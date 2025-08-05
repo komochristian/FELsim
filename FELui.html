@@ -2,16 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>FastAPI Client</title>
+  <title>FEL simulation</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
-  <h1>FastAPI + JS Example</h1>
+  <h1>FEL simulation</h1>
 
   <h2>Get Particle Distribution</h2>
   <input id="particleNum" type="number" placeholder="Enter particle number" />
   <button onclick="getDist()">Get Distribution</button>
 
   <pre id="output"></pre>
+
+  <h3>Scatter Plot (D3.js)</h3>
+  <svg id="scatterPlot" width="600" height="400"></svg>
 
   <script>
     async function getDist() {
@@ -28,6 +32,44 @@
       const data = await response.json();
       document.getElementById('output').textContent = JSON.stringify(data, null, 2);
     }
+        const data = [
+      { x: 1, y: 2 },
+      { x: 2, y: 3 },
+      { x: 3, y: 5 },
+      { x: 4, y: 4 },
+      { x: 5, y: 7 }
+    ];
+
+    const margin = { top: 20, right: 30, bottom: 40, left: 40 };
+    const width = 600 - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
+
+    const svg = d3.select("#scatterPlot")
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.x) + 1])
+      .range([0, width]);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.y) + 1])
+      .range([height, 0]);
+
+    svg.append("g")
+      .attr("transform", `translate(0,${height})`)
+      .call(d3.axisBottom(x));
+
+    svg.append("g")
+      .call(d3.axisLeft(y));
+
+    svg.selectAll("circle")
+      .data(data)
+      .join("circle")
+      .attr("cx", d => x(d.x))
+      .attr("cy", d => y(d.y))
+      .attr("r", 5)
+      .style("fill", "steelblue");
   </script>
 </body>
 </html>

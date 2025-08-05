@@ -1,0 +1,17 @@
+.beamSegment {
+    color: black;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    background-color: white;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+.beamSegment input {
+    margin-right: 8px;
+    padding: 4px;
+    flex: 1;
+}

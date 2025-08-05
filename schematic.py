@@ -242,6 +242,85 @@ class draw_beamline:
         closest_z = z_values[np.argmin(np.abs(z_values - val))]
         matrix = plot6dValues[closest_z]
         return closest_z, matrix
+    
+    def simulateData(self, matrixVariables, defineLim, interval):
+        ebeam = beam()
+        result = ebeam.getXYZ(matrixVariables)
+        twiss = result[3]
+        plot6dValues = {0: result}
+        twiss_aggregated_df = pd.DataFrame(
+            {axis: {label: [] for label in twiss.index} for axis in twiss.columns}
+        )  # Create twiss dataframe for particles
+        x_axis = [0]
+        maxVals = [0, 0, 0, 0, 0, 0]
+        minVals = [0, 0, 0, 0, 0, 0]
+
+        # Add initial twiss values
+        for i, axis in enumerate(twiss.index):
+            twiss_axis = twiss.loc[axis]
+            for label, value in twiss_axis.items():
+                twiss_aggregated_df.at[axis, label].append(value)
+
+        if defineLim:
+            maxVals, minVals = self.checkMinMax(matrixVariables, maxVals, minVals)
+        if interval <= 0:
+            interval = self.DEFAULTINTERVAL
+
+        total_intervals = sum(int(segment.length // interval) + 1 for segment in beamSegments)
+
+        # Initialize the progress bar and begin simulation
+        with tqdm(total=total_intervals, desc="Simulating Beamline",
+                  bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]") as pbar:
+            # Loop through each beamline object in beamSegments array
+            for i in range(len(beamSegments)):
+                # Track calculation progress through a segment
+                intTrack = beamSegments[i].length
+
+                # Perform calculations at each interval within segment to plot later on
+                while intTrack >= interval:
+                    # Use each segment's array to transform particles
+                    matrixVariables = np.array(beamSegments[i].useMatrice(matrixVariables, length=interval))
+                    x_axis.append(round(x_axis[-1] + interval, self.DEFAULTINTERVALROUND))
+
+                    if defineLim:
+                        maxVals, minVals = self.checkMinMax(matrixVariables, maxVals, minVals)
+
+                    # Calculate twiss parameters from particle data
+                    result = ebeam.getXYZ(matrixVariables)
+                    twiss = result[3]
+                    plot6dValues.update({x_axis[-1]: result})
+
+                    # Aggregate the beam properties results together in a single pandas frame
+                    for j, axis in enumerate(twiss.index):
+                        twiss_axis = twiss.loc[axis]
+                        for label, value in twiss_axis.items():
+                            twiss_aggregated_df.at[axis, label].append(value)
+
+                    # Update the progress bar
+                    pbar.update(1)
+                    intTrack -= interval
+
+                # Use remainder length once when it's smaller than interval
+                if intTrack > 0:
+                    matrixVariables = np.array(beamSegments[i].useMatrice(matrixVariables, length=intTrack))
+                    x_axis.append(round(x_axis[-1] + intTrack, self.DEFAULTINTERVALROUND))
+
+                    if defineLim:
+                        maxVals, minVals = self.checkMinMax(matrixVariables, maxVals, minVals)
+
+                    # Calculate twiss parameters from particle data
+                    result = ebeam.getXYZ(matrixVariables)
+                    twiss = result[3]
+                    plot6dValues.update({x_axis[-1]: result})
+
+                    # Aggregate the beam properties results together in a single pandas frame
+                    for j, axis in enumerate(twiss.index):
+                        twiss_axis = twiss.loc[axis]
+                        for label, value in twiss_axis.items():
+                            twiss_aggregated_df.at[axis, label].append(value)
+
+                    # Update the progress bar for the remaining part
+                    pbar.update(1)
 
     def plotBeamPositionTransform(self, matrixVariables, beamSegments, interval = -1, defineLim = True,
                                    saveData = False, saveFig = False, shape = {}, plot = True, spacing = True,
@@ -380,49 +459,16 @@ class draw_beamline:
         if matchScaling and defineLim:
             self._setEqualAxisScaling(maxVals, minVals)
 
-        self.createUI(plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
-             x_axis, spacing, beamSegments, showIndice)
+        self.currentcreateUI(plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
+             x_axis, spacing, beamSegments, showIndice, True)
         
         
         return twiss_aggregated_df
-    
-    def currentcreateUI(self, plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
-                x_axis, spacing, beamSegments, showIndice, plot):
-            ebeam = beam()
 
-            #  Configure graph shape
-            fig = plt.figure(figsize=self.figsize)
-            gs = gridspec.GridSpec(3, 2, height_ratios=[0.8, 0.8, 1])
-            ax1 = plt.subplot(gs[0,0])
-            ax2 = plt.subplot(gs[0, 1])
-            ax3 = plt.subplot(gs[1, 0])
-            ax4 = plt.subplot(gs[1, 1])
-            
-            #  Plot inital 6d scatter data
-            #matrix = plot6dValues.get(0)
-            #ebeam.plotXYZ(matrix[2], matrix[0], matrix[1], matrix[3], ax1,ax2,ax3,ax4, maxVals, minVals, defineLim, shape, scatter=scatter)
+    def createLinePlot(self, ax5, twiss_aggregated_df, x_axis, spacing, showIndice,
+                       beamSegments):
 
-            # Make sure saveFig is of a valid datatype
-            if isinstance(saveFig, bool):
-                savePhaseSpace = saveFig
-                saveZ = 0  # or a default like 'last' or x_axis[0]
-            elif isinstance(saveFig, (int, float)):
-                savePhaseSpace = True
-                saveZ = saveFig
-            else:
-                raise ValueError("saveFig must be either False, True, or a float (z value)")
-
-            # Find closest z value to saveFig
-            closest_initial_z, matrix = self._getClosestZ(plot6dValues, saveZ)
-
-            # Update the phase space plots to match that closest z coordinate
-            ebeam.plotXYZ(matrix[2], matrix[0], matrix[1], matrix[3], ax1, ax2, ax3, ax4, maxVals, minVals, defineLim,
-                            shape, scatter=scatter)
-
-            #  Plot and configure line graph data
-            ax5 = plt.subplot(gs[2, :])
             colors = ['dodgerblue', 'crimson','yellow','green']
-
             # Calculate and plot x and y envelope
             for i in range(0,2):
                 axis = twiss_aggregated_df.index[i]
@@ -494,6 +540,44 @@ class draw_beamline:
                     else:
                         ax5.text(recx, recy, str(i), size = 'small')
                 blockstart += seg.length
+            return lineList, ax6, ax5
+
+    def currentcreateUI(self, plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
+                x_axis, spacing, beamSegments, showIndice, plot):
+            ebeam = beam()
+
+            #  Configure graph shape
+            fig = plt.figure(figsize=self.figsize)
+            gs = gridspec.GridSpec(3, 2, height_ratios=[0.8, 0.8, 1])
+            ax1 = plt.subplot(gs[0,0])
+            ax2 = plt.subplot(gs[0, 1])
+            ax3 = plt.subplot(gs[1, 0])
+            ax4 = plt.subplot(gs[1, 1])
+            
+            #  Plot inital 6d scatter data
+            #matrix = plot6dValues.get(0)
+            #ebeam.plotXYZ(matrix[2], matrix[0], matrix[1], matrix[3], ax1,ax2,ax3,ax4, maxVals, minVals, defineLim, shape, scatter=scatter)
+
+            # Make sure saveFig is of a valid datatype
+            if isinstance(saveFig, bool):
+                savePhaseSpace = saveFig
+                saveZ = 0  # or a default like 'last' or x_axis[0]
+            elif isinstance(saveFig, (int, float)):
+                savePhaseSpace = True
+                saveZ = saveFig
+            else:
+                raise ValueError("saveFig must be either False, True, or a float (z value)")
+
+            # Find closest z value to saveFig
+            closest_initial_z, matrix = self._getClosestZ(plot6dValues, saveZ)
+
+            # Update the phase space plots to match that closest z coordinate
+            ebeam.plotXYZ(matrix[2], matrix[0], matrix[1], matrix[3], ax1, ax2, ax3, ax4, maxVals, minVals, defineLim,
+                            shape, scatter=scatter)
+
+            #  Plot and configure line graph data
+            ax5 = plt.subplot(gs[2, :])
+            lineList, ax6, m = self.createLinePlot(ax5, twiss_aggregated_df, x_axis, spacing, showIndice, beamSegments)
 
             #  Important to leave tight_layout before scrollbar creation
             plt.suptitle("Beamline Simulation")

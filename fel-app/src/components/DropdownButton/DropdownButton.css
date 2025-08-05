@@ -15,6 +15,9 @@
   
 }
 
+.buttonOpen {
+    border: rgb(147, 197, 253) 2px solid;
+}
 
 .dropdownBtn:hover {
   background-color: #e0e0e0;

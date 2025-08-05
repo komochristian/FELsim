@@ -14,7 +14,7 @@ import sympy as sp
 
 pd.set_option('display.max_rows', None)
 # Create beamline from Excel file
-path3 = r"/Users/christiankomo/Desktop/Documents/FELsim"
+path3 = r"/Users/christiankomo/Downloads/FELsim"
 path2 = r"C:\Users\NielsB\cernbox\Hawaii University\Beam dynamics\FEL_sim"
 path1 = r"C:\Users\User\Documents\FELsim"
 directory = Path(path3)
@@ -30,17 +30,17 @@ beamlineUH = excel.create_beamline()
 #     beamline = beamline[:-5]
 schem = draw_beamline()
 beamtype = beamline()
-line_E = beamtype.changeBeamType(beamlineUH, "electron", 45)
+line_E = beamlineUH[0].changeBeamType("electron", 45, beamlineUH)
 
 
 
 # ebeam
 
 ebeam = beam()
-beam_dist = ebeam.gen_6d_gaussian(0,[1,0.1,1,0.1,2856 * (10 ** 6) * (10 ** -9),1],10000)
+beam_dist = ebeam.gen_6d_gaussian(0,[1,0.1,1,0.1,2856 * (10 ** 6) * (10 ** -9),1],1000)
 
 shape = {"shape": "rectangle", "length": 3, "width": 4, "origin": (0,0)}
-# schem.plotBeamPositionTransform(beam_dist, line_E, 0.1, defineLim = True)
+schem.plotBeamPositionTransform(beam_dist, line_E, 0.1, defineLim = True, scatter=True)
 
 '''
 create beamline, get sigma i
