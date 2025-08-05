@@ -1,14 +1,27 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import './App.css';
 import Dropdown from './components/Dropdown/Dropdown';
 import DropdownItem from './components/DropdownItem/DropdownItem';
 import BeamSegment from './components/BeamSegment/BeamSegment';
 function App()
 {
+    const [beamSegmentInfo, setData] = useState(null);
+
+    useEffect(() => {
+        fetch('http://127.0.0.1:8000/get-beamsegmentinfo')
+            .then((response) => response.json())
+            .then((json) => setData(json))
+            .catch((err) => console.error("Error loading beam segment info:", err));
+        }, []);
+    console.log(beamSegmentInfo);
+
     const [selectedItems, setSelectedItems] = useState([]);
-    const items = ['Drift', 'Quadruple Focusing', 'Quadruple Defocusing',
-                    'Dipole', 'Dipole wedge'];
+
+    if (!beamSegmentInfo) return <div>Loading...</div>;
+    const items = Object.keys(beamSegmentInfo);
+
     const handleItemClick = (item) => {
+        //itemAttributes = beamSegmentInfo[item];
         setSelectedItems(prevItems => [...prevItems, item]);
     };
     const handleRename = (index, newName) => {
@@ -53,15 +66,6 @@ function App()
                         />
                     ))}
                 </div>
-
-
-
-            {/*<ul>
-                {selectedItems.map((item, index) => (
-                 <li key={index}>{item}</li>
-                 ))}
-            </ul>*/}
-
           </div>
           <div className="main-content">
               <h1>FEL simulation</h1>

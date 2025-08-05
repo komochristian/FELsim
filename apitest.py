@@ -43,14 +43,29 @@ def getBeamSegmentInfo():
     module = importlib.import_module(moduleName)
     classes = inspect.getmembers(module, inspect.isclass)
     classes_in_module = [cls for name, cls in classes if cls.__module__ == moduleName and cls.__name__ not in ["beamline", "lattice"]]
-    beamSegInfo = []
+    beamSegInfo = {}
+    #for cls in classes_in_module:
+    #    sig = inspect.signature(cls.__init__)
+    #    beamSegInfo.update({cls.__name__:
+    #                        {p for p in sig.parameters if p != "self"}})
     for cls in classes_in_module:
         sig = inspect.signature(cls.__init__)
-        beamSegInfo.append({"name": cls.__name__,
-                            "params": [p for p in sig.parameters if p != "self"]})
-    #return [cls.__name__ for cls in classes_in_module if cls.__name__ not in ["lattice", "beamline"]]
-    json_string = json.dumps(beamSegInfo)
-    return json_string
+        params_info = {}
+    
+        for name, param in sig.parameters.items():
+            if name == "self":
+                continue
+            default = (
+                param.default
+                if param.default is not inspect.Parameter.empty
+                else 1  # or some other marker
+            )
+            params_info[name] = default
+    
+        beamSegInfo[cls.__name__] = params_info
+    #json_string = json.dumps(beamSegInfo)
+    #return json_string
+    return beamSegInfo
 
 
 
