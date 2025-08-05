@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>React Without Build Tools</title>
+    <!-- Load React and ReactDOM from a CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Load Babel to compile JSX in the browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        text-align: center;
+        margin-top: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <!-- Your React code goes here -->
+    <script type="text/babel">
+      function App() {
+        const [count, setCount] = React.useState(0);
+
+        return (
+          <div>
+            <h1>Simple Counter</h1>
+            <p>Count: {count}</p>
+            <button onClick={() => setCount(count + 1)}>Increase</button>
+            <button onClick={() => setCount(count - 1)} style={{ marginLeft: '10px' }}>
+              Decrease
+            </button>
+          </div>
+        );
+      }
+
+      // Render the App component into the DOM
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script>
+  </body>
+</html>
+

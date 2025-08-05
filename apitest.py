@@ -42,14 +42,15 @@ def run_new_sim(beamline : list):
 def getBeamSegmentInfo():
     module = importlib.import_module(moduleName)
     classes = inspect.getmembers(module, inspect.isclass)
-    classes_in_module = [cls for name, cls in classes if cls.__module__ == moduleName]
+    classes_in_module = [cls for name, cls in classes if cls.__module__ == moduleName and cls.__name__ not in ["beamline", "lattice"]]
     beamSegInfo = []
     for cls in classes_in_module:
         sig = inspect.signature(cls.__init__)
         beamSegInfo.append({"name": cls.__name__,
                             "params": [p for p in sig.parameters if p != "self"]})
     #return [cls.__name__ for cls in classes_in_module if cls.__name__ not in ["lattice", "beamline"]]
-    return beamSegInfo
+    json_string = json.dumps(beamSegInfo)
+    return json_string
 
 
 
