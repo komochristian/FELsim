@@ -13,34 +13,62 @@ function App()
             .then((json) => setData(json))
             .catch((err) => console.error("Error loading beam segment info:", err));
         }, []);
-    console.log(beamSegmentInfo);
+
 
     const [selectedItems, setSelectedItems] = useState([]);
+    useEffect(() => {
+
+    console.log("Updated selectedItems:", selectedItems);
+}, [selectedItems]);
 
     if (!beamSegmentInfo) return <div>Loading...</div>;
     const items = Object.keys(beamSegmentInfo);
 
     const handleItemClick = (item) => {
-        //itemAttributes = beamSegmentInfo[item];
-        setSelectedItems(prevItems => [...prevItems, item]);
-    };
-    const handleRename = (index, newName) => {
-        setSelectedItems(prev => {
-            const updated = [...prev];
-            updated[index] = newName;
-            return updated;
-        });
+        setSelectedItems(prevItems => [...prevItems, {[item]: beamSegmentInfo[item]}]);
     };
 
     const handleDelete = (index) => {
         setSelectedItems(prev => prev.filter((_, i) => i !== index));
     };
 
+
+
+//    const handleParamChange = (index, key, newValue) => {
+//        
+//        setSelectedItems(prev =>
+//            prev.map((item, i) =>
+//                if (i != index) return item;
+//
+//                i === index
+//                    ? { ...item, [key]: parseFloat(newValue) }
+//                    : item
+//            )
+//        );
+//    };
+    const handleParamChange = (index, paramKey, newValue) => {
+        setSelectedItems(prev =>
+            prev.map((item, i) => {
+                if (i !== index) return item;
+                console.log('handleparams index:', index);
+                const topKey = Object.keys(item)[0];
+                const updatedParams = {
+                    ...item[topKey],
+                    [paramKey]: parseFloat(newValue)
+                };
+    
+                return {
+                    [topKey]: updatedParams
+                };
+            })
+        );
+    };
+
     return (
         <>
         <div className="layout">
           <div className="sidebar">
-            <h2>Menu</h2>
+            <h2>FEL simulator</h2>
              <Dropdown buttonText="Add Segment" 
                      contentText={
                              <>
@@ -59,17 +87,16 @@ function App()
                     {selectedItems.map((item, index) => (
                         <BeamSegment 
                             key={index}
-                            name={item}
+                            name={Object.keys(item)[0]}
+                            params={item}
                             index={index}
-                            onRename={handleRename}
                             onDelete={handleDelete}
+                            onChanges={handleParamChange}
                         />
                     ))}
                 </div>
           </div>
           <div className="main-content">
-              <h1>FEL simulation</h1>
-              <p>select option on left</p>
           </div>
           <div className="linegraph ">
             <h1>graph here</h1>

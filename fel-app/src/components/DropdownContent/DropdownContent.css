@@ -1,8 +1,7 @@
 .dropdownContent {
+    z-index: 10;
     display: none;
     position: absolute;
-    //position: relative;
-    //min-width: 100%;
     flex-direction: column;
     align-items: center;
     padding: 1rem;

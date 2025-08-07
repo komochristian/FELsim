@@ -1,0 +1,67 @@
+//.windowContent {
+//    position: absolute;
+//    left: 100%; /* Places it to the immediate right of the parent */
+//    top: 0;
+//    z-index: 9999; /* Ensures it overlaps other things */
+//    width: max-content;
+//    max-width: 300px;
+//    background-color: white;
+//    border: 1px solid #ccc;
+//    border-radius: 0.5rem;
+//    padding: 1rem;
+//    box-shadow: rgba(0, 0, 0, 0.1) 0px 8px 24px;
+//    opacity: 0;
+//    pointer-events: none;
+//    transition: opacity 0.3s ease;
+//    color: black;
+//}
+
+//.windowContent {
+//  position: fixed;
+//  top: 100px; /* Adjust as needed */
+//  left: 300px; /* Adjust as needed */
+//  z-index: 9999;
+//  background-color: white;
+//  border: 1px solid #ccc;
+//  padding: 1rem;
+//  border-radius: 8px;
+//  box-shadow: rgba(0, 0, 0, 0.1) 0px 8px 24px;
+//  opacity: 1;
+//  pointer-events: auto;
+//}
+
+.windowContent {
+  background: white;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 8px 24px;
+    width: max-content;
+}
+
+.windowContentOpen {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.paramGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.paramItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.paramLabel {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.paramInput {
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
