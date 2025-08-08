@@ -20,7 +20,7 @@ const BeamSegment = ({ name, params, index, onDelete, onChanges }) => {
       <div className="beamSegment">
         <h4>{name}</h4>
         <button onClick={handleToggleEdit}>
-          {editing ? 'Close' : 'Edit'}
+          {editing ? 'Save' : 'Edit'}
         </button>
         <button onClick={() => onDelete(index)}>Delete</button>
       </div>

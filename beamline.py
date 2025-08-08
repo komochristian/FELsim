@@ -1,4 +1,5 @@
 #   Authors: Christian Komo, Niels Bidault
+from pydantic import BaseModel
 from sympy import symbols, Matrix
 import sympy as sp
 import numpy as np

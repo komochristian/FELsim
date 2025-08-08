@@ -1,13 +1,24 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
+from typing import Any, Dict
 from ebeam import beam
 from beamline import *
+import beamline
+from schematic import *
 from fastapi.middleware.cors import CORSMiddleware
 import inspect
 import json
 import importlib
+import io
+import base64
 
-ORIGINS = ["*", "http://localhost:5173"]
+ORIGINS = ["*", "http://localhost:5173", "localhost:5173"]
 moduleName = 'beamline'
+
+class BeamlineInfo(BaseModel):
+    #__root__: Dict[str, Dict[str, Any]]
+    segmentName: str
+    parameters: Dict[str, Any]
 
 app = FastAPI()
 ebeam = beam()
@@ -30,13 +41,34 @@ def gen_beam(particle_num : int):
     beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], particle_num).tolist()
     return beam_dist
 
-@app.post("/refresh-beamline")
-def run_new_sim(beamline : list):
-    pass
+@app.post("/load-axes")
+def loadAxes(beamlineData: list[BeamlineInfo]):
+    beamline = importlib.import_module("beamline")
+    beamlist = []
+    for segment in beamlineData:
+        print("|"+segment.segmentName+"|")
+        if hasattr(beamline, segment.segmentName):
+            print("hasattr check")
+            segmentClass = getattr(beamline, segment.segmentName)
+            beamlist.append(segmentClass(**segment.parameters))
+    print(beamlist)
+    beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000)
+    schem = draw_beamline()
+    axList = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True)
+    images = []
+    for axes in axList:
+        newAxes = []
+        for axis in axes:
+            fig = axis.figure
+            buf = io.BytesIO()
+            fig.savefig(buf, format="png",bbox_inches="tight")
+            buf.seek(0)
+            img_base64 = base64.b64encode(buf.read()).decode("utf-8")
+            buf.close()
+            newAxes.append(img_base64)
+        images.append(newAxes)
+    return images
 
-#@app.get("/twiss-data")
-#def get_twiss(beamline: list):
-#    pass
 
 @app.get("/get-beamsegmentinfo")
 def getBeamSegmentInfo():
@@ -66,6 +98,3 @@ def getBeamSegmentInfo():
     #json_string = json.dumps(beamSegInfo)
     #return json_string
     return beamSegInfo
-
-
-

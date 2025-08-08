@@ -1,5 +1,5 @@
 #   Authors: Christian Komo, Niels Bidault
-
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.gridspec as gridspec
@@ -324,7 +324,7 @@ class draw_beamline:
 
     def plotBeamPositionTransform(self, matrixVariables, beamSegments, interval = -1, defineLim = True,
                                    saveData = False, saveFig = False, shape = {}, plot = True, spacing = True,
-                                   matchScaling = True, showIndice = False, scatter=False):
+                                   matchScaling = True, showIndice = False, scatter=False, apiCall = False):
         '''
         Simulates movement of particles through an accelerator beamline
 
@@ -367,7 +367,8 @@ class draw_beamline:
         shape = {"shape": "rectangle", "length": 200, "width": 500, "origin": (10,-4)}
         Only 2 shapes currently: rectangles and circles
         '''
-
+        if apiCall:
+            matplotlib.use('Agg')
         # Initialize values
         ebeam = beam()
         result = ebeam.getXYZ(matrixVariables)
@@ -459,9 +460,11 @@ class draw_beamline:
         if matchScaling and defineLim:
             self._setEqualAxisScaling(maxVals, minVals)
 
-        self.currentcreateUI(plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
-             x_axis, spacing, beamSegments, showIndice, True)
-        
+        apiAxData = self.currentcreateUI(plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
+             x_axis, spacing, beamSegments, showIndice, plot, apiCall)
+        if apiCall:
+            print(len(apiAxData))
+            return apiAxData
         
         return twiss_aggregated_df
 
@@ -543,7 +546,7 @@ class draw_beamline:
             return lineList, ax6, ax5
 
     def currentcreateUI(self, plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
-                x_axis, spacing, beamSegments, showIndice, plot):
+                x_axis, spacing, beamSegments, showIndice, plot, apiCall):
             ebeam = beam()
 
             #  Configure graph shape
@@ -568,16 +571,36 @@ class draw_beamline:
             else:
                 raise ValueError("saveFig must be either False, True, or a float (z value)")
 
+                    
+
+
             # Find closest z value to saveFig
             closest_initial_z, matrix = self._getClosestZ(plot6dValues, saveZ)
 
             # Update the phase space plots to match that closest z coordinate
             ebeam.plotXYZ(matrix[2], matrix[0], matrix[1], matrix[3], ax1, ax2, ax3, ax4, maxVals, minVals, defineLim,
                             shape, scatter=scatter)
+            if apiCall:
+                axList = []
+                for index, mat in plot6dValues.items():
+                    fig = plt.figure(figsize=self.figsize)
+                    gs = gridspec.GridSpec(3, 2, height_ratios=[0.8, 0.8, 1])
+                    ax1 = plt.subplot(gs[0,0])
+                    ax2 = plt.subplot(gs[0, 1])
+                    ax3 = plt.subplot(gs[1, 0])
+                    ax4 = plt.subplot(gs[1, 1])
+                    ax1.clear()
+                    ax2.clear()
+                    ax3.clear()
+                    ax4.clear() 
+                    ebeam.plotXYZ(mat[2], mat[0], mat[1], mat[3], ax1, ax2, ax3, ax4, maxVals, minVals, defineLim, shape, scatter=scatter)
+                    axList.append([ax1,ax2,ax3,ax4])
+                return axList
 
             #  Plot and configure line graph data
             ax5 = plt.subplot(gs[2, :])
             lineList, ax6, m = self.createLinePlot(ax5, twiss_aggregated_df, x_axis, spacing, showIndice, beamSegments)
+
 
             #  Important to leave tight_layout before scrollbar creation
             plt.suptitle("Beamline Simulation")
@@ -681,9 +704,11 @@ class draw_beamline:
 
             if plot:
                 plt.show()
+
+            return []
     
     def createUI(self, plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
-                 x_axis, spacing, beamSegments, showIndice):
+                 x_axis, spacing, beamSegments, showIndice, apiCall):
         ebeam = beam()
 
         # Initialize QApplication if it doesn't exist

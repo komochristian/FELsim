@@ -41,6 +41,8 @@ beam_dist = ebeam.gen_6d_gaussian(0,[1,0.1,1,0.1,2856 * (10 ** 6) * (10 ** -9),1
 
 shape = {"shape": "rectangle", "length": 3, "width": 4, "origin": (0,0)}
 schem.plotBeamPositionTransform(beam_dist, line_E, 0.1, defineLim = True, scatter=True)
+l = []
+schem.plotBeamPositionTransform(beam_dist, l, 0.1)
 
 '''
 create beamline, get sigma i
@@ -48,7 +50,6 @@ create beamline, get sigma i
 alg = AlgebraicOpti()
 sig = alg.getDistSigmai(beam_dist)
 twiss = ebeam.cal_twiss(beam_dist)[2]
-print(twiss)
 
 '''
 Initial conditions, sigma_i for horizontal and vertical planes:
@@ -64,6 +65,7 @@ print("Initial v-plane sigma_i[19] (eps * gamma):"+str(sig[21]))
 '''
 We would like to compare this values with sigma_f, to try to have sigma_f = sigma_i for the h- and v-plane
 '''
+
 
 I = 3.56  # result obtained from testOptimization.py...
 sec1 = driftLattice(0.5)
