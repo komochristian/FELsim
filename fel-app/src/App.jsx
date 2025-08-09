@@ -7,6 +7,7 @@ function App()
 {
     const [beamSegmentInfo, setData] = useState(null);
     const [dotGraphs, setDotGraphs] = useState([]);
+    const [lineGraph, setLineGraph] = useState(null);
     const [selectedItems, setSelectedItems] = useState([]);
 
     useEffect(() => {
@@ -14,7 +15,6 @@ function App()
             .then((response) => response.json())
             .then((json) => setData(json))
             .catch((err) => console.error("Error loading beam segment info:", err));
-        getBeamline(selectedItems);
         }, []);
 
 
@@ -62,7 +62,6 @@ function App()
         const jsonBody = JSON.stringify(cleanedList, null, 4); 
         console.log("json sent;", jsonBody);
 
-
         const res = await fetch('http://127.0.0.1:8000/load-axes', {
             method: 'POST',
             headers: {
@@ -70,15 +69,17 @@ function App()
             },
             body: jsonBody,
         });
-
         
-        const result = await res.json();
-        const cleanResult = result.map((subArr) => {
-            return subArr.map((axis) => { return `data:image/png;base64,${axis}` });
+        const axImages = await res.json();
+        const result = axImages['images'];
+        const lineAx = axImages['line-graph'];
+        const cleanResult = result.map(axis => {
+            return `data:image/png;base64,${axis}`
         });
         setDotGraphs(cleanResult);
-        console.log("returned api result:", result);
-        console.log("newSubArr:", cleanResult);
+        setLineGraph(`data:image/png;base64,${lineAx}`);
+        //console.log("returned api result:", result);
+        //console.log("newSubArr:", cleanResult);
 
     };
 
@@ -122,10 +123,10 @@ function App()
                 </div>
           </div>
           <div className="main-content">
-                <img src={dotGraphs.length > 0 ? dotGraphs[0][2] : null} alt="loading..."/>
+                <img src={dotGraphs.length > 0 ? dotGraphs[0] : null} alt="loading..."/>
           </div>
           <div className="linegraph ">
-            <h1>graph here</h1>
+            <img src={lineGraph ? lineGraph: null} alt="loading..."/>
           </div>
           <div className="twiss">
             <h6>Twiss options</h6>

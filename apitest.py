@@ -54,20 +54,34 @@ def loadAxes(beamlineData: list[BeamlineInfo]):
     print(beamlist)
     beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000)
     schem = draw_beamline()
-    axList = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True)
+    axList, lineAx = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True)
+    fig = lineAx.figure
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png",bbox_inches="tight")
+    buf.seek(0)
+    lineAx_img = base64.b64encode(buf.read()).decode("utf-8")
+    buf.close()
+
     images = []
     for axes in axList:
-        newAxes = []
-        for axis in axes:
-            fig = axis.figure
-            buf = io.BytesIO()
-            fig.savefig(buf, format="png",bbox_inches="tight")
-            buf.seek(0)
-            img_base64 = base64.b64encode(buf.read()).decode("utf-8")
-            buf.close()
-            newAxes.append(img_base64)
-        images.append(newAxes)
-    return images
+
+        fig = axes.figure
+        buf = io.BytesIO()
+        fig.savefig(buf, format="png",bbox_inches="tight")
+        buf.seek(0)
+        img_base64 = base64.b64encode(buf.read()).decode("utf-8")
+        buf.close()
+
+       # for axis in axes:
+       #     fig = axis.figure
+       #     buf = io.BytesIO()
+       #     fig.savefig(buf, format="png",bbox_inches="tight")
+       #     buf.seek(0)
+       #     img_base64 = base64.b64encode(buf.read()).decode("utf-8")
+       #     buf.close()
+       #     newAxes.append(img_base64)
+        images.append(img_base64)
+    return {'images': images, 'line-graph': lineAx_img}
 
 
 @app.get("/get-beamsegmentinfo")

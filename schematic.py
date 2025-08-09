@@ -460,11 +460,10 @@ class draw_beamline:
         if matchScaling and defineLim:
             self._setEqualAxisScaling(maxVals, minVals)
 
-        apiAxData = self.currentcreateUI(plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
+        apiAxData, ax5 = self.currentcreateUI(plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
              x_axis, spacing, beamSegments, showIndice, plot, apiCall)
         if apiCall:
-            print(len(apiAxData))
-            return apiAxData
+            return apiAxData, ax5
         
         return twiss_aggregated_df
 
@@ -580,10 +579,15 @@ class draw_beamline:
             # Update the phase space plots to match that closest z coordinate
             ebeam.plotXYZ(matrix[2], matrix[0], matrix[1], matrix[3], ax1, ax2, ax3, ax4, maxVals, minVals, defineLim,
                             shape, scatter=scatter)
+
+            #  Plot and configure line graph data
+            ax5 = plt.subplot(gs[2, :])
+            lineList, ax6, m = self.createLinePlot(ax5, twiss_aggregated_df, x_axis, spacing, showIndice, beamSegments)
+
             if apiCall:
                 axList = []
                 for index, mat in plot6dValues.items():
-                    fig = plt.figure(figsize=self.figsize)
+                    fig = plt.figure(figsize=(10,7)) # DONT HARDCODE
                     gs = gridspec.GridSpec(3, 2, height_ratios=[0.8, 0.8, 1])
                     ax1 = plt.subplot(gs[0,0])
                     ax2 = plt.subplot(gs[0, 1])
@@ -594,12 +598,13 @@ class draw_beamline:
                     ax3.clear()
                     ax4.clear() 
                     ebeam.plotXYZ(mat[2], mat[0], mat[1], mat[3], ax1, ax2, ax3, ax4, maxVals, minVals, defineLim, shape, scatter=scatter)
-                    axList.append([ax1,ax2,ax3,ax4])
-                return axList
 
-            #  Plot and configure line graph data
-            ax5 = plt.subplot(gs[2, :])
-            lineList, ax6, m = self.createLinePlot(ax5, twiss_aggregated_df, x_axis, spacing, showIndice, beamSegments)
+                    #axList.append([ax1,ax2,ax3,ax4])
+                    axList.append(ax1) # Only need one it seems... must dwelve furthur
+                fig.clf()
+                ax5 = plt.subplot(gs[2,:]) 
+                lineList, ax6, m = self.createLinePlot(ax5, twiss_aggregated_df, x_axis, spacing, showIndice, beamSegments)
+                return axList, ax5
 
 
             #  Important to leave tight_layout before scrollbar creation
