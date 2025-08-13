@@ -10,7 +10,28 @@ class ExcelElements:
         :param file_path: Path to the Excel file containing the beamline information.
         """
         self.df = pd.DataFrame()  # DataFrame to store the entire spreadsheet data
-        self.load_excel_lattice(file_path)
+        self.COLUMNS = ['Nomenclature', 'z_start', 'z_mid', 'z_end', 'Current (A)', 'Dipole Angle (deg)',
+                      'Dipole length (m)', 'Dipole wedge (deg)', 'Gap wedge (m)', 'Pole gap (m)', 'Fringe Field Enge coefficients',
+                      'Element name', 'Channel','Label','Sector', 'Element']
+        OLDCOLUMNS = ['Nomenclature', 'z start (m)', 'z mid (m)', 'z end (m)', 'Current A)',
+                           'Dipole Angle (deg)', 'Dipole length (m)', 'Dipole wedge (deg)',
+                           'Gap wedge (m)', 'Pole gap (m)', 'Fringe Field Enge coefficients', 
+                           'Element name', 'Channel #', 'Label', 'Sector', 'Element']
+
+        self.columnReplaceHandler = {}
+        for i in range(len(OLDCOLUMNS)):
+            self.columnReplaceHandler.update({OLDCOLUMNS[i]: self.COLUMNS[i]})
+
+        try: 
+            self.load_excel_lattice(file_path)
+        except:
+            self.load_dictionary_lattice(file_path)
+
+    def load_dictionary_lattice(self, beamlineJson):
+        self.df = pd.DataFrame(beamlineJson)
+        self.df.rename(columns=self.columnReplaceHandler, inplace=True)
+        self.df['Channel'] = pd.to_numeric(self.df['Channel'], errors='coerce')
+
 
     def load_excel_lattice(self, file_path):
         """
@@ -22,10 +43,7 @@ class ExcelElements:
         df = pd.read_excel(file_path, header=None, skiprows=1)
 
         # Rename columns to match their usage
-        df.columns = ['Nomenclature', 'z_start', 'z_mid', 'z_end', 'Current (A)', 'Dipole Angle (deg)',
-                      'Dipole length (m)', 'Dipole wedge (deg)', 'Gap wedge (m)', 'Pole gap (m)', 'Fringe Field Enge coefficients',
-                      'Element name', 'Channel','Label','Sector', 'Element']
-        
+        df.columns = self.COLUMNS        
 
         # Convert 'ch' to numeric, handling any non-numeric gracefully
         df['Channel'] = pd.to_numeric(df['Channel'], errors='coerce')

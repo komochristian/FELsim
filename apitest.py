@@ -1,6 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 from pydantic import BaseModel
-from typing import Any, Dict
+from typing import Any, Dict, List
 from ebeam import beam
 from beamline import *
 import beamline
@@ -11,14 +11,21 @@ import json
 import importlib
 import io
 import base64
+import pandas as pd
+from excelElements import ExcelElements
 
-ORIGINS = ["*", "http://localhost:5173", "localhost:5173"]
+ORIGINS = ["http://localhost:5173", "localhost:5173"]
 moduleName = 'beamline'
 
 class BeamlineInfo(BaseModel):
     #__root__: Dict[str, Dict[str, Any]]
     segmentName: str
     parameters: Dict[str, Any]
+
+class AxesPNGData(BaseModel):
+    images: Dict[float, Any]
+    line_graph: str
+
 
 app = FastAPI()
 ebeam = beam()
@@ -41,18 +48,45 @@ def gen_beam(particle_num : int):
     beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], particle_num).tolist()
     return beam_dist
 
+@app.post("/excel-to-beamline")
+def excelToBeamline(excelJson: list[Dict[str, Any]]) -> AxesPNGData:
+    pd.set_option('display.max_columns', None)
+    excelHandler = ExcelElements(excelJson)
+    beamlist = excelHandler.create_beamline()
+    beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000) #DONT HARDCORD NUM_PARTICLES
+    schem = draw_beamline()
+    axList, lineAx = schem.plotBeamPositionTransform(beam_dist, beamlist, interval=1, plot=False, apiCall=True, scatter=True)
+    fig = lineAx.figure
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png",bbox_inches="tight")
+    buf.seek(0)
+    lineAx_img = base64.b64encode(buf.read()).decode("utf-8")
+    buf.close()
+
+    images = {}
+    for index, axes in axList.items():
+
+        fig = axes.figure
+        buf = io.BytesIO()
+        fig.savefig(buf, format="png",bbox_inches="tight")
+        buf.seek(0)
+        img_base64 = base64.b64encode(buf.read()).decode("utf-8")
+        buf.close()
+
+        images.update({index: img_base64})
+    pngObject = AxesPNGData(**{'images': images, 'line_graph': lineAx_img})
+    return pngObject
+
+
 @app.post("/load-axes")
-def loadAxes(beamlineData: list[BeamlineInfo]):
+def loadAxes(beamlineData: list[BeamlineInfo]) -> AxesPNGData:
     beamline = importlib.import_module("beamline")
     beamlist = []
     for segment in beamlineData:
-        print("|"+segment.segmentName+"|")
         if hasattr(beamline, segment.segmentName):
-            print("hasattr check")
             segmentClass = getattr(beamline, segment.segmentName)
             beamlist.append(segmentClass(**segment.parameters))
-    print(beamlist)
-    beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000)
+    beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000) #DONT HARDCORD NUM_PARTICLES
     schem = draw_beamline()
     axList, lineAx = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True)
     fig = lineAx.figure
@@ -62,8 +96,8 @@ def loadAxes(beamlineData: list[BeamlineInfo]):
     lineAx_img = base64.b64encode(buf.read()).decode("utf-8")
     buf.close()
 
-    images = []
-    for axes in axList:
+    images = {}
+    for index, axes in axList.items():
 
         fig = axes.figure
         buf = io.BytesIO()
@@ -72,16 +106,9 @@ def loadAxes(beamlineData: list[BeamlineInfo]):
         img_base64 = base64.b64encode(buf.read()).decode("utf-8")
         buf.close()
 
-       # for axis in axes:
-       #     fig = axis.figure
-       #     buf = io.BytesIO()
-       #     fig.savefig(buf, format="png",bbox_inches="tight")
-       #     buf.seek(0)
-       #     img_base64 = base64.b64encode(buf.read()).decode("utf-8")
-       #     buf.close()
-       #     newAxes.append(img_base64)
-        images.append(img_base64)
-    return {'images': images, 'line-graph': lineAx_img}
+        images.update({index: img_base64})
+    pngObject = AxesPNGData(**{'images': images, 'line_graph': lineAx_img})
+    return pngObject
 
 
 @app.get("/get-beamsegmentinfo")

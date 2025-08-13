@@ -585,10 +585,11 @@ class draw_beamline:
             lineList, ax6, m = self.createLinePlot(ax5, twiss_aggregated_df, x_axis, spacing, showIndice, beamSegments)
 
             if apiCall:
-                axList = []
+                axesDict = {}
                 for index, mat in plot6dValues.items():
                     fig = plt.figure(figsize=(10,7)) # DONT HARDCODE
-                    gs = gridspec.GridSpec(3, 2, height_ratios=[0.8, 0.8, 1])
+                    #gs = gridspec.GridSpec(3, 2, height_ratios=[0.8, 0.8, 1])
+                    gs = gridspec.GridSpec(2, 2)
                     ax1 = plt.subplot(gs[0,0])
                     ax2 = plt.subplot(gs[0, 1])
                     ax3 = plt.subplot(gs[1, 0])
@@ -599,12 +600,13 @@ class draw_beamline:
                     ax4.clear() 
                     ebeam.plotXYZ(mat[2], mat[0], mat[1], mat[3], ax1, ax2, ax3, ax4, maxVals, minVals, defineLim, shape, scatter=scatter)
 
-                    #axList.append([ax1,ax2,ax3,ax4])
-                    axList.append(ax1) # Only need one it seems... must dwelve furthur
+                    #axesDict.append([ax1,ax2,ax3,ax4])
+                    axesDict.update({index: ax1}) # Only need one it seems... must dwelve furthur
                 fig.clf()
-                ax5 = plt.subplot(gs[2,:]) 
+                #ax5 = plt.subplot(gs[2,:]) 
+                deadFig, ax5 = plt.subplots(figsize=(10,1))
                 lineList, ax6, m = self.createLinePlot(ax5, twiss_aggregated_df, x_axis, spacing, showIndice, beamSegments)
-                return axList, ax5
+                return axesDict, ax5
 
 
             #  Important to leave tight_layout before scrollbar creation
@@ -613,7 +615,7 @@ class draw_beamline:
 
             #   Scroll bar creation and function
             dimensions = ax5.get_position().bounds
-            scrollax = plt.axes([dimensions[0],0.01,dimensions[2],0.01], facecolor = 'lightgoldenrodyellow')
+            scrollax = plt.axes((dimensions[0],0.01,dimensions[2],0.01), facecolor = 'lightgoldenrodyellow')
             scrollbar = Slider(scrollax, f'z: {closest_initial_z}', 0, x_axis[-1], valinit = closest_initial_z, valstep=np.array(x_axis))
             scrollbar.valtext.set_visible(False)
 

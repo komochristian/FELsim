@@ -3,12 +3,17 @@ import './App.css';
 import Dropdown from './components/Dropdown/Dropdown';
 import DropdownItem from './components/DropdownItem/DropdownItem';
 import BeamSegment from './components/BeamSegment/BeamSegment';
+import BeamlineScroll from './components/BeamlineScroll/BeamlineScroll';
+import DiscreteSlider from './components/DiscreteSlider/DiscreteSlider';
+import ExcelUploadButton from './components/ExcelUploadButton/ExcelUploadButton';
 function App()
 {
     const [beamSegmentInfo, setData] = useState(null);
     const [dotGraphs, setDotGraphs] = useState([]);
     const [lineGraph, setLineGraph] = useState(null);
     const [selectedItems, setSelectedItems] = useState([]);
+    const [currentZ, changeCurrentZ] = useState(0);
+    const [excelData, setExcelFile] = useState(null);
 
     useEffect(() => {
         fetch('http://127.0.0.1:8000/get-beamsegmentinfo')
@@ -24,6 +29,31 @@ function App()
 
     if (!beamSegmentInfo) return <div>Loading...</div>;
     const items = Object.keys(beamSegmentInfo);
+
+    const excelToAPI = async (fileJSON) => {
+        setExcelFile(fileJSON);
+        console.log(JSON.stringify(fileJSON));
+        
+        const res = await fetch('http://127.0.0.1:8000/excel-to-beamline', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(fileJSON, null, 2),
+        });
+        const axImages = await res.json();
+        const result = axImages['images'];
+        const lineAx = axImages['line_graph'];
+        const cleanResult = new Map(
+            Object.entries(result).map(([key, value]) => [
+                parseFloat(key),
+                `data:image/png;base64,${value}`,
+              ])
+            );
+        setDotGraphs(cleanResult);
+        setLineGraph(`data:image/png;base64,${lineAx}`);
+        console.log("newSubArr:", cleanResult);
+    };
 
     const handleItemClick = (item) => {
         setSelectedItems(prevItems => [...prevItems, {[item]: beamSegmentInfo[item]}]);
@@ -69,17 +99,22 @@ function App()
             },
             body: jsonBody,
         });
-        
         const axImages = await res.json();
         const result = axImages['images'];
-        const lineAx = axImages['line-graph'];
-        const cleanResult = result.map(axis => {
-            return `data:image/png;base64,${axis}`
-        });
+        const lineAx = axImages['line_graph'];
+        const cleanResult = new Map(
+            Object.entries(result).map(([key, value]) => [
+                parseFloat(key),
+                `data:image/png;base64,${value}`,
+              ])
+            );
+        //const cleanResult = result.map((index, axis) => {
+        //    return (index, `data:image/png;base64,${axis}`)
+        //});
         setDotGraphs(cleanResult);
         setLineGraph(`data:image/png;base64,${lineAx}`);
         //console.log("returned api result:", result);
-        //console.log("newSubArr:", cleanResult);
+        console.log("newSubArr:", cleanResult);
 
     };
 
@@ -108,6 +143,7 @@ function App()
                 onClick={() => getBeamline(selectedItems)}>
                 Simulate
             </button>
+            <ExcelUploadButton excelToAPI={excelToAPI} />
             <h3>Beam setup</h3>
                <div className="scrollBox">
                     {selectedItems.map((item, index) => (
@@ -123,13 +159,26 @@ function App()
                 </div>
           </div>
           <div className="main-content">
-                <img src={dotGraphs.length > 0 ? dotGraphs[0] : null} alt="loading..."/>
+                <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="loading..."/>
           </div>
           <div className="linegraph ">
             <img src={lineGraph ? lineGraph: null} alt="loading..."/>
+            <DiscreteSlider values={dotGraphs.keys()}
+                            proportional={true}
+                            defaultValue={0}
+                            onChange={(val) => {
+                                setZ(parseFloat(val));
+                            }}
+            />
           </div>
           <div className="twiss">
             <h6>Twiss options</h6>
+            <input 
+                type="number"
+                value={currentZ}
+                onChange={(e) => 
+                            changeCurrentZ(Number(e.target.value))}
+            />
           </div>
         </div>
         </>

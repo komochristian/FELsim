@@ -1,6 +1,5 @@
 /* src/App.css */
 body {
-  margin: 0;
   font-family: Arial, sans-serif;
   background-color: #f0f2f5;
   width: 100%;
@@ -11,7 +10,7 @@ body {
 .layout {
     display: grid;
     //grid-template-columns: [col-1-start] 1fr [col-2-start] 6fr [col-3-start] 0.5fr [col-end];
-    grid-template-columns: [col-1-start] 325px [col-2-start] 6fr [col-3-start] 0.5fr [col-end];
+    grid-template-columns: [col-1-start] 325px [col-2-start] 6fr  [col-end];
     grid-template-rows: [row-1-start] 2fr [row-2-start] 1fr [row-end];
     height: 100vh;
     width: 100vw;
@@ -36,9 +35,13 @@ body {
     color: #ecf0f1;
 }
 
+.sidebar button {
+    margin: 2px;
+}
+
 .main-content {
     grid-column-start: col-2-start;
-    grid-column-end: span col-end;
+    grid-column-end: col-end;
     grid-row-start: row-1-start;
     grid-row-end: row-2-start;
     border: 1px solid #ddd;
@@ -46,6 +49,14 @@ body {
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+    aspect-ratio: 16 / 7;
+}
+
+.main-content img {
+    object-fit: contain;
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 .main-content h1 {
@@ -55,17 +66,23 @@ body {
 .linegraph {
     grid-row-start: row-2-start;
     grid-row-end: row-end;
-    grid-column: col-1-start / span col-3-start;
+    grid-column: col-2-start / col-end;
     border: 1px solid #ddd;
     padding: 16px;
     background-color: #ff5733;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+    aspect-ratio: 10/2;
 }
+
+.linegraph img {
+    width: 100%;
+}
+
 
 .twiss {
     grid-row: row-2-start / row-end;
-    grid-column: col-3-start / col-end; 
+    grid-column: col-1-start / col-2-start; 
 }
 
 .scrollBox {

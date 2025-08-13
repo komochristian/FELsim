@@ -1,0 +1,83 @@
+/* DiscreteSlider.css */
+.discrete-slider {
+  --track-height: 6px;
+  position: relative;
+  padding: 8px 0;
+  user-select: none;
+  font-family: system-ui, Arial, sans-serif;
+}
+
+.slider-track {
+  position: relative;
+  height: 24px; /* space for ticks & thumb */
+}
+
+/* Tick marks */
+.tick {
+  position: absolute;
+  top: 8px;
+  width: 2px;
+  height: 8px;
+  background: #888;
+  transform: translateX(-50%);
+  border-radius: 1px;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* input range track baseline (browser default modified) */
+.slider-input {
+  -webkit-appearance: none;
+  width: 100%;
+  margin: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* track */
+.slider-input::-webkit-slider-runnable-track {
+  height: var(--track-height);
+  background: #ddd;
+  border-radius: 999px;
+}
+
+/* thumb */
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #2c7be5;
+  margin-top: calc((var(--track-height) - 18px) / 2);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  cursor: pointer;
+  border: 2px solid white;
+}
+
+/* Firefox */
+.slider-input::-moz-range-track {
+  height: var(--track-height);
+  background: #ddd;
+  border-radius: 999px;
+}
+.slider-input::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #2c7be5;
+  border: none;
+}
+
+/* current label area */
+.slider-labels {
+  display: flex;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.current-value {
+  font-weight: 600;
+  color: #222;
+}
+
