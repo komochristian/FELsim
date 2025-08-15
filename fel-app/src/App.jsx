@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import * as d3 from 'd3';
 import './App.css';
 import Dropdown from './components/Dropdown/Dropdown';
 import DropdownItem from './components/DropdownItem/DropdownItem';
@@ -6,6 +7,8 @@ import BeamSegment from './components/BeamSegment/BeamSegment';
 import BeamlineScroll from './components/BeamlineScroll/BeamlineScroll';
 import DiscreteSlider from './components/DiscreteSlider/DiscreteSlider';
 import ExcelUploadButton from './components/ExcelUploadButton/ExcelUploadButton';
+import LineGraph from './components/LineGraph/LineGraph';
+
 function App()
 {
     const [beamSegmentInfo, setData] = useState(null);
@@ -14,9 +17,10 @@ function App()
     const [selectedItems, setSelectedItems] = useState([]);
     const [currentZ, changeCurrentZ] = useState(0);
     const [excelData, setExcelFile] = useState(null);
+    const [currentBeamType, setBeamType] = useState(null);
 
     useEffect(() => {
-        fetch('http://127.0.0.1:8000/get-beamsegmentinfo')
+        fetch('http://127.0.0.1:8000/beamsegmentinfo')
             .then((response) => response.json())
             .then((json) => setData(json))
             .catch((err) => console.error("Error loading beam segment info:", err));
@@ -92,7 +96,7 @@ function App()
         const jsonBody = JSON.stringify(cleanedList, null, 4); 
         console.log("json sent;", jsonBody);
 
-        const res = await fetch('http://127.0.0.1:8000/load-axes', {
+        const res = await fetch('http://127.0.0.1:8000/axes', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -101,7 +105,8 @@ function App()
         });
         const axImages = await res.json();
         const result = axImages['images'];
-        const lineAx = axImages['line_graph'];
+        const lineAxObj = axImages['line_graph'];
+        const lineAx = lineAxObj['axis']
         const cleanResult = new Map(
             Object.entries(result).map(([key, value]) => [
                 parseFloat(key),
@@ -144,6 +149,12 @@ function App()
                 Simulate
             </button>
             <ExcelUploadButton excelToAPI={excelToAPI} />
+            <label htmlFor="beamtypeSelect" className="forLabels">Select Beam type:</label>
+            <select name="beamtypeSelect">
+                <option value="electron">Electron</option>
+                <option value="proton">Proton</option>
+                <option value="otherIon">Other Ion</option>
+            </select>
             <h3>Beam setup</h3>
                <div className="scrollBox">
                     {selectedItems.map((item, index) => (
@@ -162,14 +173,8 @@ function App()
                 <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="loading..."/>
           </div>
           <div className="linegraph ">
-            <img src={lineGraph ? lineGraph: null} alt="loading..."/>
-            <DiscreteSlider values={dotGraphs.keys()}
-                            proportional={true}
-                            defaultValue={0}
-                            onChange={(val) => {
-                                setZ(parseFloat(val));
-                            }}
-            />
+            <LineGraph></LineGraph>
+            {/*<img src={lineGraph ? lineGraph: null} alt="loading..."/>*/}
           </div>
           <div className="twiss">
             <h6>Twiss options</h6>

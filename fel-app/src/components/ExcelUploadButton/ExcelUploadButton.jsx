@@ -21,7 +21,8 @@ const ExcelUploadButton = ({excelToAPI}) => {
     };
 
     return <div>
-                <input type="file" accept=".xlsx" onChange={fileHandler} />
+                <label className="excelLabel" htmlFor="excelButton">Upload Excel File</label>
+                <input name="excelButton" type="file" accept=".xlsx" onChange={fileHandler} />
             </div>
 };
 

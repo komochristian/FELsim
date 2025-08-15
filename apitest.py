@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Body
+import uvicorn
 from pydantic import BaseModel
 from typing import Any, Dict, List
 from ebeam import beam
@@ -22,10 +23,15 @@ class BeamlineInfo(BaseModel):
     segmentName: str
     parameters: Dict[str, Any]
 
+class LineAxObject(BaseModel):
+    axis: str # temporary placeholder axes
+    sixdValues: dict
+    x_axis: list[float]
+    beamsegment: list
+
 class AxesPNGData(BaseModel):
     images: Dict[float, Any]
-    line_graph: str
-
+    line_graph: LineAxObject
 
 app = FastAPI()
 ebeam = beam()
@@ -38,6 +44,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def beamlineToJson():
+    pass
 
 @app.get("/")
 def root():
@@ -78,7 +86,7 @@ def excelToBeamline(excelJson: list[Dict[str, Any]]) -> AxesPNGData:
     return pngObject
 
 
-@app.post("/load-axes")
+@app.post("/axes")
 def loadAxes(beamlineData: list[BeamlineInfo]) -> AxesPNGData:
     beamline = importlib.import_module("beamline")
     beamlist = []
@@ -89,7 +97,7 @@ def loadAxes(beamlineData: list[BeamlineInfo]) -> AxesPNGData:
     beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000) #DONT HARDCORD NUM_PARTICLES
     schem = draw_beamline()
     axList, lineAx = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True)
-    fig = lineAx.figure
+    fig = lineAx['axis'].figure
     buf = io.BytesIO()
     fig.savefig(buf, format="png",bbox_inches="tight")
     buf.seek(0)
@@ -107,11 +115,18 @@ def loadAxes(beamlineData: list[BeamlineInfo]) -> AxesPNGData:
         buf.close()
 
         images.update({index: img_base64})
-    pngObject = AxesPNGData(**{'images': images, 'line_graph': lineAx_img})
+
+    lineAx['axis'] = lineAx_img
+    lineAx['sixdValues'] = {}
+    lineAx['beamsegment'] = []
+    lineAx['x_axis'] = []
+
+    lineAxObj = LineAxObject(**lineAx)
+    pngObject = AxesPNGData(**{'images': images, 'line_graph': lineAxObj})
     return pngObject
 
 
-@app.get("/get-beamsegmentinfo")
+@app.get("/beamsegmentinfo")
 def getBeamSegmentInfo():
     module = importlib.import_module(moduleName)
     classes = inspect.getmembers(module, inspect.isclass)
@@ -139,3 +154,6 @@ def getBeamSegmentInfo():
     #json_string = json.dumps(beamSegInfo)
     #return json_string
     return beamSegInfo
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)

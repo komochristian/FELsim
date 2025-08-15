@@ -9,9 +9,8 @@ body {
 
 .layout {
     display: grid;
-    //grid-template-columns: [col-1-start] 1fr [col-2-start] 6fr [col-3-start] 0.5fr [col-end];
     grid-template-columns: [col-1-start] 325px [col-2-start] 6fr  [col-end];
-    grid-template-rows: [row-1-start] 2fr [row-2-start] 1fr [row-end];
+    grid-template-rows: [row-1-start] 560px [row-2-start] 1.5fr [row-end];
     height: 100vh;
     width: 100vw;
 }
@@ -49,12 +48,15 @@ body {
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Subtle shadow */
-    aspect-ratio: 16 / 7;
+
+    //height: 100%;
+    min-height: 300px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .main-content img {
     object-fit: contain;
-    display: block;
     width: 100%;
     height: 100%;
 }
@@ -69,7 +71,6 @@ body {
     grid-column: col-2-start / col-end;
     border: 1px solid #ddd;
     padding: 16px;
-    background-color: #ff5733;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Subtle shadow */
     aspect-ratio: 10/2;
@@ -86,7 +87,7 @@ body {
 }
 
 .scrollBox {
-    height: 300px;
+    height: 250px;
     overflow-y: auto;
     border: 1px solid #ccc;
     padding: 10px;
@@ -106,4 +107,8 @@ body {
   text-align: center;
   padding: 14px;
   text-decoration: none;
+}
+
+.forLabels {
+    margin: 3px;
 }

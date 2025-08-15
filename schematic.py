@@ -462,9 +462,15 @@ class draw_beamline:
 
         apiAxData, ax5 = self.currentcreateUI(plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
              x_axis, spacing, beamSegments, showIndice, plot, apiCall)
+        lineAxElements = {'axis': ax5, # temporary placeholder ax
+                        'sixdValues': plot6dValues, # All other elements for nivo plotting
+                        'x_axis': x_axis,
+                        'beamsegment': beamSegments
+                         }
         if apiCall:
-            return apiAxData, ax5
-        
+            print(plot6dValues)
+            return apiAxData, lineAxElements
+
         return twiss_aggregated_df
 
     def createLinePlot(self, ax5, twiss_aggregated_df, x_axis, spacing, showIndice,
