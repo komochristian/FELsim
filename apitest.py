@@ -25,7 +25,7 @@ class BeamlineInfo(BaseModel):
 
 class LineAxObject(BaseModel):
     axis: str # temporary placeholder axes
-    sixdValues: dict
+    twiss: str
     x_axis: list[float]
     beamsegment: list
 
@@ -63,8 +63,8 @@ def excelToBeamline(excelJson: list[Dict[str, Any]]) -> AxesPNGData:
     beamlist = excelHandler.create_beamline()
     beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000) #DONT HARDCORD NUM_PARTICLES
     schem = draw_beamline()
-    axList, lineAx = schem.plotBeamPositionTransform(beam_dist, beamlist, interval=1, plot=False, apiCall=True, scatter=True)
-    fig = lineAx.figure
+    axList, lineAxObj= schem.plotBeamPositionTransform(beam_dist, beamlist, interval=1, plot=False, apiCall=True, scatter=True) # DONT HARDCODE INTERVAL, GIVE USERS FULL API OPTIONS
+    fig = lineAxObj['axis'].figure
     buf = io.BytesIO()
     fig.savefig(buf, format="png",bbox_inches="tight")
     buf.seek(0)
@@ -96,8 +96,8 @@ def loadAxes(beamlineData: list[BeamlineInfo]) -> AxesPNGData:
             beamlist.append(segmentClass(**segment.parameters))
     beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000) #DONT HARDCORD NUM_PARTICLES
     schem = draw_beamline()
-    axList, lineAx = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True)
-    fig = lineAx['axis'].figure
+    axList, lineAxObj = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True)
+    fig = lineAxObj['axis'].figure
     buf = io.BytesIO()
     fig.savefig(buf, format="png",bbox_inches="tight")
     buf.seek(0)
@@ -115,13 +115,16 @@ def loadAxes(beamlineData: list[BeamlineInfo]) -> AxesPNGData:
         buf.close()
 
         images.update({index: img_base64})
+     
+    lineAxObj['axis'] = lineAx_img
+    lineAxObj['twiss'] = lineAxObj['twiss'].to_json()
+    beamsegmentJson = []
+    #for segment in lineAxObj['beamsegment']:
+    #    beamsegmentJson.append(segment.__dict__)
+    lineAxObj['beamsegment'] = beamsegmentJson
+    #print(beamsegmentJson)
 
-    lineAx['axis'] = lineAx_img
-    lineAx['sixdValues'] = {}
-    lineAx['beamsegment'] = []
-    lineAx['x_axis'] = []
-
-    lineAxObj = LineAxObject(**lineAx)
+    lineAxObj = LineAxObject(**lineAxObj)
     pngObject = AxesPNGData(**{'images': images, 'line_graph': lineAxObj})
     return pngObject
 
@@ -155,5 +158,6 @@ def getBeamSegmentInfo():
     #return json_string
     return beamSegInfo
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+# Don't use, doesn't check for changes and server reloads
+#if __name__ == "__main__":
+    #uvicorn.run(app, host="127.0.0.1", port=8000)

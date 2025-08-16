@@ -15,9 +15,10 @@ function App()
     const [dotGraphs, setDotGraphs] = useState([]);
     const [lineGraph, setLineGraph] = useState(null);
     const [selectedItems, setSelectedItems] = useState([]);
-    const [currentZ, changeCurrentZ] = useState(0);
+    const [currentZ, setZValue] = useState(0);
     const [excelData, setExcelFile] = useState(null);
     const [currentBeamType, setBeamType] = useState(null);
+    const [twissDf, setTwissDf] = useState([]);
 
     useEffect(() => {
         fetch('http://127.0.0.1:8000/beamsegmentinfo')
@@ -34,9 +35,30 @@ function App()
     if (!beamSegmentInfo) return <div>Loading...</div>;
     const items = Object.keys(beamSegmentInfo);
 
+    const handleTwiss = (twissJsonObj, x_axis) => {
+
+        
+        const twissPlotData = Object.entries(twissJsonObj).flatMap(([key, obj]) => {
+                return Object.entries(obj).map(([axis, arr]) => {
+                
+                    return {"id": `${key}: ${axis}`,
+                            "data": 
+                                arr.map((val, i) => ({
+                                    'x': x_axis[i],
+                                    'y': val
+                                    })
+                                )
+                    }
+                });
+        });
+        
+
+        setTwissDf(twissPlotData);
+        console.log(twissPlotData);
+    };
+
     const excelToAPI = async (fileJSON) => {
         setExcelFile(fileJSON);
-        console.log(JSON.stringify(fileJSON));
         
         const res = await fetch('http://127.0.0.1:8000/excel-to-beamline', {
             method: 'POST',
@@ -56,7 +78,6 @@ function App()
             );
         setDotGraphs(cleanResult);
         setLineGraph(`data:image/png;base64,${lineAx}`);
-        console.log("newSubArr:", cleanResult);
     };
 
     const handleItemClick = (item) => {
@@ -94,7 +115,7 @@ function App()
         });
     
         const jsonBody = JSON.stringify(cleanedList, null, 4); 
-        console.log("json sent;", jsonBody);
+        //console.log("json sent;", jsonBody);
 
         const res = await fetch('http://127.0.0.1:8000/axes', {
             method: 'POST',
@@ -106,7 +127,10 @@ function App()
         const axImages = await res.json();
         const result = axImages['images'];
         const lineAxObj = axImages['line_graph'];
-        const lineAx = lineAxObj['axis']
+        const lineAx = lineAxObj['axis'];
+
+        handleTwiss(JSON.parse(lineAxObj['twiss']), lineAxObj['x_axis']);
+
         const cleanResult = new Map(
             Object.entries(result).map(([key, value]) => [
                 parseFloat(key),
@@ -119,7 +143,7 @@ function App()
         setDotGraphs(cleanResult);
         setLineGraph(`data:image/png;base64,${lineAx}`);
         //console.log("returned api result:", result);
-        console.log("newSubArr:", cleanResult);
+        //console.log("newSubArr:", cleanResult);
 
     };
 
@@ -173,7 +197,7 @@ function App()
                 <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="loading..."/>
           </div>
           <div className="linegraph ">
-            <LineGraph></LineGraph>
+            <LineGraph twissData={twissDf} setZValue={setZValue}></LineGraph>
             {/*<img src={lineGraph ? lineGraph: null} alt="loading..."/>*/}
           </div>
           <div className="twiss">

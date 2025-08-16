@@ -448,6 +448,18 @@ class draw_beamline:
                     # Update the progress bar for the remaining part
                     pbar.update(1)
 
+        #  Save x and y envelope data
+        
+        envelopeArr = []
+        for i in range(0,3):
+            axis = twiss_aggregated_df.index[i]
+            emittance = (10 ** -6) * np.array(twiss_aggregated_df.at[axis, twiss_aggregated_df.keys()[0]])
+            beta = np.array(twiss_aggregated_df.at[axis, twiss_aggregated_df.keys()[2]])
+            envelope = (10 ** 3) * np.sqrt(emittance * beta)
+            envelopeArr.append(envelope)
+        twiss_aggregated_df[r"Envelope $E$ (mm)"] = envelopeArr
+
+
         #  Optionally save standard deviation and mean data
         if saveData:  
             name = "simulator-data-" + datetime.datetime.now().strftime('%Y-%m-%d') + "_" + datetime.datetime.now().strftime('%H_%M_%S') +".csv"
@@ -463,12 +475,11 @@ class draw_beamline:
         apiAxData, ax5 = self.currentcreateUI(plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
              x_axis, spacing, beamSegments, showIndice, plot, apiCall)
         lineAxElements = {'axis': ax5, # temporary placeholder ax
-                        'sixdValues': plot6dValues, # All other elements for nivo plotting
+                        'twiss': twiss_aggregated_df, # All other elements for nivo plotting
                         'x_axis': x_axis,
                         'beamsegment': beamSegments
                          }
         if apiCall:
-            print(plot6dValues)
             return apiAxData, lineAxElements
 
         return twiss_aggregated_df
@@ -480,9 +491,7 @@ class draw_beamline:
             # Calculate and plot x and y envelope
             for i in range(0,2):
                 axis = twiss_aggregated_df.index[i]
-                emittance = (10 ** -6) * np.array(twiss_aggregated_df.at[axis, twiss_aggregated_df.keys()[0]])
-                beta = np.array(twiss_aggregated_df.at[axis, twiss_aggregated_df.keys()[2]])
-                envelope = (10 ** 3) * np.sqrt(emittance * beta)
+                envelope = np.array(twiss_aggregated_df.at[axis, twiss_aggregated_df.keys()[7]])
                 ax5.plot(x_axis, envelope,
                             color=colors[i], linestyle='-',
                             label=r'$E_' + axis + '$ (mm)')

@@ -1,6 +1,6 @@
 import { ResponsiveLine } from '@nivo/line'
 
-const LineGraph = () => {
+const LineGraph = ({twissData, setZValue}) => {
     
     const data =
         [
@@ -270,8 +270,10 @@ const LineGraph = () => {
     ]
   }
 ];
+
+    twissData = twissData.slice(21, 24);
     return <ResponsiveLine /* or Line for fixed dimensions */
-        data={data}
+        data={twissData}
         margin={{ top: 10, right: 100, bottom: 40, left: 100 }}
         yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: true, reverse: false }}
         axisBottom={{ legend: 'transportation', legendOffset: 36 }}
@@ -293,38 +295,46 @@ const LineGraph = () => {
                 symbolShape: 'circle'
             }
         ]}
-        onClick={(e) => console.log(e)}
-        layers={[
-          // Custom x-axis coloring
-          ({ xScale, innerHeight }) => {
-            const segments = [
-              { from: 'helicopter', to: 'boat', color: 'red' },
-              { from: 'boat', to: 'train', color: 'green' },
-            ]
+        onMouseMove={(point, event) => {
+            console.log(point.data['x']);
+        }}
+        onClick={(e) => setZValue(e.data['x'])}
 
-            return (
-              <>
-                {segments.map((seg, i) => {
-                  const x1 = xScale(seg.from)
-                  const x2 = xScale(seg.to)
-                  return (
-                    <line
-                      key={i}
-                      x1={x1}
-                      x2={x2}
-                      y1={innerHeight}
-                      y2={innerHeight}
-                      stroke={seg.color}
-                      strokeWidth={3}
-                    />
-                  )
-                })}
-              </>
-            )
-          },
+
+        layers={[
+        //  // Custom x-axis coloring
+        //  ({ xScale, innerHeight }) => {
+        //    const segments = [
+        //      { from: 'helicopter', to: 'boat', color: 'red' },
+        //      { from: 'boat', to: 'train', color: 'green' },
+        //    ]
+
+        //    return (
+        //      <>
+        //        {segments.map((seg, i) => {
+        //          const x1 = xScale(seg.from)
+        //          const x2 = xScale(seg.to)
+        //          return (
+        //            <line
+        //              key={i}
+        //              x1={x1}
+        //              x2={x2}
+        //              y1={innerHeight}
+        //              y2={innerHeight}
+        //              stroke={seg.color}
+        //              strokeWidth={3}
+        //            />
+        //          )
+        //        })}
+        //      </>
+        //    )
+        //  },
           // Default layers
-          'grid', 'markers', 'areas', 'lines', 'slices', 'points', 'axes', 'legends',
+            'markers', 'axes', 'areas', 'crosshair', 'lines', 'points', 'slices', 'mesh', 'legends'
         ]}
+        
+        
+
     />
 };
 

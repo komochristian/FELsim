@@ -10,7 +10,7 @@ body {
 .layout {
     display: grid;
     grid-template-columns: [col-1-start] 325px [col-2-start] 6fr  [col-end];
-    grid-template-rows: [row-1-start] 560px [row-2-start] 1.5fr [row-end];
+    grid-template-rows: [row-1-start] 520px [row-2-start] 1.5fr [row-end];
     height: 100vh;
     width: 100vw;
 }
@@ -87,7 +87,7 @@ body {
 }
 
 .scrollBox {
-    height: 250px;
+    height: 220px;
     overflow-y: auto;
     border: 1px solid #ccc;
     padding: 10px;
