@@ -26,7 +26,7 @@ function App()
             .then((json) => setData(json))
             .catch((err) => console.error("Error loading beam segment info:", err));
         }, []);
-
+    console.log(beamSegmentInfo);
 
     useEffect(() => {
         console.log("Updated selectedItems:", selectedItems);
@@ -194,19 +194,11 @@ function App()
           <div className="main-content">
                 <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="loading..."/>
           </div>
-          <div className="linegraph ">
-            <LineGraph twissData={twissDf} setZValue={setZValue}></LineGraph>
+          <div className="twiss-graph">
+                <LineGraph twissData={twissDf} setZValue={setZValue}></LineGraph>
             {/*<img src={lineGraph ? lineGraph: null} alt="loading..."/>*/}
           </div>
-          <div className="twiss">
-            <h6>Twiss options</h6>
-            <input 
-                type="number"
-                value={currentZ}
-                onChange={(e) => 
-                            changeCurrentZ(Number(e.target.value))}
-            />
-          </div>
+          
         </div>
         </>
     );

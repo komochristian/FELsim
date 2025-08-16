@@ -93,9 +93,10 @@ def gen_beam(particle_num : int):
 
 @app.post("/excel-to-beamline")
 def excelToBeamline(excelJson: list[Dict[str, Any]]) -> AxesPNGData:
-    pd.set_option('display.max_columns', None)
     excelHandler = ExcelElements(excelJson)
     beamlist = excelHandler.create_beamline()
+    print(beamlist[0].__class__.__name__)
+    print(json.dumps(beamlist[0].__dict__))
 
     pngObject = getPngObjFromBeamList(beamlist)
     return pngObject

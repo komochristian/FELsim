@@ -2,303 +2,42 @@ import { ResponsiveLine } from '@nivo/line'
 
 const LineGraph = ({twissData, setZValue}) => {
     
-    const data =
-        [
-  {
-    "id": "japan",
-    "data": [
-      {
-        "x": "plane",
-        "y": 46
-      },
-      {
-        "x": "helicopter",
-        "y": 147
-      },
-      {
-        "x": "boat",
-        "y": 269
-      },
-      {
-        "x": "train",
-        "y": 150
-      },
-      {
-        "x": "subway",
-        "y": 258
-      },
-      {
-        "x": "bus",
-        "y": 0
-      },
-      {
-        "x": "car",
-        "y": 263
-      },
-      {
-        "x": "moto",
-        "y": 187
-      },
-      {
-        "x": "bicycle",
-        "y": 117
-      },
-      {
-        "x": "horse",
-        "y": 49
-      },
-      {
-        "x": "skateboard",
-        "y": 219
-      },
-      {
-        "x": "others",
-        "y": 0
-      }
-    ]
-  },
-  {
-    "id": "france",
-    "data": [
-      {
-        "x": "plane",
-        "y": 251
-      },
-      {
-        "x": "helicopter",
-        "y": 37
-      },
-      {
-        "x": "boat",
-        "y": 7
-      },
-      {
-        "x": "train",
-        "y": 91
-      },
-      {
-        "x": "subway",
-        "y": 143
-      },
-      {
-        "x": "bus",
-        "y": 128
-      },
-      {
-        "x": "car",
-        "y": 9
-      },
-      {
-        "x": "moto",
-        "y": 91
-      },
-      {
-        "x": "bicycle",
-        "y": 246
-      },
-      {
-        "x": "horse",
-        "y": 32
-      },
-      {
-        "x": "skateboard",
-        "y": 187
-      },
-      {
-        "x": "others",
-        "y": 275
-      }
-    ]
-  },
-  {
-    "id": "us",
-    "data": [
-      {
-        "x": "plane",
-        "y": 246
-      },
-      {
-        "x": "helicopter",
-        "y": 239
-      },
-      {
-        "x": "boat",
-        "y": 284
-      },
-      {
-        "x": "train",
-        "y": 200
-      },
-      {
-        "x": "subway",
-        "y": 179
-      },
-      {
-        "x": "bus",
-        "y": 276
-      },
-      {
-        "x": "car",
-        "y": 3
-      },
-      {
-        "x": "moto",
-        "y": 271
-      },
-      {
-        "x": "bicycle",
-        "y": 33
-      },
-      {
-        "x": "horse",
-        "y": 79
-      },
-      {
-        "x": "skateboard",
-        "y": 111
-      },
-      {
-        "x": "others",
-        "y": 202
-      }
-    ]
-  },
-  {
-    "id": "germany",
-    "data": [
-      {
-        "x": "plane",
-        "y": 136
-      },
-      {
-        "x": "helicopter",
-        "y": 4
-      },
-      {
-        "x": "boat",
-        "y": 126
-      },
-      {
-        "x": "train",
-        "y": 81
-      },
-      {
-        "x": "subway",
-        "y": 171
-      },
-      {
-        "x": "bus",
-        "y": 215
-      },
-      {
-        "x": "car",
-        "y": 64
-      },
-      {
-        "x": "moto",
-        "y": 202
-      },
-      {
-        "x": "bicycle",
-        "y": 8
-      },
-      {
-        "x": "horse",
-        "y": 138
-      },
-      {
-        "x": "skateboard",
-        "y": 14
-      },
-      {
-        "x": "others",
-        "y": 115
-      }
-    ]
-  },
-  {
-    "id": "norway",
-    "data": [
-      {
-        "x": "plane",
-        "y": 128
-      },
-      {
-        "x": "helicopter",
-        "y": 104
-      },
-      {
-        "x": "boat",
-        "y": 121
-      },
-      {
-        "x": "train",
-        "y": 34
-      },
-      {
-        "x": "subway",
-        "y": 152
-      },
-      {
-        "x": "bus",
-        "y": 243
-      },
-      {
-        "x": "car",
-        "y": 186
-      },
-      {
-        "x": "moto",
-        "y": 288
-      },
-      {
-        "x": "bicycle",
-        "y": 147
-      },
-      {
-        "x": "horse",
-        "y": 270
-      },
-      {
-        "x": "skateboard",
-        "y": 39
-      },
-      {
-        "x": "others",
-        "y": 298
-      }
-    ]
-  }
-];
 
-    twissData = twissData.slice(21, 24);
-    return <ResponsiveLine /* or Line for fixed dimensions */
+    twissData = twissData.slice(21, 24); // TEMPORARY FOR TESTING
+
+
+
+    return <ResponsiveLine
         data={twissData}
         margin={{ top: 10, right: 100, bottom: 40, left: 100 }}
         yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: true, reverse: false }}
-        axisBottom={{ legend: 'transportation', legendOffset: 36 }}
-        axisLeft={{ legend: 'count', legendOffset: -40 }}
+        axisBottom={{ legend: 'distance from beam start (m)', legendOffset: 36 }}
+        axisLeft={{ legend: 'PLACEHOLDER', legendOffset: -40 }}
         pointSize={10}
-        pointColor={{ theme: 'background' }}
+        pointColor={{ 'from': 'series.color' }}
         pointBorderWidth={2}
         pointBorderColor={{ from: 'seriesColor' }}
         pointLabelYOffset={-12}
         enableTouchCrosshair={true}
         useMesh={true}
+        enableSlices={'x'}
+        //onClick={(e) => setZValue(e.data['x'])}  //  USE IF enableSlices IS DISABLED
+        onClick={(e) => setZValue(e.points[0].data['x'])} // USE if enableSlices IS 'x'
         legends={[
             {
-                anchor: 'bottom-right',
+                anchor: 'top-left',
                 direction: 'column',
-                translateX: 100,
+                translateX: 10,
                 itemWidth: 80,
                 itemHeight: 22,
                 symbolShape: 'circle'
             }
         ]}
-        onMouseMove={(point, event) => {
-            console.log(point.data['x']);
-        }}
-        onClick={(e) => setZValue(e.data['x'])}
+
+        //  FOR HOVER SCROLL FUNCTION
+        //onMouseMove={(point, event) => {
+        //    console.log(point);
+        //}}
 
 
         layers={[
@@ -329,7 +68,7 @@ const LineGraph = ({twissData, setZValue}) => {
         //      </>
         //    )
         //  },
-          // Default layers
+        
             'markers', 'axes', 'areas', 'crosshair', 'lines', 'points', 'slices', 'mesh', 'legends'
         ]}
         
