@@ -44,59 +44,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def beamlineToJson():
-    pass
-
-@app.get("/")
-def root():
-    return {"Hello" : "World!"}
-
-@app.post("/get-dist")
-def gen_beam(particle_num : int): 
-    beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], particle_num).tolist()
-    return beam_dist
-
-@app.post("/excel-to-beamline")
-def excelToBeamline(excelJson: list[Dict[str, Any]]) -> AxesPNGData:
-    pd.set_option('display.max_columns', None)
-    excelHandler = ExcelElements(excelJson)
-    beamlist = excelHandler.create_beamline()
+def getPngObjFromBeamList(beamlist):
     beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000) #DONT HARDCORD NUM_PARTICLES
     schem = draw_beamline()
-    axList, lineAxObj= schem.plotBeamPositionTransform(beam_dist, beamlist, interval=1, plot=False, apiCall=True, scatter=True) # DONT HARDCODE INTERVAL, GIVE USERS FULL API OPTIONS
-    fig = lineAxObj['axis'].figure
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png",bbox_inches="tight")
-    buf.seek(0)
-    lineAx_img = base64.b64encode(buf.read()).decode("utf-8")
-    buf.close()
-
-    images = {}
-    for index, axes in axList.items():
-
-        fig = axes.figure
-        buf = io.BytesIO()
-        fig.savefig(buf, format="png",bbox_inches="tight")
-        buf.seek(0)
-        img_base64 = base64.b64encode(buf.read()).decode("utf-8")
-        buf.close()
-
-        images.update({index: img_base64})
-    pngObject = AxesPNGData(**{'images': images, 'line_graph': lineAx_img})
-    return pngObject
-
-
-@app.post("/axes")
-def loadAxes(beamlineData: list[BeamlineInfo]) -> AxesPNGData:
-    beamline = importlib.import_module("beamline")
-    beamlist = []
-    for segment in beamlineData:
-        if hasattr(beamline, segment.segmentName):
-            segmentClass = getattr(beamline, segment.segmentName)
-            beamlist.append(segmentClass(**segment.parameters))
-    beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000) #DONT HARDCORD NUM_PARTICLES
-    schem = draw_beamline()
-    axList, lineAxObj = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True)
+    axList, lineAxObj = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True, interval=1)
     fig = lineAxObj['axis'].figure
     buf = io.BytesIO()
     fig.savefig(buf, format="png",bbox_inches="tight")
@@ -126,6 +77,40 @@ def loadAxes(beamlineData: list[BeamlineInfo]) -> AxesPNGData:
 
     lineAxObj = LineAxObject(**lineAxObj)
     pngObject = AxesPNGData(**{'images': images, 'line_graph': lineAxObj})
+    return pngObject
+
+def beamlineToJson():
+    pass
+
+@app.get("/")
+def root():
+    return {"Hello" : "World!"}
+
+@app.post("/get-dist")
+def gen_beam(particle_num : int): 
+    beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], particle_num).tolist()
+    return beam_dist
+
+@app.post("/excel-to-beamline")
+def excelToBeamline(excelJson: list[Dict[str, Any]]) -> AxesPNGData:
+    pd.set_option('display.max_columns', None)
+    excelHandler = ExcelElements(excelJson)
+    beamlist = excelHandler.create_beamline()
+
+    pngObject = getPngObjFromBeamList(beamlist)
+    return pngObject
+
+
+@app.post("/axes")
+def loadAxes(beamlineData: list[BeamlineInfo]) -> AxesPNGData:
+    beamline = importlib.import_module("beamline")
+    beamlist = []
+    for segment in beamlineData:
+        if hasattr(beamline, segment.segmentName):
+            segmentClass = getattr(beamline, segment.segmentName)
+            beamlist.append(segmentClass(**segment.parameters))
+
+    pngObject = getPngObjFromBeamList(beamlist)
     return pngObject
 
 

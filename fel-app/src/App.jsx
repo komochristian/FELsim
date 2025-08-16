@@ -35,9 +35,7 @@ function App()
     if (!beamSegmentInfo) return <div>Loading...</div>;
     const items = Object.keys(beamSegmentInfo);
 
-    const handleTwiss = (twissJsonObj, x_axis) => {
-
-        
+    const handleTwiss = (twissJsonObj, x_axis) => { 
         const twissPlotData = Object.entries(twissJsonObj).flatMap(([key, obj]) => {
                 return Object.entries(obj).map(([axis, arr]) => {
                 
@@ -52,9 +50,7 @@ function App()
                 });
         });
         
-
         setTwissDf(twissPlotData);
-        console.log(twissPlotData);
     };
 
     const excelToAPI = async (fileJSON) => {
@@ -69,7 +65,9 @@ function App()
         });
         const axImages = await res.json();
         const result = axImages['images'];
-        const lineAx = axImages['line_graph'];
+        const lineAxObj = axImages['line_graph'];
+        handleTwiss(JSON.parse(lineAxObj['twiss']), lineAxObj['x_axis']);
+
         const cleanResult = new Map(
             Object.entries(result).map(([key, value]) => [
                 parseFloat(key),
