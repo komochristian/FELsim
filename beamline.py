@@ -15,8 +15,32 @@ import csv
     #  ex. [[0.01,0.02,0.03,0.95,1],[1.6,0.7,0.2,0.01,1]]
 
 #      getSymbolicMatrice() must use all sympy methods and functions, NOT numpy
+
         
 class lattice:
+    E = 45  # Kinetic energy (MeV/c^2)
+    ## this should be passed from ebeam
+    E0 = 0.51099 # Electron rest energy (MeV/c^2)
+    Q = 1.60217663e-19  # (C)
+    M = 9.1093837e-31  # (kg)
+    C = 299792458  # Celerity (m/s)
+    f = 2856 * (10 ** 6)  # RF frequency (Hz)
+
+    M_AMU = 1.66053906892E-27  # Atomic mass unit (kg)
+    k_MeV = 1e-6 / Q  # Conversion factor (MeV / J)
+    m_p = 1.67262192595e-27  # Proton Mass (kg)
+
+    #  Dictionary of predefined particle properties [Mass (kg), Charge (C), Rest Energy (MeV)]
+    PARTICLES = {"electron": [M, Q, (M * C ** 2) * k_MeV],
+                      "proton": [m_p, Q, (m_p * C ** 2) * k_MeV]}
+
+    # Relativistic gamma and beta factors, calculated based on current kinetic energy and rest energy
+    gamma = (1 + (E / E0))
+    beta = np.sqrt(1 - (1 / (gamma ** 2)))
+
+    unitsF = 10 ** 6 # Units factor used for conversions from (keV) to (ns)
+    color = 'none'  #Color of beamline element when graphed
+
     def __init__(self, length, fringeType = None):
         '''
         parent class for accelerator beamline segment object
@@ -27,28 +51,6 @@ class lattice:
             Sets the physical length of the beamline element in meters.
         fringeType : 
         '''
-        self.E = 45  # Kinetic energy (MeV/c^2)
-        ## this should be passed from ebeam
-        self.E0 = 0.51099 # Electron rest energy (MeV/c^2)
-        self.Q = 1.60217663e-19  # (C)
-        self.M = 9.1093837e-31  # (kg)
-        self.C = 299792458  # Celerity (m/s)
-        self.f = 2856 * (10 ** 6)  # RF frequency (Hz)
-
-        self.M_AMU = 1.66053906892E-27  # Atomic mass unit (kg)
-        self.k_MeV = 1e-6 / self.Q  # Conversion factor (MeV / J)
-        self.m_p = 1.67262192595e-27  # Proton Mass (kg)
-
-        #  Dictionary of predefined particle properties [Mass (kg), Charge (C), Rest Energy (MeV)]
-        self.PARTICLES = {"electron": [self.M, self.Q, (self.M * self.C ** 2) * self.k_MeV],
-                          "proton": [self.m_p, self.Q, (self.m_p * self.C ** 2) * self.k_MeV]}
-
-        # Relativistic gamma and beta factors, calculated based on current kinetic energy and rest energy
-        self.gamma = (1 + (self.E / self.E0))
-        self.beta = np.sqrt(1 - (1 / (self.gamma ** 2)))
-
-        self.unitsF = 10 ** 6 # Units factor used for conversions from (keV) to (ns)
-        self.color = 'none'  #Color of beamline element when graphed
         self.fringeType = fringeType  # Each segment has no magnetic fringe by default
         self.startPos = None
         self.endPos = None
@@ -199,6 +201,7 @@ class lattice:
         return newMatrix #  return 2d list
     
 class driftLattice(lattice):
+    color = "white"
     def __init__(self, length: float):
         '''
         Represents a drift space (empty section) in the beamline.
@@ -209,7 +212,6 @@ class driftLattice(lattice):
             The length of the drift segment in meters.
         '''
         super().__init__(length)
-        self.color = "white"
     
     # note: unlike old usematrice, this func doesnt check for negative/zero parameter numbers,
     # Nor if length is actually the dtype numeric specifies
@@ -261,6 +263,8 @@ class driftLattice(lattice):
 
 
 class qpfLattice(lattice):
+    color = "cornflowerblue"
+    G = 2.694  #  Quadruple focusing strength (T/A/m)
     def __init__(self, current: float, length: float = 0.0889, fringeType = 'decay'):
         '''
         Represents a quadrupole focusing magnet. This magnet focuses in the x plane
@@ -277,8 +281,6 @@ class qpfLattice(lattice):
         '''
         super().__init__(length, fringeType)
         self.current = current #  Amps
-        self.color = "cornflowerblue"
-        self.G = 2.694  #  Quadruple focusing strength (T/A/m)
 
     def getSymbolicMatrice(self, numeric = False, length = None, current = None):
         '''
@@ -355,6 +357,8 @@ class qpfLattice(lattice):
 
 
 class qpdLattice(lattice):
+    color = "lightcoral"
+    G = 2.694  # Quadruple focusing strength (T/A/m)
     def __init__(self, current: float, length: float = 0.0889, fringeType = 'decay'):
         '''
         Represents a quadrupole defocusing magnet. This magnet defocuses in the x plane 
@@ -370,8 +374,6 @@ class qpdLattice(lattice):
         '''
         super().__init__(length, fringeType)
         self.current = current # Amps
-        self.G = 2.694  # Quadruple focusing strength (T/A/m)
-        self.color = "lightcoral"
     
     def getSymbolicMatrice(self, numeric = False, length = None, current = None):
         '''
@@ -447,6 +449,7 @@ class qpdLattice(lattice):
         return f"QPD beamline segment {self.length} m long and a current of {self.current} amps"
 
 class dipole(lattice):
+    color = "forestgreen"
     def __init__(self, length: float = 0.0889, angle: float = 1.5, fringeType = 'decay'):
         '''
         Represents a dipole bending magnet, which bends the beam horizontally.
@@ -460,7 +463,6 @@ class dipole(lattice):
         fringeType : 
         '''
         super().__init__(length, fringeType)
-        self.color = "forestgreen"
         self.angle = angle  # degrees
     
     def getSymbolicMatrice(self, numeric = False, length = None, angle = None):
@@ -533,6 +535,7 @@ class dipole(lattice):
         return f"Horizontal dipole magnet segment {self.length} m long (curvature) with an angle of {self.angle} degrees"
 
 class dipole_wedge(lattice):
+    color = "lightgreen"
     def __init__(self, length, angle: float = 1, dipole_length: float = 0.0889, dipole_angle: float = 1.5,
                  pole_gap = 0.014478, enge_fct = 0, fringeType = 'decay'):
         '''
@@ -560,7 +563,6 @@ class dipole_wedge(lattice):
         fringeType : 
         '''
         super().__init__(length, fringeType)
-        self.color = "lightgreen"
         self.angle = angle
         self.dipole_length = dipole_length
         self.dipole_angle = dipole_angle
@@ -665,12 +667,12 @@ class dipole_wedge(lattice):
 class beamline:
     class fringeField(lattice):
         B = 0 #  Teslas
+        color = 'brown'
 
         def __init__(self, length, fieldStrength, current = 0):
             super().__init__(length)
             self.B = fieldStrength
             # self.current = current
-            self.color = 'brown'
 
         #temporarily use drift matrice for testing
         def getSymbolicMatrice(self, numeric = False, length = None, current = None):

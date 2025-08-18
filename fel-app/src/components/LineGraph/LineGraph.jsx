@@ -11,6 +11,15 @@ const LineGraph = ({twissData, setZValue}) => {
         data={twissData}
         margin={{ top: 10, right: 100, bottom: 40, left: 100 }}
         yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: true, reverse: false }}
+
+
+        // PLOT BEAM SEGMENTS FOR PREVIEW
+        //xScale={{
+        //    type: 'linear',
+        //    min: 0,      
+        //    max: 12      
+        //}}
+
         axisBottom={{ legend: 'distance from beam start (m)', legendOffset: 36 }}
         axisLeft={{ legend: 'PLACEHOLDER', legendOffset: -40 }}
         pointSize={10}

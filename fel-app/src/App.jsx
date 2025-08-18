@@ -11,12 +11,12 @@ import LineGraph from './components/LineGraph/LineGraph';
 
 function App()
 {
+    const PRIVATEVARS = ['color', 'startPos', 'endPos'];  // USE THIS SO USERS CANT EDIT THESE VALUES
     const [beamSegmentInfo, setData] = useState(null);
     const [dotGraphs, setDotGraphs] = useState([]);
     const [lineGraph, setLineGraph] = useState(null);
     const [selectedItems, setSelectedItems] = useState([]);
     const [currentZ, setZValue] = useState(0);
-    const [excelData, setExcelFile] = useState(null);
     const [currentBeamType, setBeamType] = useState(null);
     const [twissDf, setTwissDf] = useState([]);
 
@@ -53,9 +53,7 @@ function App()
         setTwissDf(twissPlotData);
     };
 
-    const excelToAPI = async (fileJSON) => {
-        setExcelFile(fileJSON);
-        
+    const excelToAPI = async (fileJSON) => {  
         const res = await fetch('http://127.0.0.1:8000/excel-to-beamline', {
             method: 'POST',
             headers: {
@@ -63,19 +61,9 @@ function App()
             },
             body: JSON.stringify(fileJSON, null, 2),
         });
-        const axImages = await res.json();
-        const result = axImages['images'];
-        const lineAxObj = axImages['line_graph'];
-        handleTwiss(JSON.parse(lineAxObj['twiss']), lineAxObj['x_axis']);
-
-        const cleanResult = new Map(
-            Object.entries(result).map(([key, value]) => [
-                parseFloat(key),
-                `data:image/png;base64,${value}`,
-              ])
-            );
-        setDotGraphs(cleanResult);
-        setLineGraph(`data:image/png;base64,${lineAx}`);
+        const beamlist = await res.json();
+        console.log(beamlist);
+        setSelectedItems(beamlist);
     };
 
     const handleItemClick = (item) => {
@@ -135,9 +123,7 @@ function App()
                 `data:image/png;base64,${value}`,
               ])
             );
-        //const cleanResult = result.map((index, axis) => {
-        //    return (index, `data:image/png;base64,${axis}`)
-        //});
+
         setDotGraphs(cleanResult);
         setLineGraph(`data:image/png;base64,${lineAx}`);
         //console.log("returned api result:", result);

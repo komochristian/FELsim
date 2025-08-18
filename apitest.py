@@ -92,15 +92,28 @@ def gen_beam(particle_num : int):
     return beam_dist
 
 @app.post("/excel-to-beamline")
-def excelToBeamline(excelJson: list[Dict[str, Any]]) -> AxesPNGData:
+def excelToBeamline(excelJson: list[Dict[str, Any]]) -> list[dict[str, dict[str, Any]]]:
     excelHandler = ExcelElements(excelJson)
     beamlist = excelHandler.create_beamline()
-    print(beamlist[0].__class__.__name__)
-    print(json.dumps(beamlist[0].__dict__))
 
-    pngObject = getPngObjFromBeamList(beamlist)
-    return pngObject
+    jsonBeamlist = []
 
+    for segment in beamlist:
+        clas = segment.__class__
+        className = clas.__name__
+        classSig= inspect.signature(clas.__init__)
+        print(segment.__dict__)
+
+        paramsDict = {}
+        for name, param in classSig.parameters.items():
+            if name == "self":
+                continue
+            paramVal = getattr(segment, name, None)
+            paramsDict.update({name: paramVal})
+                
+        jsonBeamlist.append({className: paramsDict})
+
+    return jsonBeamlist
 
 @app.post("/axes")
 def loadAxes(beamlineData: list[BeamlineInfo]) -> AxesPNGData:
@@ -121,10 +134,7 @@ def getBeamSegmentInfo():
     classes = inspect.getmembers(module, inspect.isclass)
     classes_in_module = [cls for name, cls in classes if cls.__module__ == moduleName and cls.__name__ not in ["beamline", "lattice"]]
     beamSegInfo = {}
-    #for cls in classes_in_module:
-    #    sig = inspect.signature(cls.__init__)
-    #    beamSegInfo.update({cls.__name__:
-    #                        {p for p in sig.parameters if p != "self"}})
+
     for cls in classes_in_module:
         sig = inspect.signature(cls.__init__)
         params_info = {}
@@ -138,10 +148,11 @@ def getBeamSegmentInfo():
                 else 1  # or some other marker
             )
             params_info[name] = default
+
+        params_info['color'] = cls.color  # Manually add class info about beam's color
     
         beamSegInfo[cls.__name__] = params_info
-    #json_string = json.dumps(beamSegInfo)
-    #return json_string
+
     return beamSegInfo
 
 # Don't use, doesn't check for changes and server reloads
