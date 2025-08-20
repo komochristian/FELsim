@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import './BeamSegment.css';
 import EditWindow from "../EditWindow/EditWindow";
 
-const BeamSegment = ({ name, params, index, onDelete, onChanges }) => {
+const BeamSegment = ({ name, params, index, onDelete, onChanges, PRIVATEVARS}) => {
   const [editing, setEditing] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const segmentRef = useRef(null);
@@ -31,7 +31,8 @@ const BeamSegment = ({ name, params, index, onDelete, onChanges }) => {
           parameters={params[name]}
           index={index}
           onChange={onChanges}
-          position={position} // 👈 pass the position
+          position={position}
+          PRIVATEVARS={PRIVATEVARS}
         />
       )}
     </div>

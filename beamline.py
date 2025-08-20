@@ -201,7 +201,7 @@ class lattice:
         return newMatrix #  return 2d list
     
 class driftLattice(lattice):
-    color = "white"
+    #color = "white"
     def __init__(self, length: float):
         '''
         Represents a drift space (empty section) in the beamline.
@@ -263,7 +263,8 @@ class driftLattice(lattice):
 
 
 class qpfLattice(lattice):
-    color = "cornflowerblue"
+    #color = "cornflowerblue"
+    color = "blue"
     G = 2.694  #  Quadruple focusing strength (T/A/m)
     def __init__(self, current: float, length: float = 0.0889, fringeType = 'decay'):
         '''
@@ -357,7 +358,8 @@ class qpfLattice(lattice):
 
 
 class qpdLattice(lattice):
-    color = "lightcoral"
+    #color = "lightcoral"
+    color = "red"
     G = 2.694  # Quadruple focusing strength (T/A/m)
     def __init__(self, current: float, length: float = 0.0889, fringeType = 'decay'):
         '''
@@ -449,7 +451,8 @@ class qpdLattice(lattice):
         return f"QPD beamline segment {self.length} m long and a current of {self.current} amps"
 
 class dipole(lattice):
-    color = "forestgreen"
+    #color = "forestgreen"
+    color = "green"
     def __init__(self, length: float = 0.0889, angle: float = 1.5, fringeType = 'decay'):
         '''
         Represents a dipole bending magnet, which bends the beam horizontally.

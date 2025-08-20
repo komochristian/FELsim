@@ -322,7 +322,7 @@ class draw_beamline:
                     # Update the progress bar for the remaining part
                     pbar.update(1)
 
-    def plotBeamPositionTransform(self, matrixVariables, beamSegments, interval = -1, defineLim = True,
+    def plotBeamPositionTransform(self, matrixVariables, beamSegments, interval: float = -1, defineLim = True,
                                    saveData = False, saveFig = False, shape = {}, plot = True, spacing = True,
                                    matchScaling = True, showIndice = False, scatter=False, apiCall = False):
         '''

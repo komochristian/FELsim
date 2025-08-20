@@ -47,7 +47,7 @@ app.add_middleware(
 def getPngObjFromBeamList(beamlist):
     beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000) #DONT HARDCORD NUM_PARTICLES
     schem = draw_beamline()
-    axList, lineAxObj = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True, interval=1)
+    axList, lineAxObj = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True, interval=1) # DONT HARDCODE INTERVALl # DONT HARDCODE INTERVALl
     fig = lineAxObj['axis'].figure
     buf = io.BytesIO()
     fig.savefig(buf, format="png",bbox_inches="tight")

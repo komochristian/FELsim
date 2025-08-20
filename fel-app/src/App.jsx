@@ -15,7 +15,7 @@ function App()
     const [beamSegmentInfo, setData] = useState(null);
     const [dotGraphs, setDotGraphs] = useState([]);
     const [lineGraph, setLineGraph] = useState(null);
-    const [selectedItems, setSelectedItems] = useState([]);
+    const [beamlistSelected, setSelectedItems] = useState([]);
     const [currentZ, setZValue] = useState(0);
     const [currentBeamType, setBeamType] = useState(null);
     const [twissDf, setTwissDf] = useState([]);
@@ -29,11 +29,46 @@ function App()
     console.log(beamSegmentInfo);
 
     useEffect(() => {
-        console.log("Updated selectedItems:", selectedItems);
-    }, [selectedItems]);
+        console.log("Updated beamlistSelected:", beamlistSelected);
+    }, [beamlistSelected]);
 
     if (!beamSegmentInfo) return <div>Loading...</div>;
     const items = Object.keys(beamSegmentInfo);
+
+    //  Calculates the start and end position of the entire beamline
+    const calcStartEndPos = (segList) => {
+        let zCurrent = 0;
+        const cleanedSegList = segList.map((obj) => {
+            const segName = Object.keys(obj)[0];
+            obj[segName]['startPos'] = zCurrent;
+            zCurrent += obj[segName]['length'];
+            obj[segName]['endPos'] = zCurrent;
+            return obj;
+        })
+
+        setSelectedItems(cleanedSegList);
+    };
+
+    //  Handles the color of a single segment, use if no need to color an
+    //  entire beamline
+    const handleSegmentColor = (segment) => { 
+        for (let priv of PRIVATEVARS) {
+            if (!(priv in segment)) {
+                const segName = Object.keys(segment)[0];
+                segment[segName][priv] = beamSegmentInfo[segName][priv];
+            }
+        }
+        return segment
+    };
+
+    //  Handles both color and start and end pos for ENTIRE beamline
+    const setSelectedItemsHandler = (segList) => {
+        const cleanedSegList = segList.map((segment) => {
+            return handleSegmentColor(segment);
+        });
+
+        calcStartEndPos(cleanedSegList);
+    };
 
     const handleTwiss = (twissJsonObj, x_axis) => { 
         const twissPlotData = Object.entries(twissJsonObj).flatMap(([key, obj]) => {
@@ -62,12 +97,13 @@ function App()
             body: JSON.stringify(fileJSON, null, 2),
         });
         const beamlist = await res.json();
-        console.log(beamlist);
-        setSelectedItems(beamlist);
+        setSelectedItemsHandler(beamlist);
     };
 
     const handleItemClick = (item) => {
-        setSelectedItems(prevItems => [...prevItems, {[item]: beamSegmentInfo[item]}]);
+        const beamObj = handleSegmentColor({[item]: beamSegmentInfo[item]});
+        const updatedList = [...beamlistSelected, beamObj];
+        calcStartEndPos(updatedList);
     };
 
     const handleDelete = (index) => {
@@ -75,8 +111,8 @@ function App()
     };
 
     const handleParamChange = (index, paramKey, newValue) => {
-        setSelectedItems(prev =>
-            prev.map((item, i) => {
+        const updatedList = (
+            beamlistSelected.map((item, i) => {
                 if (i !== index) return item;
                 const topKey = Object.keys(item)[0];
                 const updatedParams = {
@@ -88,15 +124,19 @@ function App()
                     [topKey]: updatedParams
                 };
             })
-        )
+        );
+        calcStartEndPos(updatedList);
     };
 
     const getBeamline = async (segList) => {
         const cleanedList = segList.map(obj => {
             const key = Object.keys(obj)[0];
+            const cleanedParams = Object.fromEntries(
+              Object.entries(obj[key]).filter(([p]) => !PRIVATEVARS.includes(p))
+            );
             return {
                 segmentName: key,
-                parameters: obj[key]
+                parameters: cleanedParams
             };
         });
     
@@ -153,7 +193,7 @@ function App()
              />
             <button
                 type="button"
-                onClick={() => getBeamline(selectedItems)}>
+                onClick={() => getBeamline(beamlistSelected)}>
                 Simulate
             </button>
             <ExcelUploadButton excelToAPI={excelToAPI} />
@@ -165,7 +205,7 @@ function App()
             </select>
             <h3>Beam setup</h3>
                <div className="scrollBox">
-                    {selectedItems.map((item, index) => (
+                    {beamlistSelected.map((item, index) => (
                         <BeamSegment 
                             key={index}
                             name={Object.keys(item)[0]}
@@ -173,6 +213,7 @@ function App()
                             index={index}
                             onDelete={handleDelete}
                             onChanges={handleParamChange}
+                            PRIVATEVARS={PRIVATEVARS}
                         />
                     ))}
                 </div>
@@ -181,7 +222,7 @@ function App()
                 <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="loading..."/>
           </div>
           <div className="twiss-graph">
-                <LineGraph twissData={twissDf} setZValue={setZValue}></LineGraph>
+                <LineGraph twissData={twissDf} setZValue={setZValue} beamline={beamlistSelected}></LineGraph>
             {/*<img src={lineGraph ? lineGraph: null} alt="loading..."/>*/}
           </div>
           

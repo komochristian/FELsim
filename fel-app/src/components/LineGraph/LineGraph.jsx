@@ -1,30 +1,26 @@
 import { ResponsiveLine } from '@nivo/line'
 
-const LineGraph = ({twissData, setZValue}) => {
-    
-
+const LineGraph = ({twissData, setZValue, beamline}) => {
     twissData = twissData.slice(21, 24); // TEMPORARY FOR TESTING
-
 
 
     return <ResponsiveLine
         data={twissData}
-        margin={{ top: 10, right: 100, bottom: 40, left: 100 }}
+        margin={{ top: 10, right: 25, bottom: 40, left: 50 }}
         yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: true, reverse: false }}
 
 
         // PLOT BEAM SEGMENTS FOR PREVIEW
-        //xScale={{
-        //    type: 'linear',
+        xScale={{
+            type: 'linear',
         //    min: 0,      
         //    max: 12      
-        //}}
-
+        }}
         axisBottom={{ legend: 'distance from beam start (m)', legendOffset: 36 }}
         axisLeft={{ legend: 'PLACEHOLDER', legendOffset: -40 }}
-        pointSize={10}
+        pointSize={5}
         pointColor={{ 'from': 'series.color' }}
-        pointBorderWidth={2}
+        pointBorderWidth={1}
         pointBorderColor={{ from: 'seriesColor' }}
         pointLabelYOffset={-12}
         enableTouchCrosshair={true}
@@ -34,9 +30,9 @@ const LineGraph = ({twissData, setZValue}) => {
         onClick={(e) => setZValue(e.points[0].data['x'])} // USE if enableSlices IS 'x'
         legends={[
             {
-                anchor: 'top-left',
+                anchor: 'top-left', 
                 direction: 'column',
-                translateX: 10,
+                translateX: 10, 
                 itemWidth: 80,
                 itemHeight: 22,
                 symbolShape: 'circle'
@@ -48,41 +44,34 @@ const LineGraph = ({twissData, setZValue}) => {
         //    console.log(point);
         //}}
 
-
         layers={[
-        //  // Custom x-axis coloring
-        //  ({ xScale, innerHeight }) => {
-        //    const segments = [
-        //      { from: 'helicopter', to: 'boat', color: 'red' },
-        //      { from: 'boat', to: 'train', color: 'green' },
-        //    ]
+          // Custom x-axis coloring
+          ({ xScale, innerHeight }) => {
+        return (
+            <>
+                {
+                    beamline.map((seg, i) => {
+                        const params = Object.values(seg)[0];
+                        const segment = ( 
+                            <line
+                              key={i}
+                              x1={xScale(params.startPos)}
+                              x2={xScale(params.endPos)}
+                              y1={innerHeight}
+                              y2={innerHeight}
+                              stroke={params.color}
+                              strokeWidth={10}
+                            />
+                        );
+                        return segment;
+                    })
+                }
 
-        //    return (
-        //      <>
-        //        {segments.map((seg, i) => {
-        //          const x1 = xScale(seg.from)
-        //          const x2 = xScale(seg.to)
-        //          return (
-        //            <line
-        //              key={i}
-        //              x1={x1}
-        //              x2={x2}
-        //              y1={innerHeight}
-        //              y2={innerHeight}
-        //              stroke={seg.color}
-        //              strokeWidth={3}
-        //            />
-        //          )
-        //        })}
-        //      </>
-        //    )
-        //  },
-        
+            </>
+        )
+          },
             'markers', 'axes', 'areas', 'crosshair', 'lines', 'points', 'slices', 'mesh', 'legends'
         ]}
-        
-        
-
     />
 };
 

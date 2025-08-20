@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './EditWindow.css';
 import ReactDOM from 'react-dom';
 
-const EditWindow = ({open, parameters, index, onChange, position}) => {
+const EditWindow = ({open, parameters, index, onChange, position, PRIVATEVARS}) => {
   if (!open) return null;
 
   const content = (
@@ -16,7 +16,7 @@ const EditWindow = ({open, parameters, index, onChange, position}) => {
     >
       <div className="paramGrid">
         {Object.entries(parameters).map(([key, value]) => {
-          if (key === "type" || key === "id") return null;
+          if (key === "type" || key === "id" || PRIVATEVARS.includes(key)) return null;
 
           return (
             <div key={key} className="paramItem">
