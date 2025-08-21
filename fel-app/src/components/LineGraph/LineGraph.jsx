@@ -1,6 +1,6 @@
 import { ResponsiveLine } from '@nivo/line'
 
-const LineGraph = ({twissData, setZValue, beamline}) => {
+const LineGraph = ({totalLen, twissData, setZValue, beamline}) => {
     twissData = twissData.slice(21, 24); // TEMPORARY FOR TESTING
 
 
@@ -13,8 +13,8 @@ const LineGraph = ({twissData, setZValue, beamline}) => {
         // PLOT BEAM SEGMENTS FOR PREVIEW
         xScale={{
             type: 'linear',
-        //    min: 0,      
-        //    max: 12      
+            min: 0,      
+            max: totalLen
         }}
         axisBottom={{ legend: 'distance from beam start (m)', legendOffset: 36 }}
         axisLeft={{ legend: 'PLACEHOLDER', legendOffset: -40 }}

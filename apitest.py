@@ -23,6 +23,16 @@ class BeamlineInfo(BaseModel):
     segmentName: str
     parameters: Dict[str, Any]
 
+class PlottingParameters(BaseModel):
+    beamlineData: list[BeamlineInfo]
+    num_particles: int
+    interval: float
+    defineLim: bool
+    saveData: bool
+    matchScaling: bool
+    scatter: bool
+    #  I THINK WE NEED SAVE FIG AND SHAPE
+
 class LineAxObject(BaseModel):
     axis: str # temporary placeholder axes
     twiss: str
@@ -102,7 +112,6 @@ def excelToBeamline(excelJson: list[Dict[str, Any]]) -> list[dict[str, dict[str,
         clas = segment.__class__
         className = clas.__name__
         classSig= inspect.signature(clas.__init__)
-        print(segment.__dict__)
 
         paramsDict = {}
         for name, param in classSig.parameters.items():

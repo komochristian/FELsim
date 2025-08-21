@@ -614,11 +614,11 @@ class draw_beamline:
                     ax3.clear()
                     ax4.clear() 
                     ebeam.plotXYZ(mat[2], mat[0], mat[1], mat[3], ax1, ax2, ax3, ax4, maxVals, minVals, defineLim, shape, scatter=scatter)
+                    plt.tight_layout()
 
                     #axesDict.append([ax1,ax2,ax3,ax4])
                     axesDict.update({index: ax1}) # Only need one it seems... must dwelve furthur
-                fig.clf()
-                #ax5 = plt.subplot(gs[2,:]) 
+                #fig.clf()
                 deadFig, ax5 = plt.subplots(figsize=(10,1))
                 lineList, ax6, m = self.createLinePlot(ax5, twiss_aggregated_df, x_axis, spacing, showIndice, beamSegments)
                 return axesDict, ax5

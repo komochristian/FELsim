@@ -19,6 +19,7 @@ function App()
     const [currentZ, setZValue] = useState(0);
     const [currentBeamType, setBeamType] = useState(null);
     const [twissDf, setTwissDf] = useState([]);
+    const [totalLen, setTotalLen] = useState(0);
 
     useEffect(() => {
         fetch('http://127.0.0.1:8000/beamsegmentinfo')
@@ -45,7 +46,7 @@ function App()
             obj[segName]['endPos'] = zCurrent;
             return obj;
         })
-
+        setTotalLen(zCurrent);
         setSelectedItems(cleanedSegList);
     };
 
@@ -69,7 +70,8 @@ function App()
 
         calcStartEndPos(cleanedSegList);
     };
-
+    
+    //  Handles and formats twiss data for plotting
     const handleTwiss = (twissJsonObj, x_axis) => { 
         const twissPlotData = Object.entries(twissJsonObj).flatMap(([key, obj]) => {
                 return Object.entries(obj).map(([axis, arr]) => {
@@ -89,25 +91,27 @@ function App()
     };
 
     const excelToAPI = async (fileJSON) => {  
-        const res = await fetch('http://127.0.0.1:8000/excel-to-beamline', {
+        const res =  await fetch('http://127.0.0.1:8000/excel-to-beamline', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(fileJSON, null, 2),
         });
-        const beamlist = await res.json();
+        const beamlist =  await res.json();
         setSelectedItemsHandler(beamlist);
     };
 
     const handleItemClick = (item) => {
-        const beamObj = handleSegmentColor({[item]: beamSegmentInfo[item]});
+        const beamObj = handleSegmentColor({[item]: structuredClone(beamSegmentInfo[item])});
+        console.log('updated Obj', beamObj);
         const updatedList = [...beamlistSelected, beamObj];
         calcStartEndPos(updatedList);
     };
 
     const handleDelete = (index) => {
-        setSelectedItems(prev => prev.filter((_, i) => i !== index));
+        const updatedBeamline = beamlistSelected.filter((_, i) => i !== index);
+        calcStartEndPos(updatedBeamline);
     };
 
     const handleParamChange = (index, paramKey, newValue) => {
@@ -196,13 +200,6 @@ function App()
                 onClick={() => getBeamline(beamlistSelected)}>
                 Simulate
             </button>
-            <ExcelUploadButton excelToAPI={excelToAPI} />
-            <label htmlFor="beamtypeSelect" className="forLabels">Select Beam type:</label>
-            <select name="beamtypeSelect">
-                <option value="electron">Electron</option>
-                <option value="proton">Proton</option>
-                <option value="otherIon">Other Ion</option>
-            </select>
             <h3>Beam setup</h3>
                <div className="scrollBox">
                     {beamlistSelected.map((item, index) => (
@@ -218,11 +215,24 @@ function App()
                     ))}
                 </div>
           </div>
+          <div className="beamSettings">
+            <ExcelUploadButton excelToAPI={excelToAPI} />
+            <label htmlFor="beamtypeSelect" className="forLabels">Select Beam type:</label>
+            <select name="beamtypeSelect">
+                <option value="electron">Electron</option>
+                <option value="proton">Proton</option>
+                <option value="otherIon">Other Ion</option>
+            </select>
+          </div>
           <div className="main-content">
                 <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="loading..."/>
           </div>
           <div className="twiss-graph">
-                <LineGraph twissData={twissDf} setZValue={setZValue} beamline={beamlistSelected}></LineGraph>
+                <LineGraph twissData={twissDf}
+                           setZValue={setZValue} 
+                           beamline={beamlistSelected}
+                           totalLen={totalLen}>
+                </LineGraph>
             {/*<img src={lineGraph ? lineGraph: null} alt="loading..."/>*/}
           </div>
           
