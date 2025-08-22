@@ -4,8 +4,6 @@
 # Ignore Python cache directories
 __pycache__/
 
-.env
-
 experimental.py
 BFieldEquations.py
 *.eps
