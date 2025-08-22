@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./fel-app
+    ports: 
+      - "5173:5173"
+    environment:
+      - VITE_DOCKER_ROUTE=http://${BACKEND_API_IP}:${BACKEND_API_PORT}
+    depends_on:
+      - backend       # Ensure the backend service is started before the frontend
+    
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - BACKEND_API_PORT=${BACKEND_API_PORT}
+      - BACKEND_API_IP=${BACKEND_API_IP}

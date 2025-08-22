@@ -12,6 +12,9 @@ import LineGraph from './components/LineGraph/LineGraph';
 function App()
 {
     const PRIVATEVARS = ['color', 'startPos', 'endPos'];  // USE THIS SO USERS CANT EDIT THESE VALUES
+    const API_ROUTE = import.meta.env.VITE_DOCKER_ROUTE || import.meta.env.VITE_API_ROUTE;
+    console.log(API_ROUTE);
+
     const [beamSegmentInfo, setData] = useState(null);
     const [dotGraphs, setDotGraphs] = useState([]);
     const [lineGraph, setLineGraph] = useState(null);
@@ -22,7 +25,7 @@ function App()
     const [totalLen, setTotalLen] = useState(0);
 
     useEffect(() => {
-        fetch('http://127.0.0.1:8000/beamsegmentinfo')
+        fetch(API_ROUTE + '/beamsegmentinfo')
             .then((response) => response.json())
             .then((json) => setData(json))
             .catch((err) => console.error("Error loading beam segment info:", err));
@@ -91,7 +94,7 @@ function App()
     };
 
     const excelToAPI = async (fileJSON) => {  
-        const res =  await fetch('http://127.0.0.1:8000/excel-to-beamline', {
+        const res =  await fetch(API_ROUTE + '/excel-to-beamline', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -147,7 +150,7 @@ function App()
         const jsonBody = JSON.stringify(cleanedList, null, 4); 
         //console.log("json sent;", jsonBody);
 
-        const res = await fetch('http://127.0.0.1:8000/axes', {
+        const res = await fetch(API_ROUTE + '/axes', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

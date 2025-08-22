@@ -1,16 +1,10 @@
 #   Authors: Christian Komo, Niels Bidault
-
-
 import numpy as np
 import pandas as pd
 import sympy as sp
-from sympy.plotting import plot_implicit, PlotGrid
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import matplotlib.patches as patches
-from scipy.stats import norm
 from scipy.stats import gaussian_kde
-from scipy.ndimage import gaussian_filter
 from matplotlib.colors import LinearSegmentedColormap
 
 

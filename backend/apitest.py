@@ -1,19 +1,16 @@
 from fastapi import FastAPI, Body
-import uvicorn
 from pydantic import BaseModel
 from typing import Any, Dict, List
 from ebeam import beam
 from beamline import *
-import beamline
 from schematic import *
 from fastapi.middleware.cors import CORSMiddleware
 import inspect
-import json
 import importlib
 import io
 import base64
-import pandas as pd
 from excelElements import ExcelElements
+import uvicorn
 
 ORIGINS = ["http://localhost:5173", "localhost:5173"]
 moduleName = 'beamline'

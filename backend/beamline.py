@@ -5,7 +5,6 @@ import numpy as np
 from scipy import interpolate
 from scipy import optimize
 import math
-import csv
 
 #IMPORTANT NOTES:
     #  by default every beam type is an electron beam type
