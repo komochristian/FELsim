@@ -1,0 +1,23 @@
+  version: '3.8'
+  
+  services: 
+    frontend:
+      image: komo04/felsimfront:2.0
+      build: ./fel-app
+      ports: 
+        - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+      environment:
+        - VITE_DOCKER_ROUTE=http://${BACKEND_API_IP}:${BACKEND_API_PORT}
+        - FRONTEND_PORT=${FRONTEND_PORT}
+      depends_on:
+        - backend       # Ensure the backend service is started before the frontend
+
+    backend:
+      image: komo04/felsimback:2.0
+      build: ./backend
+      ports:
+        - "${BACKEND_API_PORT}:${BACKEND_API_PORT}"
+      environment:
+        - BACKEND_API_PORT=${BACKEND_API_PORT}
+        - BACKEND_API_IP=${BACKEND_API_IP}
+        - FRONTEND_PORT=${FRONTEND_PORT}

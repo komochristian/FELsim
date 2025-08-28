@@ -12,7 +12,7 @@ import LineGraph from './components/LineGraph/LineGraph';
 function App()
 {
     const PRIVATEVARS = ['color', 'startPos', 'endPos'];  // USE THIS SO USERS CANT EDIT THESE VALUES
-    const API_ROUTE = import.meta.env.VITE_DOCKER_ROUTE || import.meta.env.VITE_API_ROUTE;
+    const API_ROUTE = import.meta.env.VITE_DOCKER_ROUTE || 'http://0.0.0.0:8000';
     console.log(API_ROUTE);
 
     const [beamSegmentInfo, setData] = useState(null);
@@ -226,6 +226,8 @@ function App()
                 <option value="proton">Proton</option>
                 <option value="otherIon">Other Ion</option>
             </select>
+            <label htmlFor="numParticles">Number of particles:</label>
+            <input type="number" />
           </div>
           <div className="main-content">
                 <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="loading..."/>

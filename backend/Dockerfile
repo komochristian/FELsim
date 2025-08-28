@@ -40,6 +40,8 @@ RUN mkdir -p /tmp/matplotlib
 RUN chown appuser /tmp/matplotlib
 ENV MPLCONFIGDIR=/tmp/matplotlib
 
+ENV FRONTEND_PORT=${FRONTEND_PORT}
+
 
 # Switch to the non-privileged user to run the application.
 USER appuser
