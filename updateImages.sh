@@ -1,7 +1,10 @@
 #!/bin/sh
-VERSION=2.2
 
 set -e
+
+if [ -f .env ]; then
+  export $(grep -v '^#' .env | xargs)
+fi
 
 cd fel-app
 

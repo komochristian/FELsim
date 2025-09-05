@@ -2,7 +2,7 @@
   
   services: 
     frontend:
-      image: komo04/felsimfront:2.2
+      image: komo04/felsimfront:#{VERSION}
       build: ./fel-app
       ports: 
         - "${FRONTEND_PORT}:${FRONTEND_PORT}"
@@ -13,7 +13,7 @@
         - backend       # Ensure the backend service is started before the frontend
 
     backend:
-      image: komo04/felsimback:2.2
+      image: komo04/felsimback:${VERSION}
       build: ./backend
       ports:
         - "${BACKEND_API_PORT}:${BACKEND_API_PORT}"
