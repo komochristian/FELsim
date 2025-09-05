@@ -28,12 +28,14 @@ class BeamlineInfo(BaseModel):
 
 class PlottingParameters(BaseModel):
     beamlineData: list[BeamlineInfo]
+    beamType: str = 'electron'
     num_particles: int
-    interval: float
-    defineLim: bool
-    saveData: bool
-    matchScaling: bool
-    scatter: bool
+    kineticE: int = 45
+    interval: float = 1
+    defineLim: bool = True
+    saveData: bool = False
+    matchScaling: bool = True
+    scatter: bool = True
     #  I THINK WE NEED SAVE FIG AND SHAPE
 
 class LineAxObject(BaseModel):
@@ -57,8 +59,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def getPngObjFromBeamList(beamlist):
-    beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000) #DONT HARDCORD NUM_PARTICLES
+def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
+    beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], plotParams.num_particles) 
     schem = draw_beamline()
     axList, lineAxObj = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True, interval=1) # DONT HARDCODE INTERVALl # DONT HARDCODE INTERVALl
     fig = lineAxObj['axis'].figure
@@ -128,15 +130,20 @@ def excelToBeamline(excelJson: list[Dict[str, Any]]) -> list[dict[str, dict[str,
     return jsonBeamlist
 
 @app.post("/axes")
-def loadAxes(beamlineData: list[BeamlineInfo]) -> AxesPNGData:
+def loadAxes(plotParams: PlottingParameters) -> AxesPNGData:
     beamline = importlib.import_module("beamline")
     beamlist = []
+    beamlineData = plotParams.beamlineData
     for segment in beamlineData:
         if hasattr(beamline, segment.segmentName):
             segmentClass = getattr(beamline, segment.segmentName)
             beamlist.append(segmentClass(**segment.parameters))
 
-    pngObject = getPngObjFromBeamList(beamlist)
+    latObj = lattice(1)
+    beamlist = latObj.changeBeamType(plotParams.beamType, plotParams.kineticE, beamlist)
+
+
+    pngObject = getPngObjFromBeamList(beamlist, plotParams)
     return pngObject
 
 

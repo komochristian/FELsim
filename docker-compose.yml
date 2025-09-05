@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   frontend:
-    image: komo04/felsimfront:2.0
+    image: komo04/felsimfront:latest
     ports: 
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     environment:
@@ -13,7 +13,7 @@ services:
     
 
   backend:
-    image: komo04/felsimback:2.0
+    image: komo04/felsimback:latest
     ports:
       - "${BACKEND_API_PORT}:${BACKEND_API_PORT}"
     environment:

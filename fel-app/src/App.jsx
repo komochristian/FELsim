@@ -13,16 +13,17 @@ function App()
 {
     const PRIVATEVARS = ['color', 'startPos', 'endPos'];  // USE THIS SO USERS CANT EDIT THESE VALUES
     const API_ROUTE = import.meta.env.VITE_DOCKER_ROUTE || 'http://0.0.0.0:8000';
-    console.log(API_ROUTE);
+    //console.log(API_ROUTE);
 
     const [beamSegmentInfo, setData] = useState(null);
     const [dotGraphs, setDotGraphs] = useState([]);
     const [lineGraph, setLineGraph] = useState(null);
     const [beamlistSelected, setSelectedItems] = useState([]);
     const [currentZ, setZValue] = useState(0);
-    const [currentBeamType, setBeamType] = useState(null);
+    const [currentBeamType, setBeamType] = useState('electron');
     const [twissDf, setTwissDf] = useState([]);
     const [totalLen, setTotalLen] = useState(0);
+    const [numOfParticles, setParticleNum] = useState(1000);
 
     useEffect(() => {
         fetch(API_ROUTE + '/beamsegmentinfo')
@@ -30,10 +31,10 @@ function App()
             .then((json) => setData(json))
             .catch((err) => console.error("Error loading beam segment info:", err));
         }, []);
-    console.log(beamSegmentInfo);
+    //console.log(beamSegmentInfo);
 
     useEffect(() => {
-        console.log("Updated beamlistSelected:", beamlistSelected);
+        //console.log("Updated beamlistSelected:", beamlistSelected);
     }, [beamlistSelected]);
 
     if (!beamSegmentInfo) return <div>Loading...</div>;
@@ -107,7 +108,7 @@ function App()
 
     const handleItemClick = (item) => {
         const beamObj = handleSegmentColor({[item]: structuredClone(beamSegmentInfo[item])});
-        console.log('updated Obj', beamObj);
+        //console.log('updated Obj', beamObj);
         const updatedList = [...beamlistSelected, beamObj];
         calcStartEndPos(updatedList);
     };
@@ -146,8 +147,14 @@ function App()
                 parameters: cleanedParams
             };
         });
+
+        const plottingParams = {
+            beamlineData: cleanedList,
+            num_particles: numOfParticles,
+            beamType: currentBeamType
+        }
     
-        const jsonBody = JSON.stringify(cleanedList, null, 4); 
+        const jsonBody = JSON.stringify(plottingParams, null, 4); 
         //console.log("json sent;", jsonBody);
 
         const res = await fetch(API_ROUTE + '/axes', {
@@ -221,13 +228,26 @@ function App()
           <div className="beamSettings">
             <ExcelUploadButton excelToAPI={excelToAPI} />
             <label htmlFor="beamtypeSelect" className="forLabels">Select Beam type:</label>
-            <select name="beamtypeSelect">
+            <select name="beamtypeSelect" onChange={(e) => setBeamType(e.target.value)}>
                 <option value="electron">Electron</option>
                 <option value="proton">Proton</option>
                 <option value="otherIon">Other Ion</option>
             </select>
+            {
+                (!['electron', 'proton'].includes(currentBeamType)) && (
+                <input
+                    type="text"
+                    onChange={(e) => setBeamType(e.target.value)}
+                />)
+            }
             <label htmlFor="numParticles">Number of particles:</label>
-            <input type="number" />
+            <input defaultValue={numOfParticles}
+                   type="number"
+                    name="numParticles" 
+                    onChange={(e) => setParticleNum(e.target.value)}
+                    min={3}
+            />
+            
           </div>
           <div className="main-content">
                 <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="loading..."/>
