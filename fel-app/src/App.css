@@ -98,6 +98,10 @@ body {
     background-color: #f9f9f9;
 }
 
+.simButton {
+    position: absolute;
+}
+
 .scrollMenu {
     overflow-x: auto;
     white-space: nowrap;
@@ -114,6 +118,7 @@ body {
 
 .forLabels {
     margin: 3px;
+    display: block;
 }
 
 input::-webkit-outer-spin-button,

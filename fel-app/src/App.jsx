@@ -4,26 +4,69 @@ import './App.css';
 import Dropdown from './components/Dropdown/Dropdown';
 import DropdownItem from './components/DropdownItem/DropdownItem';
 import BeamSegment from './components/BeamSegment/BeamSegment';
-import BeamlineScroll from './components/BeamlineScroll/BeamlineScroll';
-import DiscreteSlider from './components/DiscreteSlider/DiscreteSlider';
 import ExcelUploadButton from './components/ExcelUploadButton/ExcelUploadButton';
 import LineGraph from './components/LineGraph/LineGraph';
+import ErrorWindow from './components/ErrorWindow/ErrorWindow';
 
 function App()
 {
     const PRIVATEVARS = ['color', 'startPos', 'endPos'];  // USE THIS SO USERS CANT EDIT THESE VALUES
     const API_ROUTE = import.meta.env.VITE_DOCKER_ROUTE || 'http://0.0.0.0:8000';
-    //console.log(API_ROUTE);
+    console.log(API_ROUTE);
 
     const [beamSegmentInfo, setData] = useState(null);
     const [dotGraphs, setDotGraphs] = useState([]);
     const [lineGraph, setLineGraph] = useState(null);
     const [beamlistSelected, setSelectedItems] = useState([]);
     const [currentZ, setZValue] = useState(0);
-    const [currentBeamType, setBeamType] = useState('electron');
+    const [currentBeamType, setBeamInput] = useState('electron');
+    const [beamtypeToPass, setBeamtypeToPass] = useState('electron');
     const [twissDf, setTwissDf] = useState([]);
     const [totalLen, setTotalLen] = useState(0);
     const [numOfParticles, setParticleNum] = useState(1000);
+    const [zInterval, setZInterval] = useState(0.1);
+    const [showError, setError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    
+    const showErrorWindow = (message) => {
+        setErrorMessage(message);
+        setError(true);
+    };
+    
+    const errorCatcher = () => {
+        if (zInterval <= 0) {
+            showErrorWindow("Please use an interval value greater than 0");
+            return true;
+        };
+        if (numOfParticles < 3) {
+            showErrorWindow("Use at least 3 particles");
+            return true;
+        };
+        if (beamlistSelected.length == 0) {
+            showErrorWindow("Please include 1+ beam elements");
+            return true;
+        } 
+        return false;         
+    };
+
+    useEffect(() => {
+        if (!showError) return ;
+        const timer = setTimeout(() => setError(false), 4000);
+        return () => clearTimeout(timer); 
+    }, [showError]);
+
+    useEffect(() => {
+        if (currentBeamType === "proton") {
+            setBeamtypeToPass(() => "proton")
+        }
+        else if ( currentBeamType === "electron") {
+            setBeamtypeToPass(() => "electron")
+        }
+    }, [currentBeamType]);
+
+    useEffect(() => {
+        setZValue(() => 0);
+    }, [dotGraphs]);     
 
     useEffect(() => {
         fetch(API_ROUTE + '/beamsegmentinfo')
@@ -53,6 +96,7 @@ function App()
         setTotalLen(zCurrent);
         setSelectedItems(cleanedSegList);
     };
+
 
     //  Handles the color of a single segment, use if no need to color an
     //  entire beamline
@@ -136,7 +180,12 @@ function App()
         calcStartEndPos(updatedList);
     };
 
+
     const getBeamline = async (segList) => {
+        const uiErrorStatus = errorCatcher();
+        if (uiErrorStatus) {
+            return
+        };
         const cleanedList = segList.map(obj => {
             const key = Object.keys(obj)[0];
             const cleanedParams = Object.fromEntries(
@@ -148,10 +197,12 @@ function App()
             };
         });
 
+
         const plottingParams = {
             beamlineData: cleanedList,
             num_particles: numOfParticles,
-            beamType: currentBeamType
+            beamType: beamtypeToPass,
+            interval: zInterval
         }
     
         const jsonBody = JSON.stringify(plottingParams, null, 4); 
@@ -164,6 +215,11 @@ function App()
             },
             body: jsonBody,
         });
+        if (!res.ok) {
+            const errorData = await res.json();
+            showErrorWindow(errorData.detail || errorData);
+            return 
+        }
         const axImages = await res.json();
         const result = axImages['images'];
         const lineAxObj = axImages['line_graph'];
@@ -189,6 +245,8 @@ function App()
 
     return (
         <>
+        <ErrorWindow message={errorMessage}
+                     showError = {showError} /> 
         <div className="layout">
           <div className="sidebar">
             <h2>FEL simulator</h2>
@@ -207,6 +265,7 @@ function App()
              />
             <button
                 type="button"
+                className="simButton"
                 onClick={() => getBeamline(beamlistSelected)}>
                 Simulate
             </button>
@@ -228,26 +287,31 @@ function App()
           <div className="beamSettings">
             <ExcelUploadButton excelToAPI={excelToAPI} />
             <label htmlFor="beamtypeSelect" className="forLabels">Select Beam type:</label>
-            <select name="beamtypeSelect" onChange={(e) => setBeamType(e.target.value)}>
+            <select name="beamtypeSelect" onChange={(e) => setBeamInput(e.target.value)}>
                 <option value="electron">Electron</option>
                 <option value="proton">Proton</option>
                 <option value="otherIon">Other Ion</option>
             </select>
             {
-                (!['electron', 'proton'].includes(currentBeamType)) && (
+                (currentBeamType !== "electron" && currentBeamType !== "proton") && (
                 <input
                     type="text"
-                    onChange={(e) => setBeamType(e.target.value)}
+                    onChange={(e) => setBeamtypeToPass(e.target.value)}
                 />)
             }
-            <label htmlFor="numParticles">Number of particles:</label>
+            <label htmlFor="numParticles" className="forLabels">Number of particles:</label>
             <input defaultValue={numOfParticles}
                    type="number"
                     name="numParticles" 
                     onChange={(e) => setParticleNum(e.target.value)}
                     min={3}
             />
-            
+            <label htmlFor="interval" className="forLabels">Z axis interval</label>
+            <input defaultValue={zInterval}
+                   type="number"
+                    name="interval" 
+                    onChange={(e) => setZInterval(e.target.value)}
+            />
           </div>
           <div className="main-content">
                 <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="loading..."/>

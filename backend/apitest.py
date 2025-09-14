@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Body
+from fastapi import FastAPI, Body, HTTPException
 from pydantic import BaseModel
 from typing import Any, Dict, List
 from ebeam import beam
@@ -62,7 +62,7 @@ app.add_middleware(
 def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
     beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], plotParams.num_particles) 
     schem = draw_beamline()
-    axList, lineAxObj = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True, interval=1) # DONT HARDCODE INTERVALl # DONT HARDCODE INTERVALl
+    axList, lineAxObj = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True, interval=plotParams.interval)
     fig = lineAxObj['axis'].figure
     buf = io.BytesIO()
     fig.savefig(buf, format="png",bbox_inches="tight")
@@ -131,21 +131,22 @@ def excelToBeamline(excelJson: list[Dict[str, Any]]) -> list[dict[str, dict[str,
 
 @app.post("/axes")
 def loadAxes(plotParams: PlottingParameters) -> AxesPNGData:
-    beamline = importlib.import_module("beamline")
-    beamlist = []
-    beamlineData = plotParams.beamlineData
-    for segment in beamlineData:
-        if hasattr(beamline, segment.segmentName):
-            segmentClass = getattr(beamline, segment.segmentName)
-            beamlist.append(segmentClass(**segment.parameters))
-
-    latObj = lattice(1)
-    beamlist = latObj.changeBeamType(plotParams.beamType, plotParams.kineticE, beamlist)
-
-
-    pngObject = getPngObjFromBeamList(beamlist, plotParams)
-    return pngObject
-
+    try:
+        beamline = importlib.import_module("beamline")
+        beamlist = []
+        beamlineData = plotParams.beamlineData
+        for segment in beamlineData:
+            if hasattr(beamline, segment.segmentName):
+                segmentClass = getattr(beamline, segment.segmentName)
+                beamlist.append(segmentClass(**segment.parameters))
+    
+        latObj = lattice(1)
+        beamlist = latObj.changeBeamType(plotParams.beamType, plotParams.kineticE, beamlist)
+    
+        pngObject = getPngObjFromBeamList(beamlist, plotParams)
+        return pngObject
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/beamsegmentinfo")
 def getBeamSegmentInfo():

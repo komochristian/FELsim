@@ -1,0 +1,29 @@
+.error-window {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translate(-50%, -10px); /* Center horizontally, move up slightly */
+  width: auto;
+  white-space: nowrap;
+  padding: 15px 20px;
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 1000;
+}
+
+/* When visible */
+.error-window.show {
+  opacity: 1;
+  transform: translate(-50%, 0); /* Slide into view */
+}
+
+/* When hiding */
+.error-window.hide {
+  opacity: 0;
+  transform: translate(-50%, -10px); /* Slide upward when hiding */
+}
