@@ -19,10 +19,10 @@ const BeamSegment = ({ name, params, index, onDelete, onChanges, PRIVATEVARS}) =
     <div className="beamSegmentRow" ref={segmentRef}>
       <div className="beamSegment">
         <h4>{name}</h4>
-        <button onClick={handleToggleEdit}>
+        <button onClick={handleToggleEdit} className="segmentButton">
           {editing ? 'Save' : 'Edit'}
         </button>
-        <button onClick={() => onDelete(index)}>Delete</button>
+        <button className="segmentButton" onClick={() => onDelete(index)}>Delete</button>
       </div>
 
       {editing && (

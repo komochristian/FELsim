@@ -7,6 +7,8 @@ import BeamSegment from './components/BeamSegment/BeamSegment';
 import ExcelUploadButton from './components/ExcelUploadButton/ExcelUploadButton';
 import LineGraph from './components/LineGraph/LineGraph';
 import ErrorWindow from './components/ErrorWindow/ErrorWindow';
+//import BeamTable from './components/BeamTable/BeamTable';
+//import TestTable from './components/TestTable/TestTable';
 
 function App()
 {
@@ -243,6 +245,8 @@ function App()
 
 
 
+    //<TestTable data={data} />
+    //<BeamTable data={testData} setData={setTestData} show={true}/>
     return (
         <>
         <ErrorWindow message={errorMessage}
@@ -270,9 +274,9 @@ function App()
                 Simulate
             </button>
             <h3>Beam setup</h3>
-               <div className="scrollBox">
-                    {beamlistSelected.map((item, index) => (
-                        <BeamSegment 
+            <div className="scrollBox">
+                {beamlistSelected.map((item, index) => (
+                    <BeamSegment 
                             key={index}
                             name={Object.keys(item)[0]}
                             params={item}
@@ -280,9 +284,13 @@ function App()
                             onDelete={handleDelete}
                             onChanges={handleParamChange}
                             PRIVATEVARS={PRIVATEVARS}
-                        />
-                    ))}
-                </div>
+                    />
+                ))}
+                {/*<button type="button"
+                        className="editTableButton">
+                        Edit Table
+                </button>*/}
+            </div>
           </div>
           <div className="beamSettings">
             <ExcelUploadButton excelToAPI={excelToAPI} />
@@ -314,7 +322,7 @@ function App()
             />
           </div>
           <div className="main-content">
-                <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="loading..."/>
+                <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="Please run simulation"/>
           </div>
           <div className="twiss-graph">
                 <LineGraph twissData={twissDf}

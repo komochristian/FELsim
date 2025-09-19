@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "ag-grid-react": "^34.2.0",
+    "rsuite": "^5.83.3"
+  }
+}

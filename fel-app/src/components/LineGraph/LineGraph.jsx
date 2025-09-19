@@ -1,8 +1,21 @@
 import { ResponsiveLine } from '@nivo/line'
 
 const LineGraph = ({totalLen, twissData, setZValue, beamline}) => {
-    twissData = twissData.slice(21, 24); // TEMPORARY FOR TESTING
 
+    // Remove Duplicate z indices in the array
+    const removeDuplicateX = (dataArray) => {
+      const seen = new Set();
+      return dataArray.filter(point => {
+        if (seen.has(point.x)) return false;
+        seen.add(point.x);
+        return true;
+      });
+    };
+
+    twissData.forEach((entry) => entry.data = removeDuplicateX(entry.data))
+
+    console.log(twissData);
+    twissData = twissData.slice(21, 24); // TEMPORARY FOR TESTING
 
     return <ResponsiveLine
         data={twissData}
@@ -18,6 +31,7 @@ const LineGraph = ({totalLen, twissData, setZValue, beamline}) => {
         }}
         axisBottom={{ legend: 'distance from beam start (m)', legendOffset: 36 }}
         axisLeft={{ legend: 'PLACEHOLDER', legendOffset: -40 }}
+        colors={['#CF0000', '#0000CF', '#00CF00']}
         pointSize={5}
         pointColor={{ 'from': 'series.color' }}
         pointBorderWidth={1}

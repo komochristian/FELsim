@@ -8,3 +8,5 @@ experimental.py
 BFieldEquations.py
 *.eps
 .DS_Store
+
+node_modules/
