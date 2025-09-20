@@ -13,4 +13,25 @@
    ```bash
    docker compose pull
    docker compose up --build
+   ```
+
+4. Access the Vite app at: http://localhost:5173/
+
+▶️ To Run the App Locally
+
+1. Navigate to the backend directory:
+
+```bash
+cd backend/
+uvicorn apitest:app --host=0.0.0.0 --port=8000 --reload
+```
+
+2. In a new terminal, navigate to the frontend directory:
+
+```bash
+cd fel-app/
+npm run dev
+```
+
+3. Access app at: http://localhost:5173/ 
 
