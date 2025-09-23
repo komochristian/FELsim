@@ -1,6 +1,9 @@
 {
   "dependencies": {
     "ag-grid-react": "^34.2.0",
+    "katex": "^0.16.22",
+    "react-katex": "^3.1.0",
+    "react-select": "^5.10.2",
     "rsuite": "^5.83.3"
   }
 }

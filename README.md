@@ -23,7 +23,7 @@
 
 ```bash
 cd backend/
-uvicorn apitest:app --host=0.0.0.0 --port=8000 --reload
+uvicorn felAPI:app --host=0.0.0.0 --port=8000 --reload
 ```
 
 2. In a new terminal, navigate to the frontend directory:

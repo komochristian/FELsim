@@ -1,6 +1,10 @@
 import { ResponsiveLine } from '@nivo/line'
+import katex from 'katex';
+import { InlineMath } from 'react-katex';
 
-const LineGraph = ({totalLen, twissData, setZValue, beamline}) => {
+const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis}) => {
+    const plottedData = twissData[twissAxis.value];
+    twissData = plottedData === undefined ? [] : plottedData; 
 
     // Remove Duplicate z indices in the array
     const removeDuplicateX = (dataArray) => {
@@ -12,10 +16,10 @@ const LineGraph = ({totalLen, twissData, setZValue, beamline}) => {
       });
     };
 
-    twissData.forEach((entry) => entry.data = removeDuplicateX(entry.data))
 
-    console.log(twissData);
-    twissData = twissData.slice(21, 24); // TEMPORARY FOR TESTING
+    twissData.forEach((entry) => { 
+        entry.data = removeDuplicateX(entry.data);
+    })
 
     return <ResponsiveLine
         data={twissData}
@@ -30,7 +34,7 @@ const LineGraph = ({totalLen, twissData, setZValue, beamline}) => {
             max: totalLen
         }}
         axisBottom={{ legend: 'distance from beam start (m)', legendOffset: 36 }}
-        axisLeft={{ legend: 'PLACEHOLDER', legendOffset: -40 }}
+        axisLeft={{ legend: twissAxis.value, legendOffset: -40 }}
         colors={['#CF0000', '#0000CF', '#00CF00']}
         pointSize={5}
         pointColor={{ 'from': 'series.color' }}

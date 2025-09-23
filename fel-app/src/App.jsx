@@ -7,8 +7,9 @@ import BeamSegment from './components/BeamSegment/BeamSegment';
 import ExcelUploadButton from './components/ExcelUploadButton/ExcelUploadButton';
 import LineGraph from './components/LineGraph/LineGraph';
 import ErrorWindow from './components/ErrorWindow/ErrorWindow';
-//import BeamTable from './components/BeamTable/BeamTable';
-//import TestTable from './components/TestTable/TestTable';
+import Select from 'react-select';
+import { InlineMath, BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
 
 function App()
 {
@@ -29,6 +30,18 @@ function App()
     const [zInterval, setZInterval] = useState(0.1);
     const [showError, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+    const [twissOptions, setTwissOptions] = useState([
+                                    { value: '\\epsilon (\\pi.mm.mrad)', label: '\\epsilon (\\pi.mm.mrad)' },
+                                    { value: '\\alpha', label: '\\alpha' },
+                                    { value: '\\beta (m)', label: '\\beta (m)' },
+                                    { value: '\\gamma (rad/m)', label: '\\gamma (rad/m)' },
+                                    { value: 'D (mm)', label: 'D (mm)' },
+                                    { value: 'D\' (mrad)', label: 'D\' (mrad)' },
+                                    { value: '\\phi (deg)', label: '\\phi (deg)' },
+                                    { value: 'Envelope\\ E (mm)', label: 'Envelope\\ E (mm)' }
+                                ]);
+    const [currentTwissParam, setCurrentTwiss] = useState({value: 'Envelope\\ E (mm)',
+                                                           label: 'Envelope\\ E (mm)'});
     
     const showErrorWindow = (message) => {
         setErrorMessage(message);
@@ -123,21 +136,39 @@ function App()
     
     //  Handles and formats twiss data for plotting
     const handleTwiss = (twissJsonObj, x_axis) => { 
+        //console.log(twissJsonObj);
         const twissPlotData = Object.entries(twissJsonObj).flatMap(([key, obj]) => {
-                return Object.entries(obj).map(([axis, arr]) => {
-                
-                    return {"id": `${key}: ${axis}`,
+                return Object.entries(obj).map(([axis, arr], index) => { 
+                    return {
+                            "id": `${key}: ${axis}`,
                             "data": 
                                 arr.map((val, i) => ({
                                     'x': x_axis[i],
                                     'y': val
                                     })
-                                )
-                    }
+                                ) 
+                    } 
                 });
         });
+       
+        const grouped = twissPlotData.reduce((acc, item, i) => {
+          const label = twissOptions[Math.floor(i / 3)].label;
         
-        setTwissDf(twissPlotData);
+          // Check if label group already exists
+          //let group = acc.find(g => g.label === label);
+          let group = acc[label];
+          if (!group) {
+              acc[label] = [];
+          }
+          
+          acc[label].push(item);
+          return acc;
+        }, []);
+
+        console.log(grouped);
+        //console.log(twissPlotData);
+        //setTwissDf(twissPlotData);
+        setTwissDf(grouped);
     };
 
     const excelToAPI = async (fileJSON) => {  
@@ -245,8 +276,6 @@ function App()
 
 
 
-    //<TestTable data={data} />
-    //<BeamTable data={testData} setData={setTestData} show={true}/>
     return (
         <>
         <ErrorWindow message={errorMessage}
@@ -321,6 +350,15 @@ function App()
                     onChange={(e) => setZInterval(e.target.value)}
             />
           </div>
+          
+            <Select className="toggleLegend"
+                    options={twissOptions}
+                    value={currentTwissParam}
+                    onChange={setCurrentTwiss}
+                    getOptionLabel={e => <InlineMath math={e.label} />}
+                    getSingleValueLabel={e => <InlineMath math={e.label} />}
+                    />
+
           <div className="main-content">
                 <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="Please run simulation"/>
           </div>
@@ -328,7 +366,8 @@ function App()
                 <LineGraph twissData={twissDf}
                            setZValue={setZValue} 
                            beamline={beamlistSelected}
-                           totalLen={totalLen}>
+                           totalLen={totalLen}
+                           twissAxis={currentTwissParam}>
                 </LineGraph>
             {/*<img src={lineGraph ? lineGraph: null} alt="loading..."/>*/}
           </div>

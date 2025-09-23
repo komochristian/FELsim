@@ -83,6 +83,7 @@ def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
         images.update({index: img_base64})
      
     lineAxObj['axis'] = lineAx_img
+    print(lineAxObj['twiss'])
     lineAxObj['twiss'] = lineAxObj['twiss'].to_json()
     beamsegmentJson = []
     #for segment in lineAxObj['beamsegment']:
