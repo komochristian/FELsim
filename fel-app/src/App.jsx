@@ -14,7 +14,7 @@ import 'katex/dist/katex.min.css';
 function App()
 {
     const PRIVATEVARS = ['color', 'startPos', 'endPos'];  // USE THIS SO USERS CANT EDIT THESE VALUES
-    const API_ROUTE = import.meta.env.VITE_DOCKER_ROUTE || 'http://0.0.0.0:8000';
+    const API_ROUTE = import.meta.env.VITE_DOCKER_ROUTE || 'http://127.0.0.1:8000';
     console.log(API_ROUTE);
 
     const [beamSegmentInfo, setData] = useState(null);

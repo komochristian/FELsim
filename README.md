@@ -17,21 +17,24 @@
 
 4. Access the Vite app at: http://localhost:5173/
 
-▶️ To Run the App Locally
+## ▶️ To Run the App Locally
 
-1. Navigate to the backend directory:
+1. Make sure pip, node, and npm are installed
+2. Navigate to the backend directory:
 
 ```bash
 cd backend/
-uvicorn felAPI:app --host=0.0.0.0 --port=8000 --reload
+pip install -r requirements.txt
+uvicorn felAPI:app --host=127.0.0.1 --port=8000 --reload
 ```
 
-2. In a new terminal, navigate to the frontend directory:
+3. In a new terminal, navigate to the frontend directory:
 
 ```bash
 cd fel-app/
+npm install
 npm run dev
 ```
 
-3. Access app at: http://localhost:5173/ 
+4. Access app at: http://localhost:5173/ 
 
