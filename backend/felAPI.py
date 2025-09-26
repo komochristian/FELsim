@@ -109,26 +109,30 @@ def gen_beam(particle_num : int):
 
 @app.post("/excel-to-beamline")
 def excelToBeamline(excelJson: list[Dict[str, Any]]) -> list[dict[str, dict[str, Any]]]:
-    excelHandler = ExcelElements(excelJson)
-    beamlist = excelHandler.create_beamline()
+    try:
+        excelHandler = ExcelElements(excelJson)
+        beamlist = excelHandler.create_beamline()
 
-    jsonBeamlist = []
+        jsonBeamlist = []
 
-    for segment in beamlist:
-        clas = segment.__class__
-        className = clas.__name__
-        classSig= inspect.signature(clas.__init__)
+        for segment in beamlist:
+            clas = segment.__class__
+            className = clas.__name__
+            classSig= inspect.signature(clas.__init__)
 
-        paramsDict = {}
-        for name, param in classSig.parameters.items():
-            if name == "self":
-                continue
-            paramVal = getattr(segment, name, None)
-            paramsDict.update({name: paramVal})
-                
-        jsonBeamlist.append({className: paramsDict})
+            paramsDict = {}
+            for name, param in classSig.parameters.items():
+                if name == "self":
+                    continue
+                paramVal = getattr(segment, name, None)
+                paramsDict.update({name: paramVal})
+                    
+            jsonBeamlist.append({className: paramsDict})
 
-    return jsonBeamlist
+        return jsonBeamlist
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/axes")
 def loadAxes(plotParams: PlottingParameters) -> AxesPNGData:

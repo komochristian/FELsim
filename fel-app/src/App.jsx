@@ -179,6 +179,11 @@ function App()
             },
             body: JSON.stringify(fileJSON, null, 2),
         });
+        if (!res.ok) {
+            const errorData = await res.json();
+            showErrorWindow(`Bad excel file input format, from server: ${errorData.detail || errorData}`);
+            return 
+        }
         const beamlist =  await res.json();
         setSelectedItemsHandler(beamlist);
     };
