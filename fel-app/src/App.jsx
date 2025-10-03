@@ -30,6 +30,7 @@ function App()
     const [zInterval, setZInterval] = useState(0.1);
     const [showError, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+    const [scroll, setScroll] = useState(false); // State for the checkbox
     const [twissOptions, setTwissOptions] = useState([
                                     { value: '\\epsilon (\\pi.mm.mrad)', label: '\\epsilon (\\pi.mm.mrad)' },
                                     { value: '\\alpha', label: '\\alpha' },
@@ -355,15 +356,23 @@ function App()
                     onChange={(e) => setZInterval(e.target.value)}
             />
           </div>
-          
-            <Select className="toggleLegend"
+          <div className="toggleLegend">
+            <label>
+                <input
+                    type="checkbox"
+                    checked={scroll}
+                    onChange={(e) => setScroll(e.target.checked)} // Update scroll state
+                />
+                Enable Scroll
+            </label>
+            <Select className='select-container'
                     options={twissOptions}
                     value={currentTwissParam}
                     onChange={setCurrentTwiss}
                     getOptionLabel={e => <InlineMath math={e.label} />}
                     getSingleValueLabel={e => <InlineMath math={e.label} />}
                     />
-
+          </div>
           <div className="main-content">
                 <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="Please run simulation"/>
           </div>
@@ -372,7 +381,9 @@ function App()
                            setZValue={setZValue} 
                            beamline={beamlistSelected}
                            totalLen={totalLen}
-                           twissAxis={currentTwissParam}>
+                           twissAxis={currentTwissParam}
+                           scroll={scroll}
+                           setScroll={setScroll}>
                 </LineGraph>
             {/*<img src={lineGraph ? lineGraph: null} alt="loading..."/>*/}
           </div>

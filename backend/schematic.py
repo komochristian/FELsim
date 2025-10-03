@@ -352,9 +352,8 @@ class draw_beamline:
             Option to display each segment's indice visually
         scatter: bool, optional
             Option to display particle data as hexbins or a scatter color plot
-        
-
-
+        apicall: bool, optional
+            If function is being called from API, changes return type to be compatible with nivo plotting
 
         NOTE:
         shape is a dictionary defined as:

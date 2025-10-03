@@ -1,7 +1,7 @@
 import { ResponsiveLine } from '@nivo/line'
 import { InlineMath } from 'react-katex';
 
-const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis}) => {
+const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll, setScroll}) => {
     const plottedData = twissData[twissAxis.value];
     twissData = plottedData === undefined ? [] : plottedData; 
 
@@ -44,7 +44,22 @@ const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis}) => {
         useMesh={true}
         enableSlices={'x'}
         //onClick={(e) => setZValue(e.data['x'])}  //  USE IF enableSlices IS DISABLED
-        onClick={(e) => setZValue(e.points[0].data['x'])} // USE if enableSlices IS 'x'
+        //onClick={(e) => setZValue(e.points[0].data['x'])} // USE if enableSlices IS 'x'
+
+        onClick={
+            scroll
+                ? (e) => {
+                    setZValue(e.points[0].data['x'])
+                    setScroll(false); // Set scroll to false
+                }
+                : (e) => setZValue(e.points[0].data['x']) // Default behavior when scroll is false
+        }
+        onMouseMove={
+            scroll
+                ? (e) => setZValue(e.points[0].data['x'])
+                : undefined
+        }
+
         legends={[
             {
                 anchor: 'top-left', 
