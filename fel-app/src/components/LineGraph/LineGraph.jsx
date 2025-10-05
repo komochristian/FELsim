@@ -3,7 +3,14 @@ import { InlineMath } from 'react-katex';
 
 const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll, setScroll}) => {
     const plottedData = twissData[twissAxis.value];
-    twissData = plottedData === undefined ? [] : plottedData; 
+    twissData = plottedData === undefined ? [] : plottedData;
+
+    if (twissData.length !== 0) {
+        twissData[0].color = '#CF0000'; // Red
+        twissData[1].color = '#0000CF'; // Blue
+        twissData[2].color = '#00CF00'; // Green
+    }
+
 
     // Remove Duplicate z indices in the array
     const removeDuplicateX = (dataArray) => {
@@ -33,8 +40,9 @@ const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll,
             max: totalLen
         }}
         axisBottom={{ legend: 'distance from beam start (m)', legendOffset: 36 }}
-        axisLeft={{ legend: twissAxis.value, legendOffset: -40 }}
-        colors={['#CF0000', '#0000CF', '#00CF00']}
+        axisLeft={{ legend: twissAxis.value.replace(/[\\$]/g, ''), // Remove \ and $ from the string
+                    legendOffset: -40 }}
+        colors={(e) => e.color}
         pointSize={5}
         pointColor={{ 'from': 'series.color' }}
         pointBorderWidth={1}
@@ -43,16 +51,15 @@ const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll,
         enableTouchCrosshair={true}
         useMesh={true}
         enableSlices={'x'}
-        //onClick={(e) => setZValue(e.data['x'])}  //  USE IF enableSlices IS DISABLED
         //onClick={(e) => setZValue(e.points[0].data['x'])} // USE if enableSlices IS 'x'
 
         onClick={
             scroll
                 ? (e) => {
-                    setZValue(e.points[0].data['x'])
+                    setZValue(e.points[0].data['x']) //  USE IF enableSlices IS DISABLED
                     setScroll(false); // Set scroll to false
                 }
-                : (e) => setZValue(e.points[0].data['x']) // Default behavior when scroll is false
+                : (e) => setZValue(e.points[0].data['x']) //  USE IF enableSlices IS DISABLED
         }
         onMouseMove={
             scroll
@@ -67,7 +74,12 @@ const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll,
                 translateX: 10, 
                 itemWidth: 80,
                 itemHeight: 22,
-                symbolShape: 'circle'
+                symbolShape: 'circle',
+                data: twissData.map((entry) => ({
+                    id: entry.id,
+                    label: entry.id.replace(/[\\$]/g, ''), // Clean legend item labels
+                    fill: entry.color
+                }))
             }
         ]}
 

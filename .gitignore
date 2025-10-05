@@ -10,3 +10,5 @@ BFieldEquations.py
 .DS_Store
 
 node_modules/
+
+updateImages.sh

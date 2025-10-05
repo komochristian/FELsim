@@ -13,6 +13,7 @@ cd fel-app
 
 docker buildx build \
 --push \
+--build-arg FRONTEND_PORT="$FRONTEND_PORT" \
 --platform linux/arm64,linux/amd64 --tag "komo04/felsimfront:$VERSION" .
 
 cd ../backend

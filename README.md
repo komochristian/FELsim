@@ -1,6 +1,6 @@
 # FELsim
 
-> **⚠️ Docker currently not up to date – run the bash commands below for updated version**
+> **⚠️ Docker only confirmed MacOS compatible at the moment, use CLI for other operating systems**
 
 ---
 
