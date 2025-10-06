@@ -722,5 +722,5 @@ class draw_beamline:
             if plot:
                 plt.show()
 
-            return []
+            return [[], [], [], []], ax5  # temporary placeholder axes for api
     

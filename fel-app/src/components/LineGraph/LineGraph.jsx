@@ -2,35 +2,35 @@ import { ResponsiveLine } from '@nivo/line'
 import { InlineMath } from 'react-katex';
 
 const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll, setScroll}) => {
-    const plottedData = twissData[twissAxis.value];
-    twissData = plottedData === undefined ? [] : plottedData;
+    // Remove Duplicate z indices in the array
+    const removeDuplicateX = (dataArray) => {
+        const seen = new Set();
+        return dataArray.filter(point => {
+            if (seen.has(point.x)) return false;
+            seen.add(point.x);
+            return true;
+        });
+        };
 
-    if (twissData.length !== 0) {
-        twissData[0].color = '#CF0000'; // Red
-        twissData[1].color = '#0000CF'; // Blue
-        twissData[2].color = '#00CF00'; // Green
+    const cleanedTwissData = (twissData[twissAxis.value] ?? []).map(entry => ({
+        ...entry,
+        data: removeDuplicateX(entry.data),
+    }));
+
+    if (cleanedTwissData.length !== 0) {
+        cleanedTwissData[0].color = '#CF0000'; // Red
+        cleanedTwissData[1].color = '#0000CF'; // Blue
+        cleanedTwissData[2].color = '#00CF00'; // Green
     }
 
 
-    // Remove Duplicate z indices in the array
-    const removeDuplicateX = (dataArray) => {
-      const seen = new Set();
-      return dataArray.filter(point => {
-        if (seen.has(point.x)) return false;
-        seen.add(point.x);
-        return true;
-      });
-    };
 
-
-    twissData.forEach((entry) => { 
-        entry.data = removeDuplicateX(entry.data);
-    })
+    console.log(cleanedTwissData)
 
     return <ResponsiveLine
-        data={twissData}
+        data={cleanedTwissData}
         margin={{ top: 10, right: 25, bottom: 40, left: 50 }}
-        yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: true, reverse: false }}
+        yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: false, reverse: false }}
 
 
         // PLOT BEAM SEGMENTS FOR PREVIEW
@@ -51,15 +51,14 @@ const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll,
         enableTouchCrosshair={true}
         useMesh={true}
         enableSlices={'x'}
+
         //onClick={(e) => setZValue(e.points[0].data['x'])} // USE if enableSlices IS 'x'
 
         onClick={
-            scroll
-                ? (e) => {
-                    setZValue(e.points[0].data['x']) //  USE IF enableSlices IS DISABLED
-                    setScroll(false); // Set scroll to false
-                }
-                : (e) => setZValue(e.points[0].data['x']) //  USE IF enableSlices IS DISABLED
+            (e) => {
+                setZValue(e.points[0].data['x']);
+                if (scroll) setScroll(false);
+            }
         }
         onMouseMove={
             scroll
@@ -75,7 +74,7 @@ const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll,
                 itemWidth: 80,
                 itemHeight: 22,
                 symbolShape: 'circle',
-                data: twissData.map((entry) => ({
+                data: cleanedTwissData.map((entry) => ({
                     id: entry.id,
                     label: entry.id.replace(/[\\$]/g, ''), // Clean legend item labels
                     fill: entry.color
