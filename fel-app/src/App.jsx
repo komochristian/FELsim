@@ -10,6 +10,9 @@ import ErrorWindow from './components/ErrorWindow/ErrorWindow';
 import Select from 'react-select';
 import { InlineMath, BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
+import 'react-tooltip/dist/react-tooltip.css';
+import { Tooltip } from 'react-tooltip';
+import FloatingInfoButton from './components/FloatingInfoButton/FloatingInfoButton';
 
 function App()
 {
@@ -167,7 +170,7 @@ function App()
           return acc;
         }, []);
 
-        console.log(grouped);
+        // console.log(grouped);
         //console.log(twissPlotData);
         //setTwissDf(twissPlotData);
         setTwissDf(grouped);
@@ -288,21 +291,22 @@ function App()
         <ErrorWindow message={errorMessage}
                      showError = {showError} /> 
         <div className="layout">
+        <FloatingInfoButton />   
           <div className="sidebar">
             <h2>FEL simulator</h2>
-             <Dropdown buttonText="Add Segment" 
-                     contentText={
-                             <>
-                                 {items.map((item) => (
-                                     <DropdownItem key={item}
-                                                   onClick={() => handleItemClick(item)}
-                                     >
-                                         {`${item}`}
-                                     </DropdownItem>
-                                 ))}
-                             </>
-                     }
-             />
+            <Dropdown buttonText="Add Segment" 
+                    contentText={
+                            <>
+                                {items.map((item) => (
+                                    <DropdownItem key={item}
+                                                onClick={() => handleItemClick(item)}
+                                    >
+                                        {`${item}`}
+                                    </DropdownItem>
+                                ))}
+                            </>
+                    }
+            />
             <button
                 type="button"
                 className="simButton"

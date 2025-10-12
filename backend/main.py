@@ -69,9 +69,9 @@ We would like to compare this values with sigma_f, to try to have sigma_f = sigm
 
 I = 3.56  # result obtained from testOptimization.py...
 sec1 = driftLattice(1)
-sec2 = qpfLattice(current = 1)
+sec2 = qpfLattice(current = 1, length=1)
 sec3 = driftLattice(1)
-sec4 = qpdLattice(current = 1)
+sec4 = qpdLattice(current = 1, length=1)
 sec5 = driftLattice(0.25)
 sec6 = qpfLattice(current = I)
 sec7 = driftLattice(0.25)
@@ -81,7 +81,7 @@ sec10 = dipole_wedge(0.01)
 sec11 = dipole()
 sec12 = dipole_wedge(0.01)
 # line = [sec1,sec2,sec3,sec4,sec5,sec6,sec7,sec8,sec9,sec10,sec11,sec12]
-line = [sec1, sec4, sec3]
+line = [sec1, sec2, sec4]
 beamtype = beamline()
 line_E = sec1.changeBeamType("electron", 55, line)
 

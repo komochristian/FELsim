@@ -1,7 +1,7 @@
 /* src/App.css */
 body {
   font-family: Arial, sans-serif;
-  background-color: #f0f2f5;
+  background-color: #f5f4ef;
   width: 100%;
   height: 100%;
   margin: 0;
@@ -20,10 +20,11 @@ body {
     grid-column-end: col-3-start;
     grid-row-start: row-1-start;
     grid-row-end: row-3-start;
-    border: 1px solid #ddd;
+    border-left: 1px solid #000000;
+    border-right: 1px solid #000000;
     padding: 16px;
-    background-color: #2c3e50;
-    color: white;
+    background-color: #f5f4ef;
+    color: rgb(0, 0, 0);
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -31,7 +32,7 @@ body {
     text-align: center;
     margin-top: 0;
     margin-bottom: 30px;
-    color: #ecf0f1;
+    color: #000000;
 }
 
 .toggleLegend {
@@ -41,12 +42,16 @@ body {
     height: 100%; /* Ensure the div has a defined height */
     grid-column: col-1-start / col-2-start;
     grid-row: row-2-start / row-3-start;
-    background-color: #FFFFFF;
+    background-color: #f5f4ef;
+    border-top: 1px solid #000000;
+    border-bottom: 1px solid #000000;
     flex-grow: 1;
 }
 
 .toggleLegend .select-container {
     margin-top: auto; /* Push the Select element to the bottom */
+    border-bottom: 1px solid #000000;
+    background-color: #f5f4ef;
 }
 
 .sidebar button {
@@ -90,9 +95,8 @@ body {
     grid-row-end: row-end;
     grid-column-start: col-1-start;
     grid-column-end: col-end;
-    border: 1px solid #ddd;
+    border: 1px solid #000000;
     padding: 16px;
-    border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Subtle shadow */
     background-color: #FFFFFF;
 }
@@ -106,10 +110,10 @@ body {
     position: relative;
     height: 280px;
     overflow-y: auto;
-    border: 1px solid #ccc;
+    border: 1px solid #000000;
     padding: 10px;
     margin-top: 10px;
-    background-color: #f9f9f9;
+    background-color: #ffffff99;
 }
 
 .editTableButton {
@@ -122,6 +126,10 @@ body {
 
 .simButton {
     position: absolute;
+    border:1px solid #000000;
+    border-radius: 0;
+    background-color: #ffffff99;
+    font-weight: bold;
 }
 
 .scrollMenu {

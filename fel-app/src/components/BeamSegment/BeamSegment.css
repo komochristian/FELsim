@@ -13,11 +13,16 @@
     
 }
 
+.beamSegment h4 {
+    font-weight: lighter;
+}
+
 .segmentButton {
     align-items: center;
     height: 30px;
     display: inline-flex;
     font-size: 13px;
+    /* background-color: #ffffff99; */
 }
 
 .beamSegment input {
