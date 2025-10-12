@@ -854,7 +854,7 @@
   dependencies:
     "@floating-ui/utils" "^0.2.10"
 
-"@floating-ui/dom@^1.0.1":
+"@floating-ui/dom@^1.0.1", "@floating-ui/dom@^1.6.1":
   version "1.7.4"
   resolved "https://registry.npmjs.org/@floating-ui/dom/-/dom-1.7.4.tgz"
   integrity sha512-OOchDgh4F2CchOX94cRVqhvy7b3AFb+/rQXyswmzmGakRfkMgoWVjfnLWkRirfLEfuD4ysVW16eXzwt3jHIzKA==
@@ -2038,6 +2038,11 @@ ci-info@^3.2.0:
   version "3.9.0"
   resolved "https://registry.npmjs.org/ci-info/-/ci-info-3.9.0.tgz"
   integrity sha512-NIxF55hv4nSqQswkAeiOi1r83xy8JldOFDTWiug55KBu9Jnblncd2U6ViHmYgHf01TPZS77NJBhBMKdWj9HQMQ==
+
+classnames@^2.3.0:
+  version "2.5.1"
+  resolved "https://registry.npmjs.org/classnames/-/classnames-2.5.1.tgz"
+  integrity sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==
 
 cliui@^8.0.1:
   version "8.0.1"
@@ -3865,7 +3870,7 @@ react-devtools-core@^6.1.5:
     shell-quote "^1.6.1"
     ws "^7"
 
-"react-dom@^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom@^16.8.0 || ^17.0.0 || ^18.0.0", "react-dom@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom@^18.3.1 || ^19.0.0", react-dom@^19.0.0, react-dom@^19.1.0, react-dom@>=16.13, react-dom@>=16.6.0:
+"react-dom@^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom@^16.8.0 || ^17.0.0 || ^18.0.0", "react-dom@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react-dom@^18.3.1 || ^19.0.0", react-dom@^19.0.0, react-dom@^19.1.0, react-dom@>=16.13, react-dom@>=16.14.0, react-dom@>=16.6.0:
   version "19.1.0"
   resolved "https://registry.npmjs.org/react-dom/-/react-dom-19.1.0.tgz"
   integrity sha512-Xs1hdnE+DyKgeHJeJznQmYMIBG3TKIHJJT95Q58nHLSrElKlGQqDTR2HQ9fx5CN/Gk6Vh/kupBTDLU11/nDk/g==
@@ -4013,6 +4018,14 @@ react-spring@^10.0.1:
     "@react-spring/web" "~10.0.1"
     "@react-spring/zdog" "~10.0.1"
 
+react-tooltip@^5.30.0:
+  version "5.30.0"
+  resolved "https://registry.npmjs.org/react-tooltip/-/react-tooltip-5.30.0.tgz"
+  integrity sha512-Yn8PfbgQ/wmqnL7oBpz1QiDaLKrzZMdSUUdk7nVeGTwzbxCAJiJzR4VSYW+eIO42F1INt57sPUmpgKv0KwJKtg==
+  dependencies:
+    "@floating-ui/dom" "^1.6.1"
+    classnames "^2.3.0"
+
 react-transition-group@^4.3.0:
   version "4.4.5"
   resolved "https://registry.npmjs.org/react-transition-group/-/react-transition-group-4.4.5.tgz"
@@ -4042,7 +4055,7 @@ react-zdog@>=1.0:
     react-dom "^18.2.0"
     resize-observer-polyfill "^1.5.1"
 
-react@*, "react@^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0 || ^19.0.0", "react@^16.14 || ^17.0 || ^18.0 || ^19.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react@^18.3.1 || ^19.0.0", react@^19.0.0, react@^19.1.0, react@>=0.12.0, "react@>=15.3.2 <20", react@>=16.13, react@>=16.6.0, react@>=16.8.0, react@>=17.0, react@>=18.0.0:
+react@*, "react@^15.3.0 || ^16.0.0-alpha || ^17.0.0 || ^18.0.0 || ^19.0.0", "react@^16.14 || ^17.0 || ^18.0 || ^19.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react@^18.3.1 || ^19.0.0", react@^19.0.0, react@^19.1.0, react@>=0.12.0, "react@>=15.3.2 <20", react@>=16.13, react@>=16.14.0, react@>=16.6.0, react@>=16.8.0, react@>=17.0, react@>=18.0.0:
   version "19.1.0"
   resolved "https://registry.npmjs.org/react/-/react-19.1.0.tgz"
   integrity sha512-FS+XFBNvn3GTAWq26joslQgWNoFu08F4kl0J4CgdNKADkdSGXQyTCnKteIAJy96Br6YbpEU1LSzV5dYtjMkMDg==
