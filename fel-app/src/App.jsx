@@ -10,8 +10,6 @@ import ErrorWindow from './components/ErrorWindow/ErrorWindow';
 import Select from 'react-select';
 import { InlineMath, BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
-import 'react-tooltip/dist/react-tooltip.css';
-import { Tooltip } from 'react-tooltip';
 import FloatingInfoButton from './components/FloatingInfoButton/FloatingInfoButton';
 
 function App()
