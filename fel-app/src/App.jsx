@@ -45,6 +45,7 @@ function App()
                                 ]);
     const [currentTwissParam, setCurrentTwiss] = useState({value: 'Envelope\\ E (mm)',
                                                            label: 'Envelope\\ E (mm)'});
+    const [selectedMenu, setSelectedMenu] = useState(null);
     
     const showErrorWindow = (message) => {
         setErrorMessage(message);
@@ -289,29 +290,31 @@ function App()
         <ErrorWindow message={errorMessage}
                      showError = {showError} /> 
         <div className="layout">
-        <FloatingInfoButton />   
-          <div className="sidebar">
+        <FloatingInfoButton /> 
+          <div className={`sidebar ${selectedMenu === null ? 'menuClosed' : 'menuOpen'}`}>
             <h2>FEL simulator</h2>
-            <Dropdown buttonText="Add Segment" 
-                    contentText={
-                            <>
-                                {items.map((item) => (
-                                    <DropdownItem key={item}
-                                                onClick={() => handleItemClick(item)}
-                                    >
-                                        {`${item}`}
-                                    </DropdownItem>
-                                ))}
-                            </>
-                    }
-            />
-            <button
-                type="button"
-                className="simButton"
-                onClick={() => getBeamline(beamlistSelected)}>
-                Simulate
-            </button>
-            <h3>Beam setup</h3>
+            <div>
+                <Dropdown buttonText="Add Segment" 
+                        contentText={
+                                <>
+                                    {items.map((item) => (
+                                        <DropdownItem key={item}
+                                                    onClick={() => handleItemClick(item)}
+                                        >
+                                            {`${item}`}
+                                        </DropdownItem>
+                                    ))}
+                                </>
+                        }
+                />
+                <button
+                    type="button"
+                    className="simButton"
+                    onClick={() => getBeamline(beamlistSelected)}>
+                    Simulate
+                </button>
+            </div>
+            <h4>Beam setup</h4>
             <div className="scrollBox">
                 {beamlistSelected.map((item, index) => (
                     <BeamSegment 
@@ -324,41 +327,45 @@ function App()
                             PRIVATEVARS={PRIVATEVARS}
                     />
                 ))}
-                {/*<button type="button"
-                        className="editTableButton">
-                        Edit Table
-                </button>*/}
             </div>
           </div>
-          <div className="beamSettings">
-            <ExcelUploadButton excelToAPI={excelToAPI} />
-            <label htmlFor="beamtypeSelect" className="forLabels">Select Beam type:</label>
-            <select name="beamtypeSelect" onChange={(e) => setBeamInput(e.target.value)}>
-                <option value="electron">Electron</option>
-                <option value="proton">Proton</option>
-                <option value="otherIon">Other Ion</option>
-            </select>
-            {
-                (currentBeamType !== "electron" && currentBeamType !== "proton") && (
-                <input
-                    type="text"
-                    onChange={(e) => setBeamtypeToPass(e.target.value)}
-                />)
-            }
-            <label htmlFor="numParticles" className="forLabels">Number of particles:</label>
-            <input defaultValue={numOfParticles}
-                   type="number"
-                    name="numParticles" 
-                    onChange={(e) => setParticleNum(e.target.value)}
-                    min={3}
-            />
-            <label htmlFor="interval" className="forLabels">Z axis interval</label>
-            <input defaultValue={zInterval}
-                   type="number"
-                    name="interval" 
-                    onChange={(e) => setZInterval(e.target.value)}
-            />
-          </div>
+          { selectedMenu === 'beamSettings' ?
+          <>
+            <div className="beamSettings">
+            <button className="close-button" onClick={() => setSelectedMenu(null)}>
+                X
+            </button>
+                <ExcelUploadButton excelToAPI={excelToAPI} />
+                <label htmlFor="beamtypeSelect" className="forLabels">Select Beam type:</label>
+                <select name="beamtypeSelect" 
+                        onChange={(e) => setBeamInput(e.target.value)}
+                        value={currentBeamType}>
+                    <option value="electron">Electron</option>
+                    <option value="proton">Proton</option>
+                    <option value="otherIon">Other Ion</option>
+                </select>
+                {
+                    (currentBeamType !== "electron" && currentBeamType !== "proton") && (
+                    <input
+                        type="text"
+                        onChange={(e) => setBeamtypeToPass(e.target.value)}
+                        value={beamtypeToPass}
+                    />)
+                }
+                <label htmlFor="numParticles" className="forLabels">Number of particles:</label>
+                <input defaultValue={numOfParticles}
+                    type="number"
+                        name="numParticles" 
+                        onChange={(e) => setParticleNum(e.target.value)}
+                        min={3}
+                />
+                <label htmlFor="interval" className="forLabels">Z axis interval</label>
+                <input defaultValue={zInterval}
+                    type="number"
+                        name="interval" 
+                        onChange={(e) => setZInterval(e.target.value)}
+                />
+            </div>
           <div className="toggleLegend">
             <label>
                 <input
@@ -376,7 +383,19 @@ function App()
                     getSingleValueLabel={e => <InlineMath math={e.label} />}
                     />
           </div>
-          <div className="main-content">
+        </>
+        :
+        <div className='menu-options'>
+            <div className="hamburger-menu">
+            <button className="hamburger-button" onClick={() => setSelectedMenu("beamSettings")}>
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            </div>
+        </div>
+        }  
+          <div className={`main-content`}>
                 <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="Please run simulation"/>
           </div>
           <div className="twiss-graph">
