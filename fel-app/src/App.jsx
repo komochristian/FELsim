@@ -11,6 +11,10 @@ import Select from 'react-select';
 import { InlineMath, BlockMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 import FloatingInfoButton from './components/FloatingInfoButton/FloatingInfoButton';
+import { Table, Button, IconButton, Input, InputNumber } from 'rsuite';
+const { Column, HeaderCell, Cell } = Table;
+import { VscEdit, VscSave, VscRemove } from 'react-icons/vsc';
+import 'rsuite/dist/rsuite.min.css'; 
 
 function App()
 {
@@ -46,6 +50,15 @@ function App()
     const [currentTwissParam, setCurrentTwiss] = useState({value: 'Envelope\\ E (mm)',
                                                            label: 'Envelope\\ E (mm)'});
     const [selectedMenu, setSelectedMenu] = useState(null);
+
+    const ddata =[
+        { id: 1, name: "John Doe", status: null, createdAt: "2023-10-01" },
+        { id: 2, name: "Jane Smith", status: null, createdAt: "2023-10-02" },
+        { id: 3, name: "Alice Johnson", status: null, createdAt: "2023-10-03" },
+        { id: 4, name: "Bob Brown", status: null, createdAt: "2023-10-04" },
+        { id: 5, name: "Charlie Davis", status: null, createdAt: "2023-10-05" },
+    ];
+    const [data, setDat] = useState(ddata);
     
     const showErrorWindow = (message) => {
         setErrorMessage(message);
@@ -96,7 +109,7 @@ function App()
     //console.log(beamSegmentInfo);
 
     useEffect(() => {
-        //console.log("Updated beamlistSelected:", beamlistSelected);
+        console.log("Updated beamlistSelected:", beamlistSelected);
     }, [beamlistSelected]);
 
     if (!beamSegmentInfo) return <div>Loading...</div>;
@@ -105,11 +118,12 @@ function App()
     //  Calculates the start and end position of the entire beamline
     const calcStartEndPos = (segList) => {
         let zCurrent = 0;
-        const cleanedSegList = segList.map((obj) => {
+        const cleanedSegList = segList.map((obj, i) => {
             const segName = Object.keys(obj)[0];
             obj[segName]['startPos'] = zCurrent;
             zCurrent += obj[segName]['length'];
             obj[segName]['endPos'] = zCurrent;
+            obj['id'] = i;
             return obj;
         })
         setTotalLen(zCurrent);
@@ -284,6 +298,79 @@ function App()
     };
 
 
+    const ActionCell = ({ rowData, dataKey, onEdit, onRemove, ...props }) => {
+        return (
+        <Cell {...props} style={{ padding: '6px', display: 'flex', gap: '4px' }}>
+            <IconButton
+            appearance="subtle"
+            icon={rowData.status === 'EDIT' ? <VscSave /> : <VscEdit />}
+            onClick={() => {
+                onEdit(rowData.id);
+            }}
+            />
+            <IconButton
+            appearance="subtle"
+            icon={<VscRemove />}
+            onClick={() => {
+                onRemove(rowData.id);
+            }}
+            />
+        </Cell>
+        );
+    };
+
+    const EditableCell = ({ rowData, dataType, dataKey, onChange, onEdit, ...props }) => {
+        const editing = rowData.status === 'EDIT';
+      
+        const Field = fieldMap[dataType];
+        const value = rowData[dataKey];
+       
+      
+        return (
+          <Cell
+            {...props}
+            className={editing ? 'table-cell-editing' : ''}
+            onDoubleClick={() => {
+              onEdit?.(rowData.id);
+            }}
+          >
+            {editing ? (
+              <Field
+                defaultValue={value}
+                onChange={value => {
+                  onChange?.(rowData.id, dataKey, value);
+                }}
+              />
+            ) : (
+              value
+            )}
+          </Cell>
+        );
+      };
+
+      const fieldMap = {
+        string: Input,
+        number: InputNumber,
+      };
+
+
+    const handleChange = (id, key, value) => {
+        const nextData = Object.assign([], data);
+        nextData.find(item => item.id === id)[key] = value;
+        setDat(nextData);
+      };
+      const handleEdit = id => {
+        const nextData = Object.assign([], data);
+        const activeItem = nextData.find(item => item.id === id);
+    
+        activeItem.status = activeItem.status ? null : 'EDIT';
+    
+        setDat(nextData);
+      };
+    
+      const handleRemove = id => {
+        setDat(data.filter(item => item.id !== id));
+      };
 
     return (
         <>
@@ -316,7 +403,7 @@ function App()
             </div>
             <h4>Beam setup</h4>
             <div className="scrollBox">
-                {beamlistSelected.map((item, index) => (
+                {selectedMenu === "beamSettings" ? beamlistSelected.map((item, index) => (
                     <BeamSegment 
                             key={index}
                             name={Object.keys(item)[0]}
@@ -326,7 +413,58 @@ function App()
                             onChanges={handleParamChange}
                             PRIVATEVARS={PRIVATEVARS}
                     />
-                ))}
+                ))
+                :
+                <Table height={420} data={beamlistSelected.map((val) => {
+                                            const topKey = Object.keys(val)[0];
+                                            return {id: val['id'], name: topKey, ...val[topKey]};
+                                        })}>
+                    <Column flexGrow={1}>
+                    <HeaderCell>Name</HeaderCell>
+                    <EditableCell
+                        dataKey="name"
+                        dataType="string"
+                        onChange={handleChange}
+                        onEdit={handleEdit}
+                    />
+                    </Column>
+
+                    <Column flexGrow={1}>
+                    <HeaderCell>length</HeaderCell>
+                    <EditableCell
+                        dataKey="length"
+                        dataType="number"
+                        onChange={handleChange}
+                        onEdit={handleEdit}
+                    />
+                    </Column>
+
+                    <Column flexGrow={1}>
+                    <HeaderCell>angle</HeaderCell>
+                    <EditableCell
+                        dataKey="angle"
+                        dataType="number"
+                        onChange={handleChange}
+                        onEdit={handleEdit}
+                    />
+                    </Column>
+
+                    <Column flexGrow={1}>
+                    <HeaderCell>current</HeaderCell>
+                    <EditableCell
+                        dataKey="current"
+                        dataType="number"
+                        onChange={handleChange}
+                        onEdit={handleEdit}
+                    />
+                    </Column>
+
+                    <Column width={100}>
+                    <HeaderCell>Action</HeaderCell>
+                    <ActionCell dataKey="id" onEdit={handleEdit} onRemove={handleRemove} />
+                    </Column>
+                </Table>}
+
             </div>
           </div>
           { selectedMenu === 'beamSettings' ?
@@ -388,9 +526,7 @@ function App()
         <div className='menu-options'>
             <div className="hamburger-menu">
             <button className="hamburger-button" onClick={() => setSelectedMenu("beamSettings")}>
-                <span></span>
-                <span></span>
-                <span></span>
+                <i className="fas fa-cog"></i> {/* Font Awesome settings icon */}
             </button>
             </div>
         </div>

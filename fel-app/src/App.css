@@ -227,19 +227,3 @@ input[type="number"] {
     border-radius: 0px;
     background-color: none;
   }
-  
-  .hamburger-button span {
-    display: block;
-    height: 2px;
-    width: 100%;
-    background-color: #333;
-  }
-
-  .hamburger-button:hover span {
-    display: block;
-    border: 0;
-    height: 3px;
-    width: 100%;
-    background-color: #333;
-    border-radius: 0px;
-  }

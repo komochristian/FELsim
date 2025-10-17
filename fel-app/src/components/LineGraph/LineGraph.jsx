@@ -26,6 +26,24 @@ const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll,
         cleanedTwissData[2].color = !unselectedAxis.includes(cleanedTwissData[2].id) ? '#00CF00' : '#000000'; // Green
     }
 
+    // WORK IN PROGRESS TO DISPLAY Z
+    // const CustomTooltip = ({ point }) => (
+    //     <div
+    //         style={{
+    //             background: 'white',
+    //             padding: '5px',
+    //             border: '1px solid #ccc',
+    //             borderRadius: '4px',
+    //         }}
+    //     >
+    //         <strong>{point.serieId}</strong>
+    //         <br />
+    //         x: {point.data.xFormatted}
+    //         <br />
+    //         y: {point.data.yFormatted}
+    //     </div>
+    // );
+
     return <ResponsiveLine
         data={cleanedTwissData.filter(entry => !unselectedAxis.includes(entry.id))}
         margin={{ top: 10, right: 25, bottom: 40, left: 50 }}
@@ -50,6 +68,7 @@ const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll,
         enableTouchCrosshair={true}
         useMesh={true}
         enableSlices={'x'}
+        tooltip={({point}) => <CustomTooltip point={point} />}
 
         //onClick={(e) => setZValue(e.points[0].data['x'])} // USE if enableSlices IS 'x'
 
