@@ -51,15 +51,6 @@ function App()
                                                            label: 'Envelope\\ E (mm)'});
     const [selectedMenu, setSelectedMenu] = useState(null);
 
-    const ddata =[
-        { id: 1, name: "John Doe", status: null, createdAt: "2023-10-01" },
-        { id: 2, name: "Jane Smith", status: null, createdAt: "2023-10-02" },
-        { id: 3, name: "Alice Johnson", status: null, createdAt: "2023-10-03" },
-        { id: 4, name: "Bob Brown", status: null, createdAt: "2023-10-04" },
-        { id: 5, name: "Charlie Davis", status: null, createdAt: "2023-10-05" },
-    ];
-    const [data, setDat] = useState(ddata);
-    
     const showErrorWindow = (message) => {
         setErrorMessage(message);
         setError(true);
@@ -116,7 +107,7 @@ function App()
     const items = Object.keys(beamSegmentInfo);
 
     //  Calculates the start and end position of the entire beamline
-    const calcStartEndPos = (segList) => {
+    const beamlistHandler = (segList) => {
         let zCurrent = 0;
         const cleanedSegList = segList.map((obj, i) => {
             const segName = Object.keys(obj)[0];
@@ -149,7 +140,7 @@ function App()
             return handleSegmentColor(segment);
         });
 
-        calcStartEndPos(cleanedSegList);
+        beamlistHandler(cleanedSegList);
     };
     
     //  Handles and formats twiss data for plotting
@@ -210,12 +201,12 @@ function App()
         const beamObj = handleSegmentColor({[item]: structuredClone(beamSegmentInfo[item])});
         //console.log('updated Obj', beamObj);
         const updatedList = [...beamlistSelected, beamObj];
-        calcStartEndPos(updatedList);
+        beamlistHandler(updatedList);
     };
 
     const handleDelete = (index) => {
         const updatedBeamline = beamlistSelected.filter((_, i) => i !== index);
-        calcStartEndPos(updatedBeamline);
+        beamlistHandler(updatedBeamline);
     };
 
     const handleParamChange = (index, paramKey, newValue) => {
@@ -233,7 +224,7 @@ function App()
                 };
             })
         );
-        calcStartEndPos(updatedList);
+        beamlistHandler(updatedList);
     };
 
 
@@ -320,25 +311,44 @@ function App()
     };
 
     const EditableCell = ({ rowData, dataType, dataKey, onChange, onEdit, ...props }) => {
+        const fieldMap = {
+            string: Input,
+            number: (props) => <InputNumber step={0.01} {...props} />,
+        };
+
         const editing = rowData.status === 'EDIT';
       
         const Field = fieldMap[dataType];
-        const value = rowData[dataKey];
-       
+        let value = rowData[dataKey];
+
+        const handleBlur = (event) => {
+            const newValue = event.target.value;
+            onChange(rowData.id, dataKey, newValue, rowData.beamlineName);
+        };
+
+        const parseInput = (input, dataType) => {
+            switch (dataType) {
+                case 'number':
+                  return Number(input); // Convert string to number
+                case 'string':
+                  return String(input); // Ensure it's a string
+                default:
+                  return input; // Return as is for unrecognized types
+              } 
+        }
       
         return (
           <Cell
             {...props}
             className={editing ? 'table-cell-editing' : ''}
-            onDoubleClick={() => {
-              onEdit?.(rowData.id);
-            }}
           >
             {editing ? (
               <Field
                 defaultValue={value}
+                // onBlur={handleBlur} // Update value only when the input loses focus
+
                 onChange={value => {
-                  onChange?.(rowData.id, dataKey, value);
+                  onChange?.(rowData.id, dataKey, parseInput(value, dataType), rowData.name, editing);
                 }}
               />
             ) : (
@@ -348,28 +358,25 @@ function App()
         );
       };
 
-      const fieldMap = {
-        string: Input,
-        number: InputNumber,
+
+    const handleChange = (id, key, value, beamlineName) => {
+        const nextData = Object.assign([], beamlistSelected);
+        console.log(nextData.find(item => item.id === id))
+        nextData.find(item => item.id === id)[beamlineName][key] = value;
+        beamlistHandler(nextData);
       };
 
-
-    const handleChange = (id, key, value) => {
-        const nextData = Object.assign([], data);
-        nextData.find(item => item.id === id)[key] = value;
-        setDat(nextData);
-      };
-      const handleEdit = id => {
-        const nextData = Object.assign([], data);
+    const handleEdit = id => {
+        const nextData = Object.assign([], beamlistSelected);
         const activeItem = nextData.find(item => item.id === id);
-    
-        activeItem.status = activeItem.status ? null : 'EDIT';
-    
-        setDat(nextData);
+
+        activeItem.status = activeItem.status === 'EDIT' ? null : 'EDIT';
+        beamlistHandler(nextData);
       };
     
       const handleRemove = id => {
-        setDat(data.filter(item => item.id !== id));
+        const beamlineHandler = beamlistSelected.filter(item => item.id !== id);
+        beamlistHandler(beamlineHandler);
       };
 
     return (
@@ -417,7 +424,11 @@ function App()
                 :
                 <Table height={420} data={beamlistSelected.map((val) => {
                                             const topKey = Object.keys(val)[0];
-                                            return {id: val['id'], name: topKey, ...val[topKey]};
+                                            // console.log('table:',  {id: val['id'], status: val['status'], name: topKey, ...val[topKey]});
+                                            return {id: val.id,
+                                                    status: val.status,
+                                                    name: topKey,
+                                                    ...val[topKey]};
                                         })}>
                     <Column flexGrow={1}>
                     <HeaderCell>Name</HeaderCell>

@@ -68,7 +68,7 @@ const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll,
         enableTouchCrosshair={true}
         useMesh={true}
         enableSlices={'x'}
-        tooltip={({point}) => <CustomTooltip point={point} />}
+        // tooltip={({point}) => <CustomTooltip point={point} />}
 
         //onClick={(e) => setZValue(e.points[0].data['x'])} // USE if enableSlices IS 'x'
 
