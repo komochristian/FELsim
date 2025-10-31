@@ -1,5 +1,7 @@
 import pandas as pd
-from beamline import *
+from typing import Optional, List
+from beamline import (driftLattice, qpfLattice, qpdLattice, 
+                     dipole, dipole_wedge)
 
 
 class ExcelElements:
@@ -33,7 +35,7 @@ class ExcelElements:
         self.df['Channel'] = pd.to_numeric(self.df['Channel'], errors='coerce')
 
 
-    def load_excel_lattice(self, file_path):
+    def load_excel_lattice(self, file_path: str):
         """
         Load the lattice from an Excel file and store it in a DataFrame.
 
@@ -51,7 +53,7 @@ class ExcelElements:
         # Store the DataFrame for external access
         self.df = df
 
-    def create_beamline(self):
+    def create_beamline(self): -> List:
         """
         Create the beamline by iterating through the DataFrame and generating
         the corresponding beamline elements (QPF, QPD, drifts).
@@ -113,27 +115,30 @@ class ExcelElements:
 
         return beamline
 
-    def get_dataframe(self):
+    def get_dataframe(self) -> pd.DataFrame:
         """
         Return the DataFrame containing the beamline elements.
-
+        
         :return: DataFrame with the loaded Excel data.
         """
         return self.df
-
-    def find_element_by_position(self, z):
-        # Iterate through the DataFrame rows
-        for index, row in self.positions.iterrows():
-            # Check if z is within the range  z_sta to z_end
-            if row['z_sta'] <= z <= row['z_end']:
-                # Retrieve the corresponding nomenclature
-                nomenclature = self.nomenclatures[index]
-                # You can customize this part to perform specific string comparisons or outputs
-                # For simplicity, let's return the nomenclature
-                return nomenclature
-        # If z does not fall within any range, return a default value
-        return "Position out of range"
-
-
+    
+    def find_element_by_position(self, z: float) -> Optional[str]:
+        """
+        Find the beamline element at a given z position.
+        
+        :param z: Longitudinal position to query.
+        :return: Element type at position z, or None if out of range.
+        """
+        for index, row in self.df.iterrows():
+            z_start = row['z_start']
+            z_end = row['z_end']
+            
+            if pd.notna(z_start) and pd.notna(z_end):
+                if z_start <= z <= z_end:
+                    return row['Element']
+        
+        return None
+    
     def __str__(self):
-        return f"Beamline: {len(self.nomenclatures)} elements"
+        return f"Beamline: {len(self.df)} elements"
