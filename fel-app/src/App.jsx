@@ -19,7 +19,6 @@ import 'rsuite/dist/rsuite.min.css';
 function App()
 {
     const PRIVATEVARS = ['color', 'startPos', 'endPos'];  // USE THIS SO USERS CANT EDIT THESE VALUES
-    // const API_ROUTE = import.meta.env.VITE_DOCKER_ROUTE || 'http://localhost:8000';
     const API_ROUTE = `http://localhost:${import.meta.env.VITE_BACKEND_API_PORT ?? 8000}`;
     console.log(API_ROUTE);
 
@@ -114,7 +113,7 @@ function App()
             obj[segName]['startPos'] = zCurrent;
             zCurrent += obj[segName]['length'];
             obj[segName]['endPos'] = zCurrent;
-            obj['id'] = i;
+            obj.id = i;
             return obj;
         })
         setTotalLen(zCurrent);
@@ -289,87 +288,22 @@ function App()
     };
 
 
-    const ActionCell = ({ rowData, dataKey, onEdit, onRemove, ...props }) => {
-        return (
-        <Cell {...props} style={{ padding: '6px', display: 'flex', gap: '4px' }}>
-            <IconButton
-            appearance="subtle"
-            icon={rowData.status === 'EDIT' ? <VscSave /> : <VscEdit />}
-            onClick={() => {
-                onEdit(rowData.id);
-            }}
-            />
-            <IconButton
-            appearance="subtle"
-            icon={<VscRemove />}
-            onClick={() => {
-                onRemove(rowData.id);
-            }}
-            />
-        </Cell>
-        );
-    };
-
-    const EditableCell = ({ rowData, dataType, dataKey, onChange, onEdit, ...props }) => {
-        const fieldMap = {
-            string: Input,
-            number: (props) => <InputNumber step={0.01} {...props} />,
-        };
-
-        const editing = rowData.status === 'EDIT';
-      
-        const Field = fieldMap[dataType];
-        let value = rowData[dataKey];
-
-        const handleBlur = (event) => {
-            const newValue = event.target.value;
-            onChange(rowData.id, dataKey, newValue, rowData.beamlineName);
-        };
-
-        const parseInput = (input, dataType) => {
-            switch (dataType) {
-                case 'number':
-                  return Number(input); // Convert string to number
-                case 'string':
-                  return String(input); // Ensure it's a string
-                default:
-                  return input; // Return as is for unrecognized types
-              } 
-        }
-      
-        return (
-          <Cell
-            {...props}
-            className={editing ? 'table-cell-editing' : ''}
-          >
-            {editing ? (
-              <Field
-                defaultValue={value}
-                // onBlur={handleBlur} // Update value only when the input loses focus
-
-                onChange={value => {
-                  onChange?.(rowData.id, dataKey, parseInput(value, dataType), rowData.name, editing);
-                }}
-              />
-            ) : (
-              value
-            )}
-          </Cell>
-        );
-      };
-
-
     const handleChange = (id, key, value, beamlineName) => {
         const nextData = Object.assign([], beamlistSelected);
-        console.log(nextData.find(item => item.id === id))
-        nextData.find(item => item.id === id)[beamlineName][key] = value;
-        beamlistHandler(nextData);
+        nextData.find(item => item.id === id)[beamlineName][key] = value
       };
 
     const handleEdit = id => {
         const nextData = Object.assign([], beamlistSelected);
         const activeItem = nextData.find(item => item.id === id);
 
+        if(activeItem.status === 'EDIT') {
+            const newItem = beamlistSelected.find(item => item.id === id);
+            if (newItem) {
+                const { status, ...rest } = newItem;
+                Object.assign(activeItem, rest);
+            }
+        }
         activeItem.status = activeItem.status === 'EDIT' ? null : 'EDIT';
         beamlistHandler(nextData);
       };
@@ -432,12 +366,7 @@ function App()
                                         })}>
                     <Column flexGrow={1}>
                     <HeaderCell>Name</HeaderCell>
-                    <EditableCell
-                        dataKey="name"
-                        dataType="string"
-                        onChange={handleChange}
-                        onEdit={handleEdit}
-                    />
+                    <NormalCell dataKey="name" />
                     </Column>
 
                     <Column flexGrow={1}>
@@ -446,7 +375,6 @@ function App()
                         dataKey="length"
                         dataType="number"
                         onChange={handleChange}
-                        onEdit={handleEdit}
                     />
                     </Column>
 
@@ -456,7 +384,6 @@ function App()
                         dataKey="angle"
                         dataType="number"
                         onChange={handleChange}
-                        onEdit={handleEdit}
                     />
                     </Column>
 
@@ -466,7 +393,6 @@ function App()
                         dataKey="current"
                         dataType="number"
                         onChange={handleChange}
-                        onEdit={handleEdit}
                     />
                     </Column>
 
@@ -561,5 +487,75 @@ function App()
         </>
     );
 }
+
+const ActionCell = ({ rowData, dataKey, onEdit, onRemove, ...props }) => {
+    return (
+    <Cell {...props} style={{ padding: '6px', display: 'flex', gap: '4px' }}>
+        <IconButton
+        appearance="subtle"
+        icon={rowData.status === 'EDIT' ? <VscSave /> : <VscEdit />}
+        onClick={() => {
+            onEdit(rowData.id);
+        }}
+        />
+        <IconButton
+        appearance="subtle"
+        icon={<VscRemove />}
+        onClick={() => {
+            onRemove(rowData.id);
+        }}
+        />
+    </Cell>
+    );
+};
+
+const EditableCell = ({ rowData, dataType, dataKey, onChange, onEdit, ...props }) => {
+    const fieldMap = {
+        string: Input,
+        number: (props) => <InputNumber step={0.01} {...props} />,
+    };
+
+    const editing = rowData.status === 'EDIT';
+  
+    const Field = fieldMap[dataType];
+    let value = rowData[dataKey];
+
+    const parseInput = (input, dataType) => {
+        switch (dataType) {
+            case 'number':
+              return Number(input); // Convert string to number
+            case 'string':
+              return String(input); // Ensure it's a string
+            default:
+              return input; // Return as is for unrecognized types
+          } 
+    }
+  
+    return (
+      <Cell
+        {...props}
+        className={editing ? 'table-cell-editing' : ''}
+      >
+        {editing ? (
+          <Field
+            defaultValue={value}
+            onChange={value => {
+              onChange?.(rowData.id, dataKey, parseInput(value, dataType), rowData.name, editing);
+            }}
+          />
+        ) : (
+          value
+        )}
+      </Cell>
+    );
+  };
+
+  const NormalCell = ({ rowData, dataKey, ...props }) => {
+    return (
+        <Cell {...props}>
+            {rowData[dataKey]} {/* Display the value of the specified column */}
+        </Cell>
+    );
+};
 
 export default App;
