@@ -1,5 +1,4 @@
 import { ResponsiveLine } from '@nivo/line'
-import { InlineMath } from 'react-katex';
 import { useState } from 'react';
 
 const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll, setScroll}) => {

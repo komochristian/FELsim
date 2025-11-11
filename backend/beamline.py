@@ -200,7 +200,7 @@ class lattice:
         return newMatrix #  return 2d list
     
 class driftLattice(lattice):
-    #color = "white"
+    color = "white"
     def __init__(self, length: float):
         '''
         Represents a drift space (empty section) in the beamline.

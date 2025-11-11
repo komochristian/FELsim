@@ -3,8 +3,8 @@
   top: 20px;
   left: 50%;
   transform: translate(-50%, -10px); /* Center horizontally, move up slightly */
-  width: auto;
-  white-space: nowrap;
+  max-width: 750px;
+  white-space: normal;
   padding: 15px 20px;
   background-color: #f8d7da;
   color: #721c24;

@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from 'react';
-import * as d3 from 'd3';
 import './App.css';
 import Dropdown from './components/Dropdown/Dropdown';
 import DropdownItem from './components/DropdownItem/DropdownItem';
@@ -8,13 +7,20 @@ import ExcelUploadButton from './components/ExcelUploadButton/ExcelUploadButton'
 import LineGraph from './components/LineGraph/LineGraph';
 import ErrorWindow from './components/ErrorWindow/ErrorWindow';
 import Select from 'react-select';
-import { InlineMath, BlockMath } from 'react-katex';
+import { InlineMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
 import FloatingInfoButton from './components/FloatingInfoButton/FloatingInfoButton';
-import { Table, Button, IconButton, Input, InputNumber } from 'rsuite';
-const { Column, HeaderCell, Cell } = Table;
-import { VscEdit, VscSave, VscRemove } from 'react-icons/vsc';
+import { Table } from 'rsuite';
+const { Column, HeaderCell } = Table;
 import 'rsuite/dist/rsuite.min.css'; 
+import ActionCell from './components/ActionCell/ActionCell';
+import EditableCell from './components/EditableCell/EditableCell';
+import NormalCell from './components/NormalCell/NormalCell';
+import { Col, Row } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Modal } from 'react-responsive-modal';
+import 'react-responsive-modal/styles.css';
+import ModalContent from './components/ModalContent/ModalContent';
 
 function App()
 {
@@ -51,6 +57,7 @@ function App()
     const [selectedMenu, setSelectedMenu] = useState(null);
 
     const showErrorWindow = (message) => {
+        console.log("Error:", message);
         setErrorMessage(message);
         setError(true);
     };
@@ -312,11 +319,31 @@ function App()
         const beamlineHandler = beamlistSelected.filter(item => item.id !== id);
         beamlistHandler(beamlineHandler);
       };
-
+      
+    const PreModelCheck = (beamline) => {
+        if (beamline.length === 0) {
+            setSelectedMenu(null)
+            showErrorWindow("Please add beam segments before graphing parameters");
+            return false;
+        }
+        return true;
+    }
+      
     return (
         <>
         <ErrorWindow message={errorMessage}
-                     showError = {showError} /> 
+                     showError = {showError} />
+        <Modal open={selectedMenu === 'parameterGraphing' && PreModelCheck(beamlistSelected)} 
+               onClose={() => setSelectedMenu(null)} 
+               center
+               classNames={{
+                modal: "custom-modal", // Add a custom class to the modal
+              }} 
+        >
+            <div className="modal-content">
+                <ModalContent beamline={beamlistSelected} />
+            </div>
+        </Modal> 
         <div className="layout">
         <FloatingInfoButton /> 
           <div className={`sidebar ${selectedMenu === null ? 'menuClosed' : 'menuOpen'}`}>
@@ -344,63 +371,70 @@ function App()
             </div>
             <h4>Beam setup</h4>
             <div className="scrollBox">
-                {selectedMenu === "beamSettings" ? beamlistSelected.map((item, index) => (
-                    <BeamSegment 
-                            key={index}
-                            name={Object.keys(item)[0]}
-                            params={item}
-                            index={index}
-                            onDelete={handleDelete}
-                            onChanges={handleParamChange}
-                            PRIVATEVARS={PRIVATEVARS}
-                    />
-                ))
-                :
-                <Table height={420} data={beamlistSelected.map((val) => {
-                                            const topKey = Object.keys(val)[0];
-                                            // console.log('table:',  {id: val['id'], status: val['status'], name: topKey, ...val[topKey]});
-                                            return {id: val.id,
-                                                    status: val.status,
-                                                    name: topKey,
-                                                    ...val[topKey]};
-                                        })}>
-                    <Column flexGrow={1}>
-                    <HeaderCell>Name</HeaderCell>
-                    <NormalCell dataKey="name" />
-                    </Column>
+                {
+                    selectedMenu === "beamSettings" ? 
+                        beamlistSelected.map((item, index) => (
+                            <BeamSegment 
+                                    key={index}
+                                    name={Object.keys(item)[0]}
+                                    params={item}
+                                    index={index}
+                                    onDelete={handleDelete}
+                                    onChanges={handleParamChange}
+                                    PRIVATEVARS={PRIVATEVARS}
+                            />
+                        ))
+                    :
+                    <Table height={420} data={beamlistSelected.map((val) => {
+                                                const topKey = Object.keys(val)[0];
+                                                // console.log('table:',  {id: val['id'], status: val['status'], name: topKey, ...val[topKey]});
+                                                return {id: val.id,
+                                                        status: val.status,
+                                                        name: topKey,
+                                                        ...val[topKey]};
+                    })}>
+                        <Column flexGrow={1}>
+                            <HeaderCell>Name</HeaderCell>
+                            <NormalCell dataKey="name" />
+                        </Column>
 
-                    <Column flexGrow={1}>
-                    <HeaderCell>length</HeaderCell>
-                    <EditableCell
-                        dataKey="length"
-                        dataType="number"
-                        onChange={handleChange}
-                    />
-                    </Column>
+                        <Column flexGrow={1}>
+                            <HeaderCell>length</HeaderCell>
+                            <EditableCell
+                                dataKey="length"
+                                dataType="number"
+                                onChange={handleChange}
+                            />
+                        </Column>
 
-                    <Column flexGrow={1}>
-                    <HeaderCell>angle</HeaderCell>
-                    <EditableCell
-                        dataKey="angle"
-                        dataType="number"
-                        onChange={handleChange}
-                    />
-                    </Column>
+                        {selectedMenu !== "beamSettings" &&
+                        <>
+                            <Column flexGrow={1}>
+                                <HeaderCell>angle</HeaderCell>
+                                <EditableCell
+                                    dataKey="angle"
+                                    dataType="number"
+                                    onChange={handleChange}
+                                />
+                            </Column>
 
-                    <Column flexGrow={1}>
-                    <HeaderCell>current</HeaderCell>
-                    <EditableCell
-                        dataKey="current"
-                        dataType="number"
-                        onChange={handleChange}
-                    />
-                    </Column>
+                            <Column flexGrow={1}>
+                                <HeaderCell>current</HeaderCell>
+                                <EditableCell
+                                    dataKey="current"
+                                    dataType="number"
+                                    onChange={handleChange}
+                                />
+                            </Column> 
+                        </>
+                        }
 
-                    <Column width={100}>
-                    <HeaderCell>Action</HeaderCell>
-                    <ActionCell dataKey="id" onEdit={handleEdit} onRemove={handleRemove} />
-                    </Column>
-                </Table>}
+                        <Column width={100}>
+                            <HeaderCell>Action</HeaderCell>
+                            <ActionCell dataKey="id" onEdit={handleEdit} onRemove={handleRemove} />
+                        </Column>
+                    </Table>
+                }
 
             </div>
           </div>
@@ -461,11 +495,18 @@ function App()
         </>
         :
         <div className='menu-options'>
-            <div className="hamburger-menu">
-            <button className="hamburger-button" onClick={() => setSelectedMenu("beamSettings")}>
-                <i className="fas fa-cog"></i> {/* Font Awesome settings icon */}
-            </button>
-            </div>
+            <Col className="settings-icon-wrapper pt-3">
+                <Row className="mb-3 g-0">
+                    <button className="menu-button" onClick={() => setSelectedMenu("beamSettings")}>
+                        <i className="fas fa-cog"></i>
+                    </button>
+                </Row>
+                <Row className="mb-3 g-0">
+                    <button className="menu-button" onClick={() => setSelectedMenu("parameterGraphing")}>
+                        <i className="fas fa-chart-line"></i>
+                    </button>
+                </Row>   
+            </Col>
         </div>
         }  
           <div className={`main-content`}>
@@ -487,75 +528,5 @@ function App()
         </>
     );
 }
-
-const ActionCell = ({ rowData, dataKey, onEdit, onRemove, ...props }) => {
-    return (
-    <Cell {...props} style={{ padding: '6px', display: 'flex', gap: '4px' }}>
-        <IconButton
-        appearance="subtle"
-        icon={rowData.status === 'EDIT' ? <VscSave /> : <VscEdit />}
-        onClick={() => {
-            onEdit(rowData.id);
-        }}
-        />
-        <IconButton
-        appearance="subtle"
-        icon={<VscRemove />}
-        onClick={() => {
-            onRemove(rowData.id);
-        }}
-        />
-    </Cell>
-    );
-};
-
-const EditableCell = ({ rowData, dataType, dataKey, onChange, onEdit, ...props }) => {
-    const fieldMap = {
-        string: Input,
-        number: (props) => <InputNumber step={0.01} {...props} />,
-    };
-
-    const editing = rowData.status === 'EDIT';
-  
-    const Field = fieldMap[dataType];
-    let value = rowData[dataKey];
-
-    const parseInput = (input, dataType) => {
-        switch (dataType) {
-            case 'number':
-              return Number(input); // Convert string to number
-            case 'string':
-              return String(input); // Ensure it's a string
-            default:
-              return input; // Return as is for unrecognized types
-          } 
-    }
-  
-    return (
-      <Cell
-        {...props}
-        className={editing ? 'table-cell-editing' : ''}
-      >
-        {editing ? (
-          <Field
-            defaultValue={value}
-            onChange={value => {
-              onChange?.(rowData.id, dataKey, parseInput(value, dataType), rowData.name, editing);
-            }}
-          />
-        ) : (
-          value
-        )}
-      </Cell>
-    );
-  };
-
-  const NormalCell = ({ rowData, dataKey, ...props }) => {
-    return (
-        <Cell {...props}>
-            {rowData[dataKey]} {/* Display the value of the specified column */}
-        </Cell>
-    );
-};
 
 export default App;

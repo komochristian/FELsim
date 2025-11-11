@@ -204,26 +204,41 @@ input[type="number"] {
     align-items: flex-start;
 }
 
-.hamburger-menu {
-    display: flex;
+.settings-icon-wrapper {
     align-items: center;
-    padding: 10px;
+    /* padding: 10px; */
   }
   
-  .hamburger-button {
+  .menu-button {
     background: none;
     border: none;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    width: 30px;
+    /* width: 30px; */
     height: 20px;
-    padding: 2px;
+    padding: 0px;
+    
+    box-sizing: border-box; /* Include padding and border in the size */
+
   }
 
-  .hamburger-button:hover { 
+  .menu-button:hover { 
     border: none;
     border-radius: 0px;
-    background-color: none;
+    background-color: #f5f4ef;
+  }
+
+  .modal-content {
+    max-height: 80vh; /* Ensure the content scrolls if it overflows */
+    overflow: auto; /* Add scrollbars for overflowing content */
+    padding: 20px;
+    display: flex; /* Optional: Center the SVG if needed */
+    justify-content: center;
+    align-items: center;
+  }
+
+  .custom-modal {
+    min-width: 1300px;
   }
