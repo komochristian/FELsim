@@ -1,0 +1,14 @@
+.infoTip {
+    position: fixed; /* Fixed to the viewport */
+    top: 25%; /* Center vertically */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Adjust for the tooltip's size */
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px;
+    border-radius: 3px;
+    pointer-events: none;
+    display: flex; /* Needed for align-items and justify-content */
+    align-items: center;
+    justify-content: center;
+  }

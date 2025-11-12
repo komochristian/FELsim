@@ -241,4 +241,5 @@ input[type="number"] {
 
   .custom-modal {
     min-width: 1300px;
+    min-height: 500px;
   }

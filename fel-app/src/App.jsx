@@ -110,6 +110,7 @@ function App()
     }, [beamlistSelected]);
 
     if (!beamSegmentInfo) return <div>Loading...</div>;
+    console.log("BEAM SEG INFO:", beamSegmentInfo);
     const items = Object.keys(beamSegmentInfo);
 
     //  Calculates the start and end position of the entire beamline
@@ -124,6 +125,7 @@ function App()
             return obj;
         })
         setTotalLen(zCurrent);
+        console.log("RIGHT BEFORE SET:", cleanedSegList);
         setSelectedItems(cleanedSegList);
     };
 
@@ -202,7 +204,7 @@ function App()
         const beamlist =  await res.json();
         setSelectedItemsHandler(beamlist);
     };
-
+    //CHANGE
     const handleItemClick = (item) => {
         const beamObj = handleSegmentColor({[item]: structuredClone(beamSegmentInfo[item])});
         //console.log('updated Obj', beamObj);
@@ -215,6 +217,7 @@ function App()
         beamlistHandler(updatedBeamline);
     };
 
+    //CHANGE
     const handleParamChange = (index, paramKey, newValue) => {
         const updatedList = (
             beamlistSelected.map((item, i) => {
@@ -233,7 +236,7 @@ function App()
         beamlistHandler(updatedList);
     };
 
-
+    //CHANGE
     const getBeamline = async (segList) => {
         const uiErrorStatus = errorCatcher();
         if (uiErrorStatus) {
@@ -294,7 +297,7 @@ function App()
 
     };
 
-
+    //CHANGE
     const handleChange = (id, key, value, beamlineName) => {
         const nextData = Object.assign([], beamlistSelected);
         nextData.find(item => item.id === id)[beamlineName][key] = value
@@ -319,7 +322,7 @@ function App()
         const beamlineHandler = beamlistSelected.filter(item => item.id !== id);
         beamlistHandler(beamlineHandler);
       };
-      
+
     const PreModelCheck = (beamline) => {
         if (beamline.length === 0) {
             setSelectedMenu(null)
@@ -341,6 +344,7 @@ function App()
               }} 
         >
             <div className="modal-content">
+                {/* CHANGE */}
                 <ModalContent beamline={beamlistSelected} />
             </div>
         </Modal> 
@@ -365,6 +369,7 @@ function App()
                 <button
                     type="button"
                     className="simButton"
+                    // CHANGE
                     onClick={() => getBeamline(beamlistSelected)}>
                     Simulate
                 </button>
@@ -373,6 +378,7 @@ function App()
             <div className="scrollBox">
                 {
                     selectedMenu === "beamSettings" ? 
+                    // CHANGE
                         beamlistSelected.map((item, index) => (
                             <BeamSegment 
                                     key={index}
@@ -385,6 +391,7 @@ function App()
                             />
                         ))
                     :
+                    // CHANGE
                     <Table height={420} data={beamlistSelected.map((val) => {
                                                 const topKey = Object.keys(val)[0];
                                                 // console.log('table:',  {id: val['id'], status: val['status'], name: topKey, ...val[topKey]});
@@ -513,6 +520,7 @@ function App()
                 <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="Please run simulation"/>
           </div>
           <div className="twiss-graph">
+            {/* CHANGE */}
                 <LineGraph twissData={twissDf}
                            setZValue={setZValue} 
                            beamline={beamlistSelected}
