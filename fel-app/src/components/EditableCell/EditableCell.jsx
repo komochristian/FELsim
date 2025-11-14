@@ -34,7 +34,7 @@ const EditableCell = ({ rowData, dataType, dataKey, onChange, onEdit, ...props }
           <Field
             defaultValue={value}
             onChange={value => {
-              onChange?.(rowData.id, dataKey, parseInput(value, dataType), rowData.name, editing);
+              onChange?.(rowData.id, dataKey, parseInput(value, dataType), editing);
             }}
           />
         ) : (

@@ -115,15 +115,14 @@ const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll,
             <>
                 {
                     beamline.map((seg, i) => {
-                        const params = Object.values(seg)[0];
                         const segment = ( 
                             <line
                               key={i}
-                              x1={xScale(params.startPos)}
-                              x2={xScale(params.endPos)}
+                              x1={xScale(seg.startPos)}
+                              x2={xScale(seg.endPos)}
                               y1={innerHeight}
                               y2={innerHeight}
-                              stroke={params.color}
+                              stroke={seg.color}
                               strokeWidth={10}
                             />
                         );

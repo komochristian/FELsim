@@ -24,7 +24,7 @@ import ModalContent from './components/ModalContent/ModalContent';
 
 function App()
 {
-    const PRIVATEVARS = ['color', 'startPos', 'endPos'];  // USE THIS SO USERS CANT EDIT THESE VALUES
+    const PRIVATEVARS = ['color', 'startPos', 'endPos', 'name', 'id', 'status'];  // USE THIS SO USERS CANT EDIT THESE VALUES
     const API_ROUTE = `http://localhost:${import.meta.env.VITE_BACKEND_API_PORT ?? 8000}`;
     console.log(API_ROUTE);
 
@@ -110,22 +110,20 @@ function App()
     }, [beamlistSelected]);
 
     if (!beamSegmentInfo) return <div>Loading...</div>;
-    console.log("BEAM SEG INFO:", beamSegmentInfo);
     const items = Object.keys(beamSegmentInfo);
 
-    //  Calculates the start and end position of the entire beamline
+    //  Calculates the start and end position of the entire beamline,
+    //  Assumes segment format is already correct
     const beamlistHandler = (segList) => {
         let zCurrent = 0;
         const cleanedSegList = segList.map((obj, i) => {
-            const segName = Object.keys(obj)[0];
-            obj[segName]['startPos'] = zCurrent;
-            zCurrent += obj[segName]['length'];
-            obj[segName]['endPos'] = zCurrent;
+            obj['startPos'] = zCurrent;
+            zCurrent += obj['length'];
+            obj['endPos'] = zCurrent;
             obj.id = i;
             return obj;
         })
         setTotalLen(zCurrent);
-        console.log("RIGHT BEFORE SET:", cleanedSegList);
         setSelectedItems(cleanedSegList);
     };
 
@@ -135,8 +133,8 @@ function App()
     const handleSegmentColor = (segment) => { 
         for (let priv of PRIVATEVARS) {
             if (!(priv in segment)) {
-                const segName = Object.keys(segment)[0];
-                segment[segName][priv] = beamSegmentInfo[segName][priv];
+                const segName = segment.name || Object.keys(segment)[0];
+                segment[priv] = beamSegmentInfo[segName][priv];
             }
         }
         return segment
@@ -144,10 +142,12 @@ function App()
 
     //  Handles both color and start and end pos for ENTIRE beamline
     const setSelectedItemsHandler = (segList) => {
+        console.log("segList from excel:", segList);
         const cleanedSegList = segList.map((segment) => {
-            return handleSegmentColor(segment);
+            const name = Object.keys(segment)[0];             
+            return handleSegmentColor({ "name": name,
+                                        ...segment[name]});
         });
-
         beamlistHandler(cleanedSegList);
     };
     
@@ -207,32 +207,12 @@ function App()
     //CHANGE
     const handleItemClick = (item) => {
         const beamObj = handleSegmentColor({[item]: structuredClone(beamSegmentInfo[item])});
+
+        const cleanedObj = {"name": item,
+                            ...beamObj[item]};
+        console.log('cleanedObj', cleanedObj);
         //console.log('updated Obj', beamObj);
-        const updatedList = [...beamlistSelected, beamObj];
-        beamlistHandler(updatedList);
-    };
-
-    const handleDelete = (index) => {
-        const updatedBeamline = beamlistSelected.filter((_, i) => i !== index);
-        beamlistHandler(updatedBeamline);
-    };
-
-    //CHANGE
-    const handleParamChange = (index, paramKey, newValue) => {
-        const updatedList = (
-            beamlistSelected.map((item, i) => {
-                if (i !== index) return item;
-                const topKey = Object.keys(item)[0];
-                const updatedParams = {
-                    ...item[topKey],
-                    [paramKey]: parseFloat(newValue)
-                };
-    
-                return {
-                    [topKey]: updatedParams
-                };
-            })
-        );
+        const updatedList = [...beamlistSelected, cleanedObj];
         beamlistHandler(updatedList);
     };
 
@@ -243,16 +223,16 @@ function App()
             return
         };
         const cleanedList = segList.map(obj => {
-            const key = Object.keys(obj)[0];
+            const key = obj.name;
             const cleanedParams = Object.fromEntries(
-              Object.entries(obj[key]).filter(([p]) => !PRIVATEVARS.includes(p))
+              Object.entries(obj).filter(([p]) => !PRIVATEVARS.includes(p))
             );
+            console.log('cleanedParams:', cleanedParams);
             return {
                 segmentName: key,
                 parameters: cleanedParams
             };
         });
-
 
         const plottingParams = {
             beamlineData: cleanedList,
@@ -297,10 +277,9 @@ function App()
 
     };
 
-    //CHANGE
-    const handleChange = (id, key, value, beamlineName) => {
+    const handleChange = (id, key, value) => {
         const nextData = Object.assign([], beamlistSelected);
-        nextData.find(item => item.id === id)[beamlineName][key] = value
+        nextData.find(item => item.id === id)[key] = value;
       };
 
     const handleEdit = id => {
@@ -369,37 +348,15 @@ function App()
                 <button
                     type="button"
                     className="simButton"
-                    // CHANGE
                     onClick={() => getBeamline(beamlistSelected)}>
                     Simulate
                 </button>
             </div>
             <h4>Beam setup</h4>
             <div className="scrollBox">
-                {
-                    selectedMenu === "beamSettings" ? 
-                    // CHANGE
-                        beamlistSelected.map((item, index) => (
-                            <BeamSegment 
-                                    key={index}
-                                    name={Object.keys(item)[0]}
-                                    params={item}
-                                    index={index}
-                                    onDelete={handleDelete}
-                                    onChanges={handleParamChange}
-                                    PRIVATEVARS={PRIVATEVARS}
-                            />
-                        ))
-                    :
-                    // CHANGE
-                    <Table height={420} data={beamlistSelected.map((val) => {
-                                                const topKey = Object.keys(val)[0];
-                                                // console.log('table:',  {id: val['id'], status: val['status'], name: topKey, ...val[topKey]});
-                                                return {id: val.id,
-                                                        status: val.status,
-                                                        name: topKey,
-                                                        ...val[topKey]};
-                    })}>
+                    {/* // CHANGE */}
+                    {/* ALLOW EDITTING OF ALL PARAMETERS LATER ON */}
+                    <Table height={420} data={beamlistSelected}>
                         <Column flexGrow={1}>
                             <HeaderCell>Name</HeaderCell>
                             <NormalCell dataKey="name" />
@@ -441,8 +398,6 @@ function App()
                             <ActionCell dataKey="id" onEdit={handleEdit} onRemove={handleRemove} />
                         </Column>
                     </Table>
-                }
-
             </div>
           </div>
           { selectedMenu === 'beamSettings' ?
@@ -520,7 +475,6 @@ function App()
                 <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="Please run simulation"/>
           </div>
           <div className="twiss-graph">
-            {/* CHANGE */}
                 <LineGraph twissData={twissDf}
                            setZValue={setZValue} 
                            beamline={beamlistSelected}
