@@ -5,16 +5,24 @@ import { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { API_ROUTE, PRIVATEVARS, MODALPRIVATEVARS } from '../../constants';
 
 const schema = yup
   .object()
   .shape({
     "z-pos": yup.number().required('Z position is required'),
+    "target_parameter": yup.string().required('Parameter selection is required'),
   })
   .required()
 
 const ModalContent = ({ beamline }) => {
+    // State to track hovered rectangle and tooltip visibility
+    const [hovered, setHovered] = useState(null);
+    const [tooltipStyle, setTooltipStyle] = useState({ display: 'none' });
+    const [beamElementSelected, setSelectedElement] = useState(null);
+    const [beamIndex, setBeamIndex] = useState(null);
+
     const {
         register,
         handleSubmit,
@@ -24,14 +32,38 @@ const ModalContent = ({ beamline }) => {
         resolver: yupResolver(schema),
       });
 
-      const onSubmit = (data) => {
+      const onSubmit = async (data) => {
         console.log('Form submitted:', data);
-      };
 
-    // State to track hovered rectangle and tooltip visibility
-    const [hovered, setHovered] = useState(null);
-    const [tooltipStyle, setTooltipStyle] = useState({ display: 'none' });
-    const [beamElementSelected, setSelectedElement] = useState(null);
+        const cleanedList = beamline.map(obj => {
+            const key = obj.name;
+            const cleanedParams = Object.fromEntries(
+              Object.entries(obj).filter(([p]) => !PRIVATEVARS.includes(p))
+            );
+            return {
+                segmentName: key,
+                parameters: cleanedParams
+            };
+        });
+
+        console.log('cleanedList:', cleanedList);
+
+        const cleanedData = {
+            beam_index: beamIndex,
+            target_parameter: data.target_parameter,
+            target_z_index: data['z-pos'],
+            beamline_data: cleanedList
+        }
+
+        const res = await fetch(API_ROUTE + '/plot-parameters', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(cleanedData, null, 2),
+        });
+        
+      };
 
     // Handle hover over a rectangle
     const handleMouseEnter = (startPos, name,  event) => {
@@ -54,6 +86,7 @@ const ModalContent = ({ beamline }) => {
     // Handle click on a rectangle
     const handleClick = (info) => {
         const key = info.target.getAttribute('data-key');
+        setBeamIndex(key);
         setSelectedElement(beamline[key]);
         console.log(beamline[key]);
     };
@@ -124,18 +157,43 @@ const ModalContent = ({ beamline }) => {
                     </Card.Body>
                 </Card>
             </Col>
-            <Col>
-                <Card md={3}>
+            <Col md={4}>
+                <Card>
                     <Card.Body>
                         <Form onSubmit={handleSubmit(onSubmit)}>
                             <Form.Group>
                                 <Form.Label>Enter a position along the beamline to optimize</Form.Label>
                                 <input
                                     type="number"
+                                    step="any"
                                     {...register('z-pos')}
-                                    className={`form-control ${errors.note ? 'is-invalid' : ''}`}
+                                    className={`form-control ${errors['z-pos'] ? 'is-invalid' : ''}`}
                                 />
-                                {/* ADD ERROR THORWING NEXT */}
+                                <div className="invalid-feedback">{errors['z-pos']?.message}</div>
+                            </Form.Group>
+                            <Form.Group>
+                                {beamElementSelected ? (
+                                    <>
+                                      <Form.Label>Beam Parameter to Plot:</Form.Label>
+                                      <select {...register('target_parameter')} className={`form-control ${errors.target_parameter ? 'is-invalid' : ''}`}>
+                                        {Object.entries(beamElementSelected).map(([key, value]) => {
+                                                if (!MODALPRIVATEVARS.includes(key)) {
+                                                    return <option value={key}>{key}</option>;
+                                                }
+                                            }
+                                        )}
+                                      </select>
+                                      <div className="invalid-feedback">{errors.target_parameter?.message}</div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Form.Label className='text-danger'>Please select a beam element</Form.Label> 
+                                        <input type="hidden" {...register('target_parameter')} value='' />
+                                        <div className="invalid-feedback">{errors.target_parameter?.message}</div>
+
+                                    </>
+                                )}
+
                             </Form.Group>
                             <Form.Group className="form-group">
                                 <Row className="pt-3">

@@ -40,7 +40,15 @@ ebeam = beam()
 beam_dist = ebeam.gen_6d_gaussian(0,[1,0.1,1,0.1,2856 * (10 ** 6) * (10 ** -9),1],1000)
 
 shape = {"shape": "rectangle", "length": 3, "width": 4, "origin": (0,0)}
-schem.plotBeamPositionTransform(beam_dist, line_E, 0.1, defineLim = True, scatter=True)
+schem.plotBeamPositionTransform(beam_dist, line_E[0:20], 0.1, defineLim = True, scatter=True)
+
+# Testing Purposes
+line1 = line_E[0:10]
+line2 = line_E[10:21]
+schem.plotBeamPositionTransform(beam_dist, line1, 0.1, defineLim = True, scatter=True)
+beam_dist = schem.matrixVariables
+schem.plotBeamPositionTransform(beam_dist, line2, 0.1, defineLim = True, scatter=True)
+
 l = []
 schem.plotBeamPositionTransform(beam_dist, l, 0.1)
 

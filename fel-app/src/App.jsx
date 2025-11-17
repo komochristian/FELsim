@@ -2,7 +2,6 @@ import React, {useState, useEffect} from 'react';
 import './App.css';
 import Dropdown from './components/Dropdown/Dropdown';
 import DropdownItem from './components/DropdownItem/DropdownItem';
-import BeamSegment from './components/BeamSegment/BeamSegment';
 import ExcelUploadButton from './components/ExcelUploadButton/ExcelUploadButton';
 import LineGraph from './components/LineGraph/LineGraph';
 import ErrorWindow from './components/ErrorWindow/ErrorWindow';
@@ -21,13 +20,11 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import ModalContent from './components/ModalContent/ModalContent';
+import { PRIVATEVARS, API_ROUTE } from './constants';
 
 function App()
 {
-    const PRIVATEVARS = ['color', 'startPos', 'endPos', 'name', 'id', 'status'];  // USE THIS SO USERS CANT EDIT THESE VALUES
-    const API_ROUTE = `http://localhost:${import.meta.env.VITE_BACKEND_API_PORT ?? 8000}`;
     console.log(API_ROUTE);
-
     const [beamSegmentInfo, setData] = useState(null);
     const [dotGraphs, setDotGraphs] = useState([]);
     const [lineGraph, setLineGraph] = useState(null);
@@ -241,7 +238,7 @@ function App()
             interval: zInterval
         }
     
-        const jsonBody = JSON.stringify(plottingParams, null, 4); 
+        const jsonBody = JSON.stringify(plottingParams, null, 2); 
         //console.log("json sent;", jsonBody);
 
         const res = await fetch(API_ROUTE + '/axes', {

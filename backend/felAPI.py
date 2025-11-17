@@ -48,6 +48,13 @@ class AxesPNGData(BaseModel):
     images: Dict[float, Any]
     line_graph: LineAxObject
 
+class GraphParameters(BaseModel):
+    beam_index: int
+    target_parameter: str
+    target_z_index: float
+    beamline_data: list[BeamlineInfo]
+
+
 app = FastAPI()
 ebeam = beam()
 # Allow requests from your frontend (CORS!)
@@ -179,6 +186,41 @@ def getBeamSegmentInfo():
         beamSegInfo[cls.__name__] = params_info
 
     return beamSegInfo
+
+@app.post("/plot-parameters")
+def plot_parameters(graphParams: GraphParameters):
+    try:
+        beamline = importlib.import_module("beamline")
+        beamlist = []
+        beamlineData = graphParams.beamline_data
+        for segment in beamlineData:
+            if hasattr(beamline, segment.segmentName):
+                segmentClass = getattr(beamline, segment.segmentName)
+                beamlist.append(segmentClass(**segment.parameters))
+
+        cleanedBeamlist = beamlist[:graphParams.beam_index]
+
+        schem = draw_beamline()
+        ebeam = beam()
+        beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000)
+
+        #  100 chosen as a large number to speed up initial calculation
+        schem.plotBeamPositionTransform(beam_dist, cleanedBeamlist, plot=False, interval=100)
+        beam_dist = schem.matrixVariables
+
+        #  WORK ON CHANGING BEAM PARAMETERS AND PLOTTING
+        # i = 0
+        # while (i < 10):
+
+
+
+
+
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=400, detail=str(e))
+    
+    return {"message": "Success"}
 
 # Don't use, doesn't check for changes and server reloads
 #if __name__ == "__main__":
