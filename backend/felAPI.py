@@ -13,6 +13,7 @@ from excelElements import ExcelElements
 import uvicorn
 import os
 from dotenv import load_dotenv
+import copy
 
 load_dotenv('../.env')  # Only during dev testing when not using Dockerfile...
 FRONTEND_PORT = os.getenv('FRONTEND_PORT')
@@ -51,8 +52,9 @@ class AxesPNGData(BaseModel):
 class GraphParameters(BaseModel):
     beam_index: int
     target_parameter: str
-    target_z_index: float
+    target_z_pos: float
     beamline_data: list[BeamlineInfo]
+    twiss_target: str
 
 
 app = FastAPI()
@@ -164,7 +166,7 @@ def loadAxes(plotParams: PlottingParameters) -> AxesPNGData:
 def getBeamSegmentInfo():
     module = importlib.import_module(moduleName)
     classes = inspect.getmembers(module, inspect.isclass)
-    classes_in_module = [cls for name, cls in classes if cls.__module__ == moduleName and cls.__name__ not in ["beamline", "lattice"]]
+    classes_in_module = [cls for name, cls in classes if cls.__module__ == moduleName and cls.__name__ not in ["Beamline", "lattice"]]
     beamSegInfo = {}
 
     for cls in classes_in_module:
@@ -190,7 +192,7 @@ def getBeamSegmentInfo():
 @app.post("/plot-parameters")
 def plot_parameters(graphParams: GraphParameters):
     try:
-        beamline = importlib.import_module("beamline")
+        beamline = importlib.import_module(moduleName)
         beamlist = []
         beamlineData = graphParams.beamline_data
         for segment in beamlineData:
@@ -204,18 +206,28 @@ def plot_parameters(graphParams: GraphParameters):
         ebeam = beam()
         beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000)
 
+        print("Plotting initial beamline up to index", cleanedBeamlist)
+
         #  100 chosen as a large number to speed up initial calculation
-        schem.plotBeamPositionTransform(beam_dist, cleanedBeamlist, plot=False, interval=100)
+        schem.plotBeamPositionTransform(beam_dist, cleanedBeamlist, plot=False, interval=100, rendering=False)
         beam_dist = schem.matrixVariables
 
+        beamObj = Beamline(beamlist)
+        indexOfZSegment = beamObj.findSegmentAtPos(graphParams.target_z_pos)
+
+        print('indexOfZSegment:', indexOfZSegment)  
+
+        newSegment = copy.deepcopy(beamObj.beamline[indexOfZSegment])
+        optimized_beamlist = beamObj.beamline[graphParams.beam_index:indexOfZSegment]
+        optimized_beamlist.append(newSegment)
+
+        for i in optimized_beamlist:
+            print("Printing segment:", i)  
+
         #  WORK ON CHANGING BEAM PARAMETERS AND PLOTTING
-        # i = 0
-        # while (i < 10):
-
-
-
-
-
+        for i in range(10):
+            schem.plotBeamPositionTransform(beam_dist, optimized_beamlist, plot=False, interval=100, rendering=False)
+            
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))

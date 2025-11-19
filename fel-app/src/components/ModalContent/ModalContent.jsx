@@ -8,15 +8,20 @@ import * as yup from "yup";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { API_ROUTE, PRIVATEVARS, MODALPRIVATEVARS } from '../../constants';
 
-const schema = yup
-  .object()
-  .shape({
-    "z-pos": yup.number().required('Z position is required'),
-    "target_parameter": yup.string().required('Parameter selection is required'),
-  })
-  .required()
+const ModalContent = ({ beamline, twissOptions }) => {
+        const schema = yup
+    .object()
+    .shape({
+        "z-pos": yup
+            .number()
+            .required('Z position is required')
+            .min(0, 'Z position must be non-negative')
+            .max(beamline[beamline.length - 1].endPos, 'Z needs to be within the beamline'),
+        "target_parameter": yup.string().required('Parameter selection is required'),
+        "twiss_target": yup.string().required('Select a twiss parameter to plot'),
+    })
+    .required()
 
-const ModalContent = ({ beamline }) => {
     // State to track hovered rectangle and tooltip visibility
     const [hovered, setHovered] = useState(null);
     const [tooltipStyle, setTooltipStyle] = useState({ display: 'none' });
@@ -51,8 +56,9 @@ const ModalContent = ({ beamline }) => {
         const cleanedData = {
             beam_index: beamIndex,
             target_parameter: data.target_parameter,
-            target_z_index: data['z-pos'],
-            beamline_data: cleanedList
+            target_z_pos: data['z-pos'],
+            beamline_data: cleanedList,
+            twiss_target: data.twiss_target
         }
 
         const res = await fetch(API_ROUTE + '/plot-parameters', {
@@ -167,6 +173,8 @@ const ModalContent = ({ beamline }) => {
                                     type="number"
                                     step="any"
                                     {...register('z-pos')}
+                                    min={0}
+                                    max={beamline[beamline.length - 1].endPos}
                                     className={`form-control ${errors['z-pos'] ? 'is-invalid' : ''}`}
                                 />
                                 <div className="invalid-feedback">{errors['z-pos']?.message}</div>
@@ -190,11 +198,21 @@ const ModalContent = ({ beamline }) => {
                                         <Form.Label className='text-danger'>Please select a beam element</Form.Label> 
                                         <input type="hidden" {...register('target_parameter')} value='' />
                                         <div className="invalid-feedback">{errors.target_parameter?.message}</div>
-
                                     </>
                                 )}
-
                             </Form.Group>
+                            <Form.Group>
+                                <Form.Label>Select Twiss Parameter to Plot:</Form.Label>
+                                <select {...register('twiss_target')} className={`form-control ${errors.twiss_target ? 'is-invalid' : ''}`}>
+                                    {twissOptions.map(opt => (
+                                        <option key={opt.modal_val} value={opt.modal_val}>
+                                            {opt.modal_val}
+                                        </option>
+                                    ))}
+                                </select>
+                                <div className="invalid-feedback">{errors.twiss_target?.message}</div>
+                            </Form.Group>
+
                             <Form.Group className="form-group">
                                 <Row className="pt-3">
                                     <Col>

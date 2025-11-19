@@ -40,14 +40,14 @@ function App()
     const [errorMessage, setErrorMessage] = useState('');
     const [scroll, setScroll] = useState(false); // State for the checkbox
     const [twissOptions, setTwissOptions] = useState([
-                                    { value: '\\epsilon (\\pi.mm.mrad)', label: '\\epsilon (\\pi.mm.mrad)' },
-                                    { value: '\\alpha', label: '\\alpha' },
-                                    { value: '\\beta (m)', label: '\\beta (m)' },
-                                    { value: '\\gamma (rad/m)', label: '\\gamma (rad/m)' },
-                                    { value: 'D (mm)', label: 'D (mm)' },
-                                    { value: 'D\' (mrad)', label: 'D\' (mrad)' },
-                                    { value: '\\phi (deg)', label: '\\phi (deg)' },
-                                    { value: 'Envelope\\ E (mm)', label: 'Envelope\\ E (mm)' }
+                                    { value: '\\epsilon (\\pi.mm.mrad)', label: '\\epsilon (\\pi.mm.mrad)', modal_val: 'emittance' },
+                                    { value: '\\alpha', label: '\\alpha', modal_val: 'alpha' },
+                                    { value: '\\beta (m)', label: '\\beta (m)', modal_val: 'beta' },
+                                    { value: '\\gamma (rad/m)', label: '\\gamma (rad/m)', modal_val: 'gamma' },
+                                    { value: 'D (mm)', label: 'D (mm)', modal_val: 'dispersion' },
+                                    { value: 'D\' (mrad)', label: 'D\' (mrad)', modal_val: 'dispersion_prime' },
+                                    { value: '\\phi (deg)', label: '\\phi (deg)', modal_val: 'angle' },
+                                    { value: 'Envelope\\ E (mm)', label: 'Envelope\\ E (mm)', modal_val: 'envelope' }
                                 ]);
     const [currentTwissParam, setCurrentTwiss] = useState({value: 'Envelope\\ E (mm)',
                                                            label: 'Envelope\\ E (mm)'});
@@ -321,7 +321,7 @@ function App()
         >
             <div className="modal-content">
                 {/* CHANGE */}
-                <ModalContent beamline={beamlistSelected} />
+                <ModalContent beamline={beamlistSelected} twissOptions={twissOptions} />
             </div>
         </Modal> 
         <div className="layout">

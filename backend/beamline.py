@@ -666,7 +666,7 @@ class dipole_wedge(lattice):
 
 
 #NOTE: getSymbolicMatrice() must use all sympy methods and functions, NOT numpy
-class beamline:
+class Beamline:
     class fringeField(lattice):
         B = 0 #  Teslas
         color = 'brown'
@@ -755,6 +755,13 @@ class beamline:
             seg.startPos = self.totalLen
             self.totalLen += seg.length
             seg.endPos = self.totalLen
+
+    def findSegmentAtPos(self, pos):
+        for i in range(len(self.beamline)):
+            seg = self.beamline[i]
+            if (pos >= seg.startPos and pos <= seg.endPos):
+                return i
+        return -1
 
      #  may use other interpolation methods (cubic, spline, etc)  
      # x = 0 = start of end of segment     

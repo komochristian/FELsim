@@ -320,7 +320,8 @@ class draw_beamline:
 
     def plotBeamPositionTransform(self, matrixVariables, beamSegments, interval: float = -1, defineLim = True,
                                    saveData = False, saveFig = False, shape = {}, plot = True, spacing = True,
-                                   matchScaling = True, showIndice = False, scatter=False, apiCall = False):
+                                   matchScaling = True, showIndice = False, scatter=False, apiCall = False,
+                                   rendering = True):
         '''
         Simulates movement of particles through an accelerator beamline
 
@@ -354,6 +355,8 @@ class draw_beamline:
             Option to display particle data as hexbins or a scatter color plot
         apicall: bool, optional
             If function is being called from API, changes return type to be compatible with nivo plotting
+        rendering: bool, optional
+            If false, skips all MatPlotLib plotting and rendering steps for faster data generation
 
         NOTE:
         shape is a dictionary defined as:
@@ -467,14 +470,16 @@ class draw_beamline:
         if matchScaling and defineLim:
             self._setEqualAxisScaling(maxVals, minVals)
 
-        apiAxData, ax5 = self.currentcreateUI(plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
-             x_axis, spacing, beamSegments, showIndice, plot, apiCall)
-        lineAxElements = {'axis': ax5, # temporary placeholder ax
+        if rendering:
+            apiAxData, ax5 = self.currentcreateUI(plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
+                x_axis, spacing, beamSegments, showIndice, plot, apiCall)
+            
+        if apiCall:
+            lineAxElements = {'axis': ax5, # temporary placeholder ax
                         'twiss': twiss_aggregated_df, # All other elements for nivo plotting
                         'x_axis': x_axis,
                         'beamsegment': beamSegments
                          }
-        if apiCall:
             return apiAxData, lineAxElements
 
         return twiss_aggregated_df
