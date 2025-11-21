@@ -52,10 +52,13 @@ class AxesPNGData(BaseModel):
 class GraphParameters(BaseModel):
     beam_index: int
     target_parameter: str
-    target_z_pos: float
+    target_s_pos: float
     beamline_data: list[BeamlineInfo]
     twiss_target: str
 
+class GraphPlotData(BaseModel):
+    parameter_value: float
+    data: Dict[str, float]
 
 app = FastAPI()
 ebeam = beam()
@@ -190,7 +193,10 @@ def getBeamSegmentInfo():
     return beamSegInfo
 
 @app.post("/plot-parameters")
-def plot_parameters(graphParams: GraphParameters):
+def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
+    LABELMAPPING = {'emittance': r'$\epsilon$ ($\pi$.mm.mrad)','alpha': r'$\alpha$','beta': r'$\beta$ (m)',
+       'gamma': r'$\gamma$ (rad/m)', 'dispersion': r'$D$ (mm)', 'dispersion_prime': r'$D^{\prime}$ (mrad)', 'angle': r'$\phi$ (deg)',
+       'envelope': r'Envelope $E$ (mm)'}
     try:
         beamline = importlib.import_module(moduleName)
         beamlist = []
@@ -213,27 +219,34 @@ def plot_parameters(graphParams: GraphParameters):
         beam_dist = schem.matrixVariables
 
         beamObj = Beamline(beamlist)
-        indexOfZSegment = beamObj.findSegmentAtPos(graphParams.target_z_pos)
+        indexOfSSegment = beamObj.findSegmentAtPos(graphParams.target_s_pos)
 
-        print('indexOfZSegment:', indexOfZSegment)  
-
-        newSegment = copy.deepcopy(beamObj.beamline[indexOfZSegment])
-        optimized_beamlist = beamObj.beamline[graphParams.beam_index:indexOfZSegment]
+        newSegment = copy.deepcopy(beamObj.beamline[indexOfSSegment])
+        newSegment.length = graphParams.target_s_pos - beamObj.beamline[indexOfSSegment - 1].endPos
+        optimized_beamlist = beamObj.beamline[graphParams.beam_index:indexOfSSegment]
         optimized_beamlist.append(newSegment)
 
         for i in optimized_beamlist:
-            print("Printing segment:", i)  
+            print("Printing segment:", i) 
 
-        #  WORK ON CHANGING BEAM PARAMETERS AND PLOTTING
+        plotInfo = [] 
+
+        #  make user adjustable for steps and range
         for i in range(10):
-            schem.plotBeamPositionTransform(beam_dist, optimized_beamlist, plot=False, interval=100, rendering=False)
-            
+            setattr(optimized_beamlist[0], graphParams.target_parameter, i)
+            twiss = schem.plotBeamPositionTransform(beam_dist, optimized_beamlist, plot=False, interval=100, rendering=False)
+            col = LABELMAPPING.get(graphParams.twiss_target, graphParams.twiss_target)
+            print(col)
+            plotDict = {f'parameter_value': i, 'data': {name: axis[-1] for name, axis in twiss[col].items()}}
+            print(plotDict)
+            plotInfo.append(plotDict)
+
+        return plotInfo
+    
     except Exception as e:
         print(e)
         raise HTTPException(status_code=400, detail=str(e))
     
-    return {"message": "Success"}
-
 # Don't use, doesn't check for changes and server reloads
 #if __name__ == "__main__":
     #uvicorn.run(app, host="127.0.0.1", port=8000)

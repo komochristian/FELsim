@@ -1,10 +1,10 @@
 import { ResponsiveLine } from '@nivo/line'
 import { useState } from 'react';
 
-const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll, setScroll}) => {
+const LineGraph = ({totalLen, twissData, setSValue, beamline, twissAxis, scroll, setScroll}) => {
     const [unselectedAxis, setUnselectedAxis] = useState([]);
 
-    // Remove Duplicate z indices in the array
+    // Remove Duplicate s indices in the array
     const removeDuplicateX = (dataArray) => {
         const seen = new Set();
         return dataArray.filter(point => {
@@ -25,7 +25,7 @@ const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll,
         cleanedTwissData[2].color = !unselectedAxis.includes(cleanedTwissData[2].id) ? '#00CF00' : '#000000'; // Green
     }
 
-    // WORK IN PROGRESS TO DISPLAY Z
+    // WORK IN PROGRESS TO DISPLAY S
     // const CustomTooltip = ({ point }) => (
     //     <div
     //         style={{
@@ -69,17 +69,17 @@ const LineGraph = ({totalLen, twissData, setZValue, beamline, twissAxis, scroll,
         enableSlices={'x'}
         // tooltip={({point}) => <CustomTooltip point={point} />}
 
-        //onClick={(e) => setZValue(e.points[0].data['x'])} // USE if enableSlices IS 'x'
+        //onClick={(e) => setSValue(e.points[0].data['x'])} // USE if enableSlices IS 'x'
 
         onClick={
             (e) => {
-                setZValue(e.points[0].data['x']);
+                setSValue(e.points[0].data['x']);
                 if (scroll) setScroll(false);
             }
         }
         onMouseMove={
             scroll
-                ? (e) => setZValue(e.points[0].data['x'])
+                ? (e) => setSValue(e.points[0].data['x'])
                 : undefined
         }
 

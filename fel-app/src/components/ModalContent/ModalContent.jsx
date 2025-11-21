@@ -8,15 +8,15 @@ import * as yup from "yup";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { API_ROUTE, PRIVATEVARS, MODALPRIVATEVARS } from '../../constants';
 
-const ModalContent = ({ beamline, twissOptions }) => {
+const ModalContent = ({ beamline, twissOptions, showErrorWindow }) => {
         const schema = yup
     .object()
     .shape({
-        "z-pos": yup
+        "s-pos": yup
             .number()
-            .required('Z position is required')
-            .min(0, 'Z position must be non-negative')
-            .max(beamline[beamline.length - 1].endPos, 'Z needs to be within the beamline'),
+            .required('S position is required')
+            .min(0, 'S position must be non-negative')
+            .max(beamline[beamline.length - 1].endPos, 'S needs to be within the beamline'),
         "target_parameter": yup.string().required('Parameter selection is required'),
         "twiss_target": yup.string().required('Select a twiss parameter to plot'),
     })
@@ -56,7 +56,7 @@ const ModalContent = ({ beamline, twissOptions }) => {
         const cleanedData = {
             beam_index: beamIndex,
             target_parameter: data.target_parameter,
-            target_z_pos: data['z-pos'],
+            target_s_pos: data['s-pos'],
             beamline_data: cleanedList,
             twiss_target: data.twiss_target
         }
@@ -68,6 +68,17 @@ const ModalContent = ({ beamline, twissOptions }) => {
             },
             body: JSON.stringify(cleanedData, null, 2),
         });
+        // console.log('Res:', res);
+        if (!res.ok) {
+            const errorData = await res.json();
+            showErrorWindow(errorData.detail || errorData);
+            return 
+        }
+        const responseData = await res.json();
+        console.log('Response Data:', responseData);
+        
+        
+        // WORK HERE, INSERT CHART LIBRARY FOR DATA
         
       };
 
@@ -172,12 +183,12 @@ const ModalContent = ({ beamline, twissOptions }) => {
                                 <input
                                     type="number"
                                     step="any"
-                                    {...register('z-pos')}
-                                    min={0}
+                                    {...register('s-pos')}
+                                    min={beamElementSelected?.endPos || 0}
                                     max={beamline[beamline.length - 1].endPos}
-                                    className={`form-control ${errors['z-pos'] ? 'is-invalid' : ''}`}
+                                    className={`form-control ${errors['s-pos'] ? 'is-invalid' : ''}`}
                                 />
-                                <div className="invalid-feedback">{errors['z-pos']?.message}</div>
+                                <div className="invalid-feedback">{errors['s-pos']?.message}</div>
                             </Form.Group>
                             <Form.Group>
                                 {beamElementSelected ? (

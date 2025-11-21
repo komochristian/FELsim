@@ -29,13 +29,13 @@ function App()
     const [dotGraphs, setDotGraphs] = useState([]);
     const [lineGraph, setLineGraph] = useState(null);
     const [beamlistSelected, setSelectedItems] = useState([]);
-    const [currentZ, setZValue] = useState(0);
+    const [currentS, setSValue] = useState(0);
     const [currentBeamType, setBeamInput] = useState('electron');
     const [beamtypeToPass, setBeamtypeToPass] = useState('electron');
     const [twissDf, setTwissDf] = useState([]);
     const [totalLen, setTotalLen] = useState(0);
     const [numOfParticles, setParticleNum] = useState(1000);
-    const [zInterval, setZInterval] = useState(0.1);
+    const [sInterval, setSInterval] = useState(0.1);
     const [showError, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [scroll, setScroll] = useState(false); // State for the checkbox
@@ -60,7 +60,7 @@ function App()
     };
     
     const errorCatcher = () => {
-        if (zInterval <= 0) {
+        if (sInterval <= 0) {
             showErrorWindow("Please use an interval value greater than 0");
             return true;
         };
@@ -91,7 +91,7 @@ function App()
     }, [currentBeamType]);
 
     useEffect(() => {
-        setZValue(() => 0);
+        setSValue(() => 0);
     }, [dotGraphs]);     
 
     useEffect(() => {
@@ -112,15 +112,15 @@ function App()
     //  Calculates the start and end position of the entire beamline,
     //  Assumes segment format is already correct
     const beamlistHandler = (segList) => {
-        let zCurrent = 0;
+        let sCurrent = 0;
         const cleanedSegList = segList.map((obj, i) => {
-            obj['startPos'] = zCurrent;
-            zCurrent += obj['length'];
-            obj['endPos'] = zCurrent;
+            obj['startPos'] = sCurrent;
+            sCurrent += obj['length'];
+            obj['endPos'] = sCurrent;
             obj.id = i;
             return obj;
         })
-        setTotalLen(zCurrent);
+        setTotalLen(sCurrent);
         setSelectedItems(cleanedSegList);
     };
 
@@ -235,7 +235,7 @@ function App()
             beamlineData: cleanedList,
             num_particles: numOfParticles,
             beamType: beamtypeToPass,
-            interval: zInterval
+            interval: sInterval
         }
     
         const jsonBody = JSON.stringify(plottingParams, null, 2); 
@@ -321,7 +321,7 @@ function App()
         >
             <div className="modal-content">
                 {/* CHANGE */}
-                <ModalContent beamline={beamlistSelected} twissOptions={twissOptions} />
+                <ModalContent beamline={beamlistSelected} twissOptions={twissOptions} showErrorWindow={showErrorWindow} />
             </div>
         </Modal> 
         <div className="layout">
@@ -427,11 +427,11 @@ function App()
                         onChange={(e) => setParticleNum(e.target.value)}
                         min={3}
                 />
-                <label htmlFor="interval" className="forLabels">Z axis interval</label>
-                <input defaultValue={zInterval}
+                <label htmlFor="interval" className="forLabels">S axis interval</label>
+                <input defaultValue={sInterval}
                     type="number"
                         name="interval" 
-                        onChange={(e) => setZInterval(e.target.value)}
+                        onChange={(e) => setSInterval(e.target.value)}
                 />
             </div>
           <div className="toggleLegend">
@@ -469,11 +469,11 @@ function App()
         </div>
         }  
           <div className={`main-content`}>
-                <img src={dotGraphs.size > 0 ? dotGraphs.get(currentZ) : null} alt="Please run simulation"/>
+                <img src={dotGraphs.size > 0 ? dotGraphs.get(currentS) : null} alt="Please run simulation"/>
           </div>
           <div className="twiss-graph">
                 <LineGraph twissData={twissDf}
-                           setZValue={setZValue} 
+                           setSValue={setSValue} 
                            beamline={beamlistSelected}
                            totalLen={totalLen}
                            twissAxis={currentTwissParam}
