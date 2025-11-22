@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Body, HTTPException
 from pydantic import BaseModel
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from ebeam import beam
 from beamline import *
 from schematic import *
@@ -14,6 +14,7 @@ import uvicorn
 import os
 from dotenv import load_dotenv
 import copy
+import math
 
 load_dotenv('../.env')  # Only during dev testing when not using Dockerfile...
 FRONTEND_PORT = os.getenv('FRONTEND_PORT')
@@ -58,7 +59,7 @@ class GraphParameters(BaseModel):
 
 class GraphPlotData(BaseModel):
     parameter_value: float
-    data: Dict[str, float]
+    data: Dict[str, float | None]
 
 app = FastAPI()
 ebeam = beam()
@@ -237,10 +238,12 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
             twiss = schem.plotBeamPositionTransform(beam_dist, optimized_beamlist, plot=False, interval=100, rendering=False)
             col = LABELMAPPING.get(graphParams.twiss_target, graphParams.twiss_target)
             print(col)
-            plotDict = {f'parameter_value': i, 'data': {name: axis[-1] for name, axis in twiss[col].items()}}
+            plotDict = {f'parameter_value': i, 'data': {name: None if axis[-1] is None or math.isnan(axis[-1]) or math.isinf(axis[-1]) else axis[-1]
+                                                        for name, axis in twiss[col].items()}}
             print(plotDict)
             plotInfo.append(plotDict)
 
+        # RETURN ALL TWISS, MAKE USER SELECT WHICH ONE
         return plotInfo
     
     except Exception as e:

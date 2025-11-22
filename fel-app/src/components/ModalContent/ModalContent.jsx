@@ -7,6 +7,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { API_ROUTE, PRIVATEVARS, MODALPRIVATEVARS } from '../../constants';
+import ParameterGraph from '../ParameterGraph/ParameterGraph';
 
 const ModalContent = ({ beamline, twissOptions, showErrorWindow }) => {
         const schema = yup
@@ -27,6 +28,8 @@ const ModalContent = ({ beamline, twissOptions, showErrorWindow }) => {
     const [tooltipStyle, setTooltipStyle] = useState({ display: 'none' });
     const [beamElementSelected, setSelectedElement] = useState(null);
     const [beamIndex, setBeamIndex] = useState(null);
+    const [plotData, setPlotData] = useState(null);
+    const [simulatedData, setSimulatedData] = useState(null);
 
     const {
         register,
@@ -60,6 +63,7 @@ const ModalContent = ({ beamline, twissOptions, showErrorWindow }) => {
             beamline_data: cleanedList,
             twiss_target: data.twiss_target
         }
+        setSimulatedData(cleanedData);
 
         const res = await fetch(API_ROUTE + '/plot-parameters', {
             method: 'POST',
@@ -76,10 +80,7 @@ const ModalContent = ({ beamline, twissOptions, showErrorWindow }) => {
         }
         const responseData = await res.json();
         console.log('Response Data:', responseData);
-        
-        
-        // WORK HERE, INSERT CHART LIBRARY FOR DATA
-        
+        setPlotData(responseData);
       };
 
     // Handle hover over a rectangle
@@ -174,7 +175,7 @@ const ModalContent = ({ beamline, twissOptions, showErrorWindow }) => {
                     </Card.Body>
                 </Card>
             </Col>
-            <Col md={4}>
+            <Col md={3}>
                 <Card>
                     <Card.Body>
                         <Form onSubmit={handleSubmit(onSubmit)}>
@@ -236,6 +237,13 @@ const ModalContent = ({ beamline, twissOptions, showErrorWindow }) => {
                         </Form>
                     </Card.Body>
                 </Card>
+            </Col>
+            <Col md={6}>
+                <ParameterGraph
+                    data={plotData}
+                    parameter_name={simulatedData?.target_parameter | ''}
+                    twiss_target={simulatedData?.twiss_target || ''}
+                />
             </Col>
         </Row>
         </Container>
