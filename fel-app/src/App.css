@@ -232,7 +232,7 @@ input[type="number"] {
 
   .modal-content {
     max-height: 80vh; /* Ensure the content scrolls if it overflows */
-    overflow: auto; /* Add scrollbars for overflowing content */
+    overflow: visible; /* Add scrollbars for overflowing content */
     padding: 20px;
     display: flex; /* Optional: Center the SVG if needed */
     justify-content: center;

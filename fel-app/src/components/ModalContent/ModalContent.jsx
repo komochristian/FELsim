@@ -22,6 +22,8 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
             .min(0, 'S position must be non-negative')
             .max(beamline[beamline.length - 1].endPos, 'S needs to be within the beamline'),
         "target_parameter": yup.string().required('Parameter selection is required'),
+        "domain_range": yup.number().default(10).min(0, 'Domain range must be non-negative'),
+        "custom_step": yup.number().default(1).moreThan(0, 'Step size must be positive'),
     })
     .required()
 
@@ -66,6 +68,8 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
             target_parameter: data.target_parameter,
             target_s_pos: data['s-pos'],
             beamline_data: cleanedList,
+            domain_range: data['domain_range'],
+            custom_step: data['custom_step'],
         }
         setSimulatedData(cleanedData);
 
@@ -183,7 +187,7 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
                 <Row>
                     <Card>
                         <Card.Body>
-                            <Card.Title>Select Twiss Parameter to Plot:</Card.Title>
+                            <Card.Title>Twiss Parameter</Card.Title>
                             <Select className='select-container'
                                 options={TWISS_OPTIONS}
                                 value={currentTwissParam}
@@ -238,6 +242,35 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
                                     </>
                                 )}
                             </Form.Group>
+                            <Row>
+                                <Col>
+                                    <Form.Group>
+                                        <Form.Label>Domain to plot</Form.Label>
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            {...register('domain_range')}
+                                            min={0}
+                                            className={`form-control ${errors['domain_range'] ? 'is-invalid' : ''}`}
+                                        />
+                                        <div className="invalid-feedback">{errors.domain_range?.message}</div>
+                                    </Form.Group>
+                                </Col>
+                                <Col>
+                                    <Form.Group>
+                                        <Form.Label>Custom step</Form.Label>
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            default={1}
+                                            {...register('custom_step')}
+                                            min={0}
+                                            className={`form-control ${errors.custom_step ? 'is-invalid' : ''}`}
+                                        />
+                                        <div className="invalid-feedback">{errors.custom_step?.message}</div>
+                                    </Form.Group>
+                                </Col>
+                            </Row>
                             <Form.Group className="form-group">
                                 <Row className="pt-3">
                                     <Col>

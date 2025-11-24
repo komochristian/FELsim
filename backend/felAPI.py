@@ -15,6 +15,7 @@ import os
 from dotenv import load_dotenv
 import copy
 import math
+import numpy as np
 
 load_dotenv('../.env')  # Only during dev testing when not using Dockerfile...
 FRONTEND_PORT = os.getenv('FRONTEND_PORT')
@@ -55,6 +56,8 @@ class GraphParameters(BaseModel):
     target_parameter: str
     target_s_pos: float
     beamline_data: list[BeamlineInfo]
+    domain_range: int | float = 10
+    custom_step: int | float = 1
 
 class GraphPlotPointResponse(BaseModel):
     x: float | None
@@ -243,9 +246,10 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
         #     print("Printing segment:", i) 
 
         plotInfo = [] 
+        domain_range = np.arange(0, graphParams.domain_range, graphParams.custom_step).tolist()
+        if graphParams.domain_range not in domain_range: domain_range.append(graphParams.domain_range)
 
-        #  make user adjustable for steps and range
-        for i in range(10):
+        for i in domain_range:
             setattr(optimized_beamlist[0], graphParams.target_parameter, i)
             twiss = schem.plotBeamPositionTransform(beam_dist, optimized_beamlist, plot=False, interval=100, rendering=False)
             # col = LABELMAPPING.get(graphParams.twiss_target, graphParams.twiss_target)
@@ -259,7 +263,7 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
                                     for col in twiss.columns
                                  ]
                         }
-            print(plotDict)
+            # print(plotDict)
             plotInfo.append(plotDict)
 
         # RETURN ALL TWISS, MAKE USER SELECT WHICH ONE
