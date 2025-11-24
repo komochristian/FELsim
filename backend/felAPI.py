@@ -55,11 +55,16 @@ class GraphParameters(BaseModel):
     target_parameter: str
     target_s_pos: float
     beamline_data: list[BeamlineInfo]
-    twiss_target: str
+
+class GraphPlotPointResponse(BaseModel):
+    x: float | None
+    y: float | None
+    z: float | None
+    twiss_parameter: str
 
 class GraphPlotData(BaseModel):
     parameter_value: float
-    data: Dict[str, float | None]
+    data: List[GraphPlotPointResponse]
 
 app = FastAPI()
 ebeam = beam()
@@ -195,9 +200,16 @@ def getBeamSegmentInfo():
 
 @app.post("/plot-parameters")
 def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
-    LABELMAPPING = {'emittance': r'$\epsilon$ ($\pi$.mm.mrad)','alpha': r'$\alpha$','beta': r'$\beta$ (m)',
-       'gamma': r'$\gamma$ (rad/m)', 'dispersion': r'$D$ (mm)', 'dispersion_prime': r'$D^{\prime}$ (mrad)', 'angle': r'$\phi$ (deg)',
-       'envelope': r'Envelope $E$ (mm)'}
+    LABELMAPPING = {
+        r'$\epsilon$ ($\pi$.mm.mrad)': 'emittance',
+        r'$\alpha$': 'alpha',
+        r'$\beta$ (m)': 'beta',
+        r'$\gamma$ (rad/m)': 'gamma',
+        r'$D$ (mm)': 'dispersion',
+        r'$D^{\prime}$ (mrad)': 'dispersion_prime',
+        r'$\phi$ (deg)': 'angle',
+        r'Envelope $E$ (mm)': 'envelope'
+    }
     try:
         beamline = importlib.import_module(moduleName)
         beamlist = []
@@ -213,7 +225,7 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
         ebeam = beam()
         beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000)
 
-        print("Plotting initial beamline up to index", cleanedBeamlist)
+        # print("Plotting initial beamline up to segment", cleanedBeamlist)
 
         #  100 chosen as a large number to speed up initial calculation
         schem.plotBeamPositionTransform(beam_dist, cleanedBeamlist, plot=False, interval=100, rendering=False)
@@ -227,8 +239,8 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
         optimized_beamlist = beamObj.beamline[graphParams.beam_index:indexOfSSegment]
         optimized_beamlist.append(newSegment)
 
-        for i in optimized_beamlist:
-            print("Printing segment:", i) 
+        # for i in optimized_beamlist:
+        #     print("Printing segment:", i) 
 
         plotInfo = [] 
 
@@ -236,10 +248,17 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
         for i in range(10):
             setattr(optimized_beamlist[0], graphParams.target_parameter, i)
             twiss = schem.plotBeamPositionTransform(beam_dist, optimized_beamlist, plot=False, interval=100, rendering=False)
-            col = LABELMAPPING.get(graphParams.twiss_target, graphParams.twiss_target)
-            print(col)
-            plotDict = {f'parameter_value': i, 'data': {name: None if axis[-1] is None or math.isnan(axis[-1]) or math.isinf(axis[-1]) else axis[-1]
-                                                        for name, axis in twiss[col].items()}}
+            # col = LABELMAPPING.get(graphParams.twiss_target, graphParams.twiss_target)
+            plotDict = {f'parameter_value': i, 
+                         'data': [
+                                    {
+                                        **{name: None if axis[-1] is None or math.isnan(axis[-1]) or math.isinf(axis[-1]) else axis[-1]
+                                        for name, axis in twiss[col].items()},
+                                        'twiss_parameter': LABELMAPPING.get(col, col)
+                                    }
+                                    for col in twiss.columns
+                                 ]
+                        }
             print(plotDict)
             plotInfo.append(plotDict)
 

@@ -20,7 +20,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import ModalContent from './components/ModalContent/ModalContent';
-import { PRIVATEVARS, API_ROUTE } from './constants';
+import { PRIVATEVARS, API_ROUTE, TWISS_OPTIONS } from './constants';
 
 function App()
 {
@@ -39,18 +39,9 @@ function App()
     const [showError, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [scroll, setScroll] = useState(false); // State for the checkbox
-    const [twissOptions, setTwissOptions] = useState([
-                                    { value: '\\epsilon (\\pi.mm.mrad)', label: '\\epsilon (\\pi.mm.mrad)', modal_val: 'emittance' },
-                                    { value: '\\alpha', label: '\\alpha', modal_val: 'alpha' },
-                                    { value: '\\beta (m)', label: '\\beta (m)', modal_val: 'beta' },
-                                    { value: '\\gamma (rad/m)', label: '\\gamma (rad/m)', modal_val: 'gamma' },
-                                    { value: 'D (mm)', label: 'D (mm)', modal_val: 'dispersion' },
-                                    { value: 'D\' (mrad)', label: 'D\' (mrad)', modal_val: 'dispersion_prime' },
-                                    { value: '\\phi (deg)', label: '\\phi (deg)', modal_val: 'angle' },
-                                    { value: 'Envelope\\ E (mm)', label: 'Envelope\\ E (mm)', modal_val: 'envelope' }
-                                ]);
     const [currentTwissParam, setCurrentTwiss] = useState({value: 'Envelope\\ E (mm)',
-                                                           label: 'Envelope\\ E (mm)'});
+                                                           label: 'Envelope\\ E (mm)',
+                                                           modal_val: 'envelope'});
     const [selectedMenu, setSelectedMenu] = useState(null);
 
     const showErrorWindow = (message) => {
@@ -166,7 +157,7 @@ function App()
         });
        
         const grouped = twissPlotData.reduce((acc, item, i) => {
-          const label = twissOptions[Math.floor(i / 3)].label;
+          const label = TWISS_OPTIONS[Math.floor(i / 3)].label;
         
           // Check if label group already exists
           //let group = acc.find(g => g.label === label);
@@ -321,7 +312,7 @@ function App()
         >
             <div className="modal-content">
                 {/* CHANGE */}
-                <ModalContent beamline={beamlistSelected} twissOptions={twissOptions} showErrorWindow={showErrorWindow} />
+                <ModalContent beamline={beamlistSelected} showErrorWindow={showErrorWindow} />
             </div>
         </Modal> 
         <div className="layout">
@@ -444,7 +435,7 @@ function App()
                 Enable Scroll
             </label>
             <Select className='select-container'
-                    options={twissOptions}
+                    options={TWISS_OPTIONS}
                     value={currentTwissParam}
                     onChange={setCurrentTwiss}
                     getOptionLabel={e => <InlineMath math={e.label} />}

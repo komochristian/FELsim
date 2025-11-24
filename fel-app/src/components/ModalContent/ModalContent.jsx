@@ -6,10 +6,13 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { API_ROUTE, PRIVATEVARS, MODALPRIVATEVARS } from '../../constants';
+import { API_ROUTE, PRIVATEVARS, MODALPRIVATEVARS, TWISS_OPTIONS } from '../../constants';
 import ParameterGraph from '../ParameterGraph/ParameterGraph';
+import Select from 'react-select';
+import { InlineMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
 
-const ModalContent = ({ beamline, twissOptions, showErrorWindow }) => {
+const ModalContent = ({ beamline, showErrorWindow }) => {
         const schema = yup
     .object()
     .shape({
@@ -19,7 +22,6 @@ const ModalContent = ({ beamline, twissOptions, showErrorWindow }) => {
             .min(0, 'S position must be non-negative')
             .max(beamline[beamline.length - 1].endPos, 'S needs to be within the beamline'),
         "target_parameter": yup.string().required('Parameter selection is required'),
-        "twiss_target": yup.string().required('Select a twiss parameter to plot'),
     })
     .required()
 
@@ -30,6 +32,9 @@ const ModalContent = ({ beamline, twissOptions, showErrorWindow }) => {
     const [beamIndex, setBeamIndex] = useState(null);
     const [plotData, setPlotData] = useState(null);
     const [simulatedData, setSimulatedData] = useState(null);
+    const [currentTwissParam, setCurrentTwiss] = useState({value: 'Envelope\\ E (mm)',
+                                                           label: 'Envelope\\ E (mm)',
+                                                           modal_val: 'envelope'});
 
     const {
         register,
@@ -41,7 +46,7 @@ const ModalContent = ({ beamline, twissOptions, showErrorWindow }) => {
       });
 
       const onSubmit = async (data) => {
-        console.log('Form submitted:', data);
+        // console.log('Form submitted:', data);
 
         const cleanedList = beamline.map(obj => {
             const key = obj.name;
@@ -54,14 +59,13 @@ const ModalContent = ({ beamline, twissOptions, showErrorWindow }) => {
             };
         });
 
-        console.log('cleanedList:', cleanedList);
+        // console.log('cleanedList:', cleanedList);
 
         const cleanedData = {
             beam_index: beamIndex,
             target_parameter: data.target_parameter,
             target_s_pos: data['s-pos'],
             beamline_data: cleanedList,
-            twiss_target: data.twiss_target
         }
         setSimulatedData(cleanedData);
 
@@ -157,23 +161,44 @@ const ModalContent = ({ beamline, twissOptions, showErrorWindow }) => {
         </Row>
         <Row className="justify-content-center">
             <Col md={3}>
-                <Card>
-                    <Card.Body>
-                        <Card.Title>Beam element selected</Card.Title>
-                        <Card.Text> 
-                            {beamElementSelected ? (
-                                <div>
-                                    <p><strong>{beamElementSelected.name}</strong></p>
-                                    <p><strong>Start Position:</strong> {Math.round(beamElementSelected.startPos * 10000) /10000} m</p>
-                                    <p><strong>End Position:</strong> {Math.round(beamElementSelected.endPos * 10000) /10000} m</p>
-                                </div>
-                            ) : (
-                                <p>No beam element selected.</p>
-                            )}
+                <Row className="mb-2">
+                    <Card>
+                        <Card.Body>
+                            <Card.Title>Beam element selected</Card.Title>
+                            <Card.Text> 
+                                {beamElementSelected ? (
+                                    <div>
+                                        <p><strong>{beamElementSelected.name}</strong></p>
+                                        <p><strong>Start Position:</strong> {Math.round(beamElementSelected.startPos * 10000) /10000} m</p>
+                                        <p><strong>End Position:</strong> {Math.round(beamElementSelected.endPos * 10000) /10000} m</p>
+                                    </div>
+                                ) : (
+                                    <p>No beam element selected.</p>
+                                )}
 
-                        </Card.Text>
-                    </Card.Body>
-                </Card>
+                            </Card.Text>
+                        </Card.Body>
+                    </Card>
+                </Row>
+                <Row>
+                    <Card>
+                        <Card.Body>
+                            <Card.Title>Select Twiss Parameter to Plot:</Card.Title>
+                            <Select className='select-container'
+                                options={TWISS_OPTIONS}
+                                value={currentTwissParam}
+                                onChange={setCurrentTwiss}
+                                getOptionLabel={e => <InlineMath math={e.label} />}
+                                getSingleValueLabel={e => <InlineMath math={e.modal_val} />}
+                                menuPortalTarget={document.body}
+                                menuPosition="fixed"
+                                styles={{
+                                    menuPortal: base => ({ ...base, zIndex: 9999 })
+                                }}
+                            />
+                        </Card.Body>
+                    </Card>
+                </Row>
             </Col>
             <Col md={3}>
                 <Card>
@@ -213,18 +238,6 @@ const ModalContent = ({ beamline, twissOptions, showErrorWindow }) => {
                                     </>
                                 )}
                             </Form.Group>
-                            <Form.Group>
-                                <Form.Label>Select Twiss Parameter to Plot:</Form.Label>
-                                <select {...register('twiss_target')} className={`form-control ${errors.twiss_target ? 'is-invalid' : ''}`}>
-                                    {twissOptions.map(opt => (
-                                        <option key={opt.modal_val} value={opt.modal_val}>
-                                            {opt.modal_val}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className="invalid-feedback">{errors.twiss_target?.message}</div>
-                            </Form.Group>
-
                             <Form.Group className="form-group">
                                 <Row className="pt-3">
                                     <Col>
@@ -242,42 +255,12 @@ const ModalContent = ({ beamline, twissOptions, showErrorWindow }) => {
                 <ParameterGraph
                     data={plotData}
                     parameter_name={simulatedData?.target_parameter | ''}
-                    twiss_target={simulatedData?.twiss_target || ''}
+                    twiss_target={currentTwissParam.modal_val || ''}
                 />
             </Col>
         </Row>
         </Container>
   );
 };
-
-{/* <Card.Body>
-              <Form onSubmit={handleSubmit(onSubmit)}>
-                <Form.Group>
-                  <Form.Label>Note</Form.Label>
-                  <input
-                    type="text"
-                    {...register('note')}
-                    className={`form-control ${errors.note ? 'is-invalid' : ''}`}
-                  />
-                  <div className="invalid-feedback">{errors.note?.message}</div>
-                </Form.Group>
-                <input type="hidden" {...register('owner')} value={currentUser} />
-                <input type="hidden" {...register('contactId')} value={contactId} />
-                <Form.Group className="form-group">
-                  <Row className="pt-3">
-                    <Col>
-                      <Button type="submit" variant="primary">
-                        Submit
-                      </Button>
-                    </Col>
-                    <Col>
-                      <Button type="button" onClick={() => reset()} variant="warning" className="float-right">
-                        Reset
-                      </Button>
-                    </Col>
-                  </Row>
-                </Form.Group>
-              </Form>
-            </Card.Body> */}
 
 export default ModalContent;

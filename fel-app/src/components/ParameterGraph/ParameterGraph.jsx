@@ -1,6 +1,5 @@
 import { ResponsiveLine } from "@nivo/line";
 import { useState } from "react";
-import { set } from "react-hook-form";
 
 const ParameterGraph = ({data, parameter_name, twiss_target}) => {
     const [unselectedAxis, setUnselectedAxis] = useState([]);
@@ -17,12 +16,14 @@ const ParameterGraph = ({data, parameter_name, twiss_target}) => {
     
         inputArray.forEach(entry => {
             const { parameter_value, data } = entry;
-            series.x.push({ x: parameter_value, y: data.x });
-            series.y.push({ x: parameter_value, y: data.y });
-            series.z.push({ x: parameter_value, y: data.z });
+            const plotData = data.filter(d => d.twiss_parameter === twiss_target)[0];
+
+            series.x.push({ x: parameter_value, y: plotData.x });
+            series.y.push({ x: parameter_value, y: plotData.y });
+            series.z.push({ x: parameter_value, y: plotData.z });
+            // console.log('series:', series);
         });
     
-        console.log('series:', series);
 
         return [
             { id: `${twiss_target}: x`, data: series.x, color: '#CF0000' },
