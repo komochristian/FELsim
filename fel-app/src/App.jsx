@@ -389,9 +389,9 @@ function App()
           { selectedMenu === 'beamSettings' ?
           <>
             <div className="beamSettings">
-            <button className="close-button" onClick={() => setSelectedMenu(null)}>
-                X
-            </button>
+                <button className="close-button" onClick={() => setSelectedMenu(null)}>
+                    X
+                </button>
                 <ExcelUploadButton excelToAPI={excelToAPI} />
                 <label htmlFor="beamtypeSelect" className="forLabels">Select Beam type:</label>
                 <select name="beamtypeSelect" 
@@ -469,9 +469,7 @@ function App()
                            scroll={scroll}
                            setScroll={setScroll}>
                 </LineGraph>
-            {/*<img src={lineGraph ? lineGraph: null} alt="loading..."/>*/}
           </div>
-          
         </div>
         </>
     );

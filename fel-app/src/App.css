@@ -69,9 +69,10 @@ body {
 .beamSettings {
     grid-column: col-1-start / col-3-start;
     grid-row: row-1-start / row-2-start;
-    margin: 4px;
+    margin: 0px;
     overflow-x: hidden;
     position: relative;
+    background-color: #f5f4ef;
 }
 
 .close-button {
@@ -199,9 +200,12 @@ input[type="number"] {
 
 .menu-options {
     grid-row-start: row-1-start;
-    grid-row-end: row-2-start;
+    grid-row-end: row-3-start;
+    grid-column-start: col-1-start;
+    grid-column-end: col-2-start;
     display: flex;
     align-items: flex-start;
+    background-color: #f5f4ef;
 }
 
 .settings-icon-wrapper {
