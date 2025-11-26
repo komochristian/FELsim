@@ -47,7 +47,7 @@ const ParameterGraph = ({data, parameter_name, twiss_target}) => {
         <ResponsiveLine
             data={nivoData.filter(entry => !unselectedAxis.includes(entry.id))}
             margin={{ top: 10, right: 25, bottom: 40, left: 50 }}
-            xScale={{ type: 'linear' }}
+            xScale={{ type: 'linear', min: 'auto', max: 'auto' }}
             yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: false, reverse: false }}
             axisBottom={{ legend: `${parameter_name} value`, legendOffset: 36 }}
             axisLeft={{ legend: twiss_target, legendOffset: -40 }}

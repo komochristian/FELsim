@@ -49,7 +49,7 @@ function App()
         setErrorMessage(message);
         setError(true);
     };
-    
+
     const errorCatcher = () => {
         if (sInterval <= 0) {
             showErrorWindow("Please use an interval value greater than 0");
@@ -311,13 +311,12 @@ function App()
               }} 
         >
             <div className="modal-content">
-                {/* CHANGE */}
                 <ModalContent beamline={beamlistSelected} showErrorWindow={showErrorWindow} />
             </div>
         </Modal> 
         <div className="layout">
         <FloatingInfoButton /> 
-          <div className={`sidebar ${selectedMenu === null ? 'menuClosed' : 'menuOpen'}`}>
+          <div className={`sidebar ${selectedMenu === 'beamSettings' ? 'menuOpen' : 'menuClosed'}`}>
             <h2>FEL simulator</h2>
             <div>
                 <Dropdown buttonText="Add Segment" 
@@ -342,7 +341,6 @@ function App()
             </div>
             <h4>Beam setup</h4>
             <div className="scrollBox">
-                    {/* // CHANGE */}
                     {/* ALLOW EDITTING OF ALL PARAMETERS LATER ON */}
                     <Table height={420} data={beamlistSelected}>
                         <Column flexGrow={1}>

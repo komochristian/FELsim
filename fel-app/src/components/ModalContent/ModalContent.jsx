@@ -22,7 +22,8 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
             .min(0, 'S position must be non-negative')
             .max(beamline[beamline.length - 1].endPos, 'S needs to be within the beamline'),
         "target_parameter": yup.string().required('Parameter selection is required'),
-        "domain_range": yup.number().default(10).min(0, 'Domain range must be non-negative'),
+        "min": yup.number().default(0).min(0, 'min must be non-negative'),
+        "max": yup.number().default(10),
         "custom_step": yup.number().default(1).moreThan(0, 'Step size must be positive'),
     })
     .required()
@@ -68,7 +69,8 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
             target_parameter: data.target_parameter,
             target_s_pos: data['s-pos'],
             beamline_data: cleanedList,
-            domain_range: data['domain_range'],
+            min: data['min'],
+            max: data['max'],
             custom_step: data['custom_step'],
         }
         setSimulatedData(cleanedData);
@@ -93,7 +95,6 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
 
     // Handle hover over a rectangle
     const handleMouseEnter = (startPos, name,  event) => {
-        console.log(event)
         setHovered(`${name} (Start: ${Math.round(startPos * 10000) / 10000} m) (index: ${event.target.getAttribute('data-key')})`);
         setTooltipStyle({
             visible: true,
@@ -141,15 +142,15 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
                     height="100%" 
                 >
                 {beamline.map((item, index) => {
-                    let { startPos, endPos, color, name } = item;
-                    startPos = 500*startPos/totalLength;
-                    endPos = 500*endPos/totalLength;
-                    const width = 500*(endPos - startPos)/totalLength;
+                    const { startPos, endPos, color, name } = item;
+                    const adjustedStartPos = 500*startPos/totalLength;
+                    const adjustedEndPos = 500 * endPos/totalLength;
+                    const width = 500*(adjustedEndPos - adjustedStartPos)/totalLength;
                     return (
                     <rect
                         key={index}
                         data-key={index}
-                        x={startPos}
+                        x={adjustedStartPos}
                         y={0}
                         width={width}
                         height={20}
@@ -245,20 +246,32 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
                             <Row>
                                 <Col>
                                     <Form.Group>
-                                        <Form.Label>Domain to plot</Form.Label>
+                                        <Form.Label>Min</Form.Label>
                                         <input
                                             type="number"
                                             step="any"
-                                            {...register('domain_range')}
+                                            {...register('min')}
                                             min={0}
-                                            className={`form-control ${errors['domain_range'] ? 'is-invalid' : ''}`}
+                                            className={`form-control ${errors['min'] ? 'is-invalid' : ''}`}
                                         />
-                                        <div className="invalid-feedback">{errors.domain_range?.message}</div>
+                                        <div className="invalid-feedback">{errors.min?.message}</div>
                                     </Form.Group>
                                 </Col>
                                 <Col>
                                     <Form.Group>
-                                        <Form.Label>Custom step</Form.Label>
+                                        <Form.Label>Max</Form.Label>
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            {...register('max')}
+                                            className={`form-control ${errors['max'] ? 'is-invalid' : ''}`}
+                                        />
+                                        <div className="invalid-feedback">{errors.max?.message}</div>
+                                    </Form.Group>
+                                </Col>
+                                <Col>
+                                    <Form.Group>
+                                        <Form.Label>Interval</Form.Label>
                                         <input
                                             type="number"
                                             step="any"
@@ -287,7 +300,7 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
             <Col md={6}>
                 <ParameterGraph
                     data={plotData}
-                    parameter_name={simulatedData?.target_parameter | ''}
+                    parameter_name={simulatedData?.target_parameter || ''}
                     twiss_target={currentTwissParam.modal_val || ''}
                 />
             </Col>

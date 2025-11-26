@@ -56,7 +56,8 @@ class GraphParameters(BaseModel):
     target_parameter: str
     target_s_pos: float
     beamline_data: list[BeamlineInfo]
-    domain_range: int | float = 10
+    min: int | float = 0
+    max: int | float = 10
     custom_step: int | float = 1
 
 class GraphPlotPointResponse(BaseModel):
@@ -246,8 +247,8 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
         #     print("Printing segment:", i) 
 
         plotInfo = [] 
-        domain_range = np.arange(0, graphParams.domain_range, graphParams.custom_step).tolist()
-        if graphParams.domain_range not in domain_range: domain_range.append(graphParams.domain_range)
+        domain_range = np.arange(graphParams.min, graphParams.max, graphParams.custom_step).tolist()
+        if graphParams.max not in domain_range: domain_range.append(graphParams.max)
 
         for i in domain_range:
             setattr(optimized_beamlist[0], graphParams.target_parameter, i)
