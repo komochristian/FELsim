@@ -9,11 +9,20 @@ const FloatingInfoButton = () => {
         data-tooltip-id="info-tooltip"
         data-tooltip-html="To get started, load a beamline and simulate with desired settings<br />
                            Tips:<br />
-                           1. Click on the graph to view the Z position.<br />
-                           2, Use the dropdown to change the Twiss parameter displayed.<br />
-                           3. Enable Scroll lets you hover over the graph to scroll through the beamline.<br />
-                           4. Click on legend items to toggle visibility.<br />
-                            <br />
+                            - Click on the line graph to view particle data at S position.<br />
+                            - Click on legend items to toggle visibility.<br /><br/>
+
+                           Settings Guide:<br />
+                            - Use the dropdown to change the Twiss parameter displayed.<br />
+                            - Enable Scroll lets you hover over the graph to scroll through the beamline.<br /><br />
+                            
+                            Optimization Guide:<br />
+                             - Visualize and plot twiss parameters as a function of a beam element's parameter.<br />
+                             - Select position you want to plot twiss parameter at.<br />
+                             - select beamline element and the parameter you want to optimize.
+                             - adjust plot settings as needed.<br />
+                             
+                             <br/>
                            For questions, contact: komochristian@gmail.com"
         data-tooltip-place="left"
         style={{

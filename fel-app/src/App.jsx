@@ -290,7 +290,7 @@ function App()
         beamlistHandler(beamlineHandler);
       };
 
-    const PreModelCheck = (beamline) => {
+    const PreModalCheck = (beamline) => {
         if (beamline.length === 0) {
             setSelectedMenu(null)
             showErrorWindow("Please add beam segments before graphing parameters");
@@ -303,7 +303,7 @@ function App()
         <>
         <ErrorWindow message={errorMessage}
                      showError = {showError} />
-        <Modal open={selectedMenu === 'parameterGraphing' && PreModelCheck(beamlistSelected)} 
+        <Modal open={selectedMenu === 'parameterGraphing' && PreModalCheck(beamlistSelected)} 
                onClose={() => setSelectedMenu(null)} 
                center
                classNames={{
@@ -389,6 +389,7 @@ function App()
           { selectedMenu === 'beamSettings' ?
           <>
             <div className="beamSettings">
+                <h4>Simulation Settings</h4>
                 <button className="close-button" onClick={() => setSelectedMenu(null)}>
                     X
                 </button>
@@ -411,35 +412,35 @@ function App()
                 }
                 <label htmlFor="numParticles" className="forLabels">Number of particles:</label>
                 <input defaultValue={numOfParticles}
-                    type="number"
+                        type="number"
                         name="numParticles" 
                         onChange={(e) => setParticleNum(e.target.value)}
                         min={3}
                 />
                 <label htmlFor="interval" className="forLabels">S axis interval</label>
                 <input defaultValue={sInterval}
-                    type="number"
+                        type="number"
                         name="interval" 
                         onChange={(e) => setSInterval(e.target.value)}
                 />
             </div>
-          <div className="toggleLegend">
-            <label>
-                <input
-                    type="checkbox"
-                    checked={scroll}
-                    onChange={(e) => setScroll(e.target.checked)} // Update scroll state
-                />
-                Enable Scroll
-            </label>
-            <Select className='select-container'
-                    options={TWISS_OPTIONS}
-                    value={currentTwissParam}
-                    onChange={setCurrentTwiss}
-                    getOptionLabel={e => <InlineMath math={e.label} />}
-                    getSingleValueLabel={e => <InlineMath math={e.label} />}
+            <div className="toggleLegend">
+                <label>
+                    <input
+                        type="checkbox"
+                        checked={scroll}
+                        onChange={(e) => setScroll(e.target.checked)} // Update scroll state
                     />
-          </div>
+                    Enable Scroll
+                </label>
+                <Select className='select-container'
+                        options={TWISS_OPTIONS}
+                        value={currentTwissParam}
+                        onChange={setCurrentTwiss}
+                        getOptionLabel={e => <InlineMath math={e.label} />}
+                        getSingleValueLabel={e => <InlineMath math={e.label} />}
+                        />
+            </div>
         </>
         :
         <div className='menu-options'>

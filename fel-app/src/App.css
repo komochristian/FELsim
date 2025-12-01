@@ -52,13 +52,13 @@ body {
     grid-row: row-2-start / row-3-start;
     background-color: #f5f4ef;
     border-top: 1px solid #000000;
-    border-bottom: 1px solid #000000;
+    border-bottom: 0px;
     flex-grow: 1;
+    padding: 5px;
 }
 
 .toggleLegend .select-container {
     margin-top: auto; /* Push the Select element to the bottom */
-    border-bottom: 1px solid #000000;
     background-color: #f5f4ef;
 }
 
@@ -73,12 +73,13 @@ body {
     overflow-x: hidden;
     position: relative;
     background-color: #f5f4ef;
+    padding: 5px;
 }
 
 .close-button {
     position: absolute;
-    top: 4px;
-    right: 4px;
+    top: 9px;
+    right: 9px;
     background: none;
     border: 1px solid #000000;
     color: #000000;

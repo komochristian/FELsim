@@ -11,6 +11,7 @@ import ParameterGraph from '../ParameterGraph/ParameterGraph';
 import Select from 'react-select';
 import { InlineMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
+import { ScrollableBeam } from '../ScrollableBeam/ScrollableBeam';
 
 const ModalContent = ({ beamline, showErrorWindow }) => {
         const schema = yup
@@ -164,6 +165,7 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
                 </svg>
             </div>
         </Row>
+        {/* <ScrollableBeam beamline={beamline} /> */}
         <Row className="justify-content-center">
             <Col md={3}>
                 <Row className="mb-2">
@@ -210,7 +212,7 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
                     <Card.Body>
                         <Form onSubmit={handleSubmit(onSubmit)}>
                             <Form.Group>
-                                <Form.Label>Enter a position along the beamline to optimize</Form.Label>
+                                <Form.Label>Enter a position along the beamline to plot</Form.Label>
                                 <input
                                     type="number"
                                     step="any"
@@ -252,6 +254,7 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
                                             step="any"
                                             {...register('min')}
                                             min={0}
+                                            defaultValue={0}
                                             className={`form-control ${errors['min'] ? 'is-invalid' : ''}`}
                                         />
                                         <div className="invalid-feedback">{errors.min?.message}</div>
@@ -264,6 +267,7 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
                                             type="number"
                                             step="any"
                                             {...register('max')}
+                                            defaultValue={10}
                                             className={`form-control ${errors['max'] ? 'is-invalid' : ''}`}
                                         />
                                         <div className="invalid-feedback">{errors.max?.message}</div>
@@ -275,7 +279,7 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
                                         <input
                                             type="number"
                                             step="any"
-                                            default={1}
+                                            defaultValue={1}
                                             {...register('custom_step')}
                                             min={0}
                                             className={`form-control ${errors.custom_step ? 'is-invalid' : ''}`}
