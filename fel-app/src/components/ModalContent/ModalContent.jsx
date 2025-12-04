@@ -11,10 +11,10 @@ import ParameterGraph from '../ParameterGraph/ParameterGraph';
 import Select from 'react-select';
 import { InlineMath } from 'react-katex';
 import 'katex/dist/katex.min.css';
-import { ScrollableBeam } from '../ScrollableBeam/ScrollableBeam';
+import ScrollableBeam from '../ScrollableBeam/ScrollableBeam';
 
 const ModalContent = ({ beamline, showErrorWindow }) => {
-        const schema = yup
+    const schema = yup
     .object()
     .shape({
         "s-pos": yup
@@ -30,8 +30,6 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
     .required()
 
     // State to track hovered rectangle and tooltip visibility
-    const [hovered, setHovered] = useState(null);
-    const [tooltipStyle, setTooltipStyle] = useState({ display: 'none' });
     const [beamElementSelected, setSelectedElement] = useState(null);
     const [beamIndex, setBeamIndex] = useState(null);
     const [plotData, setPlotData] = useState(null);
@@ -94,38 +92,19 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
         setPlotData(responseData);
       };
 
-    // Handle hover over a rectangle
-    const handleMouseEnter = (startPos, name,  event) => {
-        setHovered(`${name} (Start: ${Math.round(startPos * 10000) / 10000} m) (index: ${event.target.getAttribute('data-key')})`);
-        setTooltipStyle({
-            visible: true,
-        });
-    };
-
-    // Handle mouse leave
-    const handleMouseLeave = () => {
-        setHovered(null);
-        setTooltipStyle({ 
-                            display: 'none',
-                            visible: false
-                        });
-    };
-
-    // Handle click on a rectangle
-    const handleClick = (info) => {
+      const handleClick = (info) => {
         const key = info.target.getAttribute('data-key');
         setBeamIndex(key);
         setSelectedElement(beamline[key]);
-        console.log(beamline[key]);
+        // console.log(beamline[key]);
     };
   
     //TODO
     //1. MAKE X BUTTON NOT GET IN THE WAY
     //2. MAKE IT SCROLLABLE IF TOO LONG
-    const totalLength = beamline[beamline.length-1].endPos;
     return (
         <Container>
-        <div
+        {/* <div
             style={{
             ...tooltipStyle,
             }}
@@ -164,8 +143,11 @@ const ModalContent = ({ beamline, showErrorWindow }) => {
                 })}
                 </svg>
             </div>
-        </Row>
-        {/* <ScrollableBeam beamline={beamline} /> */}
+        </Row> */}
+
+         <ScrollableBeam beamline={beamline}
+                         onClick={handleClick} /> 
+
         <Row className="justify-content-center">
             <Col md={3}>
                 <Row className="mb-2">

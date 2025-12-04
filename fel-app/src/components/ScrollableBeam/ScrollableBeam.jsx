@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import { Row } from 'react-bootstrap';
 import "./ScrollableBeam.css";
 
-const ScrollableBeam = ({ beamline }) => {
+const ScrollableBeam = ({ beamline, onClick }) => {
     const [tooltipStyle, setTooltipStyle] = useState({ display: 'none' });
     const [hovered, setHovered] = useState(null);
-    const [beamIndex, setBeamIndex] = useState(null);
-    const [beamElementSelected, setSelectedElement] = useState(null);
 
     const totalLength = beamline[beamline.length-1].endPos;
 
@@ -25,12 +23,6 @@ const ScrollableBeam = ({ beamline }) => {
                         });
     };
 
-    const handleClick = (info) => {
-        const key = info.target.getAttribute('data-key');
-        setBeamIndex(key);
-        setSelectedElement(beamline[key]);
-        // console.log(beamline[key]);
-    };
     return <>
         <div
             style={{...tooltipStyle,}}
@@ -63,7 +55,8 @@ const ScrollableBeam = ({ beamline }) => {
                         fill={color}
                         onMouseEnter={(e) => handleMouseEnter(startPos, name, e)}
                         onMouseLeave={handleMouseLeave}
-                        onClick={(e) => handleClick(e)}
+                        // onClick={(e) => handleClick(e)}
+                        onClick={(e) => onClick(e)}
                     />
                     );
                 })}
@@ -71,4 +64,6 @@ const ScrollableBeam = ({ beamline }) => {
             </div>
         </Row>
     </>;
-    };
+};
+
+export default ScrollableBeam;

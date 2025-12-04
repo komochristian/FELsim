@@ -20,11 +20,11 @@ sec9 = driftLattice(0.50)
 sec10 = dipole(length=0.0889, angle=1.5)
 line = [sec1,sec2,sec3,sec4,sec5,sec6,sec7,sec8,sec9,sec10]
 
-beamtype = beamline()
-pBeam = beamtype.changeBeamType(line, "electron", 40)
+beamtype = Beamline()
+pBeam = sec1.changeBeamType("electron", 40, line)
 
 beam_dist = ebeam.gen_6d_gaussian(0,[1,0.1,1,0.1,2.856,1],1000)
-schem.plotBeamPositionTransform(beam_dist, pBeam, 0.01, spacing = 10)
+# schem.plotBeamPositionTransform(beam_dist, pBeam, 0.01, spacing = 10)
 
 vals = {
         1: ["I", "current", lambda num:num],
@@ -42,7 +42,7 @@ objectives = {9:[{"measure": ["y", "std"],"goal":1,"weight":1},
 
 test = beamOptimizer(line, beam_dist)
 for i in line: print(i)
-result = test.calc("Nelder-Mead", vals, starting, objectives, plotProgress = True, plotBeam= True)
+result = test.calc("COBYLA", vals, starting, objectives, plotProgress = True, plotBeam= True)
 for i in line: print(i)
 
 
