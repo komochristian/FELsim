@@ -15,7 +15,7 @@ import 'rsuite/dist/rsuite.min.css';
 import ActionCell from './components/ActionCell/ActionCell';
 import EditableCell from './components/EditableCell/EditableCell';
 import NormalCell from './components/NormalCell/NormalCell';
-import { Col, Row } from 'react-bootstrap';
+import { Col, Row, Card } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
@@ -43,6 +43,8 @@ function App()
                                                            label: 'Envelope\\ E (mm)',
                                                            modal_val: 'envelope'});
     const [selectedMenu, setSelectedMenu] = useState(null);
+    const [selectedRowId, setSelectedRowId] = useState(null);
+
 
     const showErrorWindow = (message) => {
         console.log("Error:", message);
@@ -195,12 +197,12 @@ function App()
     //CHANGE
     const handleItemClick = (item) => {
         const beamObj = handleSegmentColor({[item]: structuredClone(beamSegmentInfo[item])});
-
         const cleanedObj = {"name": item,
                             ...beamObj[item]};
         console.log('cleanedObj', cleanedObj);
-        //console.log('updated Obj', beamObj);
-        const updatedList = [...beamlistSelected, cleanedObj];
+        const insertIndice = selectedRowId !== null ? selectedRowId : beamlistSelected.length;
+        const updatedList = [...beamlistSelected.slice(0, insertIndice), cleanedObj, ...beamlistSelected.slice(insertIndice)];
+        setSelectedRowId((id) => id === null ? null : id + 1);
         beamlistHandler(updatedList);
     };
 
@@ -341,50 +343,78 @@ function App()
             </div>
             <h4>Beam setup</h4>
             <div className="scrollBox">
-                    {/* ALLOW EDITTING OF ALL PARAMETERS LATER ON */}
-                    <Table height={420} data={beamlistSelected}>
-                        <Column flexGrow={1}>
-                            <HeaderCell>Name</HeaderCell>
-                            <NormalCell dataKey="name" />
-                        </Column>
+                {/* ALLOW EDITTING OF ALL PARAMETERS LATER ON */}
+                <Table height={420} 
+                       data={beamlistSelected}
+                       onRowClick={(rowData, event) => {
+                            // rowData contains the clicked row's info
+                            if (rowData.id === selectedRowId) {
+                                setSelectedRowId(null);
+                            } else 
+                            setSelectedRowId(rowData.id)
+                        }}
+                        rowClassName={rowData => rowData?.id === selectedRowId ? 'highlight-row' : ''}
+                        >
+                    <Column flexGrow={1} fullText>
+                        <HeaderCell>Name</HeaderCell>
+                        <NormalCell dataKey="name" />
+                    </Column>
 
-                        <Column flexGrow={1}>
-                            <HeaderCell>length</HeaderCell>
+                    <Column flexGrow={1} fullText>
+                        <HeaderCell>length</HeaderCell>
+                        <EditableCell
+                            dataKey="length"
+                            dataType="number"
+                            onChange={handleChange}
+                        />
+                    </Column>
+
+                    {selectedMenu !== "beamSettings" &&
+                    <>
+                        <Column flexGrow={1} fullText>
+                            <HeaderCell>angle</HeaderCell>
                             <EditableCell
-                                dataKey="length"
+                                dataKey="angle"
                                 dataType="number"
                                 onChange={handleChange}
                             />
                         </Column>
-
-                        {selectedMenu !== "beamSettings" &&
-                        <>
-                            <Column flexGrow={1}>
-                                <HeaderCell>angle</HeaderCell>
-                                <EditableCell
-                                    dataKey="angle"
-                                    dataType="number"
-                                    onChange={handleChange}
-                                />
-                            </Column>
-
-                            <Column flexGrow={1}>
-                                <HeaderCell>current</HeaderCell>
-                                <EditableCell
-                                    dataKey="current"
-                                    dataType="number"
-                                    onChange={handleChange}
-                                />
-                            </Column> 
-                        </>
-                        }
-
-                        <Column width={100}>
-                            <HeaderCell>Action</HeaderCell>
-                            <ActionCell dataKey="id" onEdit={handleEdit} onRemove={handleRemove} />
-                        </Column>
-                    </Table>
+                        <Column flexGrow={1} fullText>
+                            <HeaderCell>current</HeaderCell>
+                            <EditableCell
+                                dataKey="current"
+                                dataType="number"
+                                onChange={handleChange}
+                            />
+                        </Column> 
+                    </>
+                    }
+                    <Column width={100}>
+                        <HeaderCell>Action</HeaderCell>
+                        <ActionCell dataKey="id" onEdit={handleEdit} onRemove={handleRemove} />
+                    </Column>
+                </Table>
             </div>
+            <Card className="mt-3">
+                <Card.Header>
+                    Graph settings
+                </Card.Header>
+                <label>
+                    <input
+                        type="checkbox"
+                        checked={scroll}
+                        onChange={(e) => setScroll(e.target.checked)} // Update scroll state
+                    />
+                    Enable Scroll
+                </label>
+                    <Select className='select-container'
+                            options={TWISS_OPTIONS}
+                            value={currentTwissParam}
+                            onChange={setCurrentTwiss}
+                            getOptionLabel={e => <InlineMath math={e.label} />}
+                            getSingleValueLabel={e => <InlineMath math={e.label} />}
+                            />
+                </Card>
           </div>
           { selectedMenu === 'beamSettings' ?
           <>
@@ -423,23 +453,6 @@ function App()
                         name="interval" 
                         onChange={(e) => setSInterval(e.target.value)}
                 />
-            </div>
-            <div className="toggleLegend">
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={scroll}
-                        onChange={(e) => setScroll(e.target.checked)} // Update scroll state
-                    />
-                    Enable Scroll
-                </label>
-                <Select className='select-container'
-                        options={TWISS_OPTIONS}
-                        value={currentTwissParam}
-                        onChange={setCurrentTwiss}
-                        getOptionLabel={e => <InlineMath math={e.label} />}
-                        getSingleValueLabel={e => <InlineMath math={e.label} />}
-                        />
             </div>
         </>
         :
