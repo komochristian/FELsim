@@ -10,14 +10,16 @@ const ActionCell = ({ rowData, dataKey, onEdit, onRemove, ...props }) => {
         <IconButton
         appearance="subtle"
         icon={rowData.status === 'EDIT' ? <VscSave /> : <VscEdit />}
-        onClick={() => {
+        onClick={(event) => {
+            event.stopPropagation();
             onEdit(rowData.id);
         }}
         />
         <IconButton
         appearance="subtle"
         icon={<VscRemove />}
-        onClick={() => {
+        onClick={(event) => {
+            event.stopPropagation();
             onRemove(rowData.id);
         }}
         />

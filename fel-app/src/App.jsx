@@ -21,6 +21,7 @@ import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import ModalContent from './components/ModalContent/ModalContent';
 import { PRIVATEVARS, API_ROUTE, TWISS_OPTIONS } from './constants';
+import { Mosaic } from 'react-loading-indicators';
 
 function App()
 {
@@ -44,6 +45,7 @@ function App()
                                                            modal_val: 'envelope'});
     const [selectedMenu, setSelectedMenu] = useState(null);
     const [selectedRowId, setSelectedRowId] = useState(null);
+    const [loading, setLoading] = useState(false);
 
 
     const showErrorWindow = (message) => {
@@ -208,63 +210,71 @@ function App()
 
     //CHANGE
     const getBeamline = async (segList) => {
-        const uiErrorStatus = errorCatcher();
-        if (uiErrorStatus) {
-            return
+        if (loading) {
+            showErrorWindow("Simulation already in progress");
+            return;
         };
-        const cleanedList = segList.map(obj => {
-            const key = obj.name;
-            const cleanedParams = Object.fromEntries(
-              Object.entries(obj).filter(([p]) => !PRIVATEVARS.includes(p))
-            );
-            console.log('cleanedParams:', cleanedParams);
-            return {
-                segmentName: key,
-                parameters: cleanedParams
+        setLoading(true);
+        try {
+            const uiErrorStatus = errorCatcher();
+            if (uiErrorStatus) {
+                return
             };
-        });
+            const cleanedList = segList.map(obj => {
+                const key = obj.name;
+                const cleanedParams = Object.fromEntries(
+                Object.entries(obj).filter(([p]) => !PRIVATEVARS.includes(p))
+                );
+                console.log('cleanedParams:', cleanedParams);
+                return {
+                    segmentName: key,
+                    parameters: cleanedParams
+                };
+            });
 
-        const plottingParams = {
-            beamlineData: cleanedList,
-            num_particles: numOfParticles,
-            beamType: beamtypeToPass,
-            interval: sInterval
+            const plottingParams = {
+                beamlineData: cleanedList,
+                num_particles: numOfParticles,
+                beamType: beamtypeToPass,
+                interval: sInterval
+            }
+        
+            const jsonBody = JSON.stringify(plottingParams, null, 2); 
+            //console.log("json sent;", jsonBody);
+
+            const res = await fetch(API_ROUTE + '/axes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: jsonBody,
+            });
+            if (!res.ok) {
+                const errorData = await res.json();
+                showErrorWindow(errorData.detail || errorData);
+                return 
+            }
+            const axImages = await res.json();
+            const result = axImages['images'];
+            const lineAxObj = axImages['line_graph'];
+            const lineAx = lineAxObj['axis'];
+
+            handleTwiss(JSON.parse(lineAxObj['twiss']), lineAxObj['x_axis']);
+
+            const cleanResult = new Map(
+                Object.entries(result).map(([key, value]) => [
+                    parseFloat(key),
+                    `data:image/png;base64,${value}`,
+                ])
+                );
+
+            setDotGraphs(cleanResult);
+            setLineGraph(`data:image/png;base64,${lineAx}`);
+            //console.log("returned api result:", result);
+            //console.log("newSubArr:", cleanResult);
+        } finally {
+            setLoading(false);
         }
-    
-        const jsonBody = JSON.stringify(plottingParams, null, 2); 
-        //console.log("json sent;", jsonBody);
-
-        const res = await fetch(API_ROUTE + '/axes', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: jsonBody,
-        });
-        if (!res.ok) {
-            const errorData = await res.json();
-            showErrorWindow(errorData.detail || errorData);
-            return 
-        }
-        const axImages = await res.json();
-        const result = axImages['images'];
-        const lineAxObj = axImages['line_graph'];
-        const lineAx = lineAxObj['axis'];
-
-        handleTwiss(JSON.parse(lineAxObj['twiss']), lineAxObj['x_axis']);
-
-        const cleanResult = new Map(
-            Object.entries(result).map(([key, value]) => [
-                parseFloat(key),
-                `data:image/png;base64,${value}`,
-              ])
-            );
-
-        setDotGraphs(cleanResult);
-        setLineGraph(`data:image/png;base64,${lineAx}`);
-        //console.log("returned api result:", result);
-        //console.log("newSubArr:", cleanResult);
-
     };
 
     const handleChange = (id, key, value) => {
@@ -413,6 +423,11 @@ function App()
                             onChange={setCurrentTwiss}
                             getOptionLabel={e => <InlineMath math={e.label} />}
                             getSingleValueLabel={e => <InlineMath math={e.label} />}
+                            menuPortalTarget={document.body}
+                            menuPosition="fixed"
+                            styles={{
+                                menuPortal: (base) => ({ ...base, zIndex: 9999 })
+                            }}
                             />
                 </Card>
           </div>
@@ -471,8 +486,11 @@ function App()
             </Col>
         </div>
         }  
-          <div className={`main-content`}>
-                <img src={dotGraphs.size > 0 ? dotGraphs.get(currentS) : null} alt="Please run simulation"/>
+          <div className="main-content h-100 d-flex justify-content-center align-items-center">
+            {loading ? <Mosaic color="#000000" size="small" text="Loading" textColor="#000000" />
+            :
+            (dotGraphs.size > 0 ? <img src={dotGraphs.get(currentS)}/> : <h1>No simulation loaded</h1>)
+            }
           </div>
           <div className="twiss-graph">
                 <LineGraph twissData={twissDf}

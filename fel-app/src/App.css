@@ -105,6 +105,9 @@ button:focus {
     background-color: #FFFFFF;
     min-height: 300px;
     overflow: hidden;
+    display: flex;
+    justify-content: center; /* horizontal */
+    align-items: center;     /* vertical */
 }
 
 .main-content img {
@@ -145,7 +148,6 @@ button:focus {
 
 
 .simButton {
-    position: absolute;
     border:1px solid #000000;
     border-radius: 0;
     background-color: #ffffff99;

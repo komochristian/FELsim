@@ -36,6 +36,7 @@ const EditableCell = ({ rowData, dataType, dataKey, onChange, onEdit, ...props }
             onChange={value => {
               onChange?.(rowData.id, dataKey, parseInput(value, dataType), editing);
             }}
+            onClick={event => event.stopPropagation()}
           />
         ) : (
           value
