@@ -22,6 +22,11 @@ import 'react-responsive-modal/styles.css';
 import ModalContent from './components/ModalContent/ModalContent';
 import { PRIVATEVARS, API_ROUTE, TWISS_OPTIONS } from './constants';
 import { Mosaic } from 'react-loading-indicators';
+import { Sidebar, Menu, MenuItem } from 'react-pro-sidebar';
+import { FaCog as CogIcon } from "react-icons/fa";
+import { FaChartLine as ChartIcon } from "react-icons/fa";
+import { FaAtom as AtomIcon } from "react-icons/fa";
+import BeamSettings from './components/BeamSettings/BeamSettings';
 
 function App()
 {
@@ -46,6 +51,7 @@ function App()
     const [selectedMenu, setSelectedMenu] = useState(null);
     const [selectedRowId, setSelectedRowId] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
 
     const showErrorWindow = (message) => {
@@ -315,12 +321,13 @@ function App()
         <>
         <ErrorWindow message={errorMessage}
                      showError = {showError} />
-        <Modal open={selectedMenu === 'parameterGraphing' && PreModalCheck(beamlistSelected)} 
-               onClose={() => setSelectedMenu(null)} 
-               center
-               classNames={{
+        <Modal 
+            open={selectedMenu === 'parameterGraphing' && PreModalCheck(beamlistSelected)} 
+            onClose={() => setSelectedMenu(null)} 
+            center
+            classNames={{
                 modal: "custom-modal", // Add a custom class to the modal
-              }} 
+            }} 
         >
             <div className="modal-content">
                 <ModalContent beamline={beamlistSelected} showErrorWindow={showErrorWindow} />
@@ -328,20 +335,21 @@ function App()
         </Modal> 
         <div className="layout">
         <FloatingInfoButton /> 
-          <div className={`sidebar ${selectedMenu === 'beamSettings' ? 'menuOpen' : 'menuClosed'}`}>
+        <div className={`sidebar ${sidebarOpen ? 'menuOpen' : 'menuClosed'}`}>
             <h2>FEL simulator</h2>
             <div>
                 <Dropdown buttonText="Add Segment" 
                         contentText={
-                                <>
-                                    {items.map((item) => (
-                                        <DropdownItem key={item}
-                                                    onClick={() => handleItemClick(item)}
-                                        >
-                                            {`${item}`}
-                                        </DropdownItem>
-                                    ))}
-                                </>
+                            <>
+                                {items.map((item) => (
+                                    <DropdownItem 
+                                        key={item}
+                                        onClick={() => handleItemClick(item)}
+                                    >
+                                        {`${item}`}
+                                    </DropdownItem>
+                                ))}
+                            </>
                         }
                 />
                 <button
@@ -356,7 +364,7 @@ function App()
                 {/* ALLOW EDITTING OF ALL PARAMETERS LATER ON */}
                 <Table height={420} 
                        data={beamlistSelected}
-                       onRowClick={(rowData, event) => {
+                       onRowClick={(rowData) => {
                             // rowData contains the clicked row's info
                             if (rowData.id === selectedRowId) {
                                 setSelectedRowId(null);
@@ -378,8 +386,7 @@ function App()
                             onChange={handleChange}
                         />
                     </Column>
-
-                    {selectedMenu !== "beamSettings" &&
+                    {!sidebarOpen &&
                     <>
                         <Column flexGrow={1} fullText>
                             <HeaderCell>angle</HeaderCell>
@@ -431,50 +438,18 @@ function App()
                             />
                 </Card>
           </div>
-          { selectedMenu === 'beamSettings' ?
-          <>
-            <div className="beamSettings">
-                <h4>Simulation Settings</h4>
-                <button className="close-button" onClick={() => setSelectedMenu(null)}>
-                    X
-                </button>
-                <ExcelUploadButton excelToAPI={excelToAPI} />
-                <label htmlFor="beamtypeSelect" className="forLabels">Select Beam type:</label>
-                <select name="beamtypeSelect" 
-                        onChange={(e) => setBeamInput(e.target.value)}
-                        value={currentBeamType}>
-                    <option value="electron">Electron</option>
-                    <option value="proton">Proton</option>
-                    <option value="otherIon">Other Ion</option>
-                </select>
-                {
-                    (currentBeamType !== "electron" && currentBeamType !== "proton") && (
-                    <input
-                        type="text"
-                        onChange={(e) => setBeamtypeToPass(e.target.value)}
-                        value={beamtypeToPass}
-                    />)
-                }
-                <label htmlFor="numParticles" className="forLabels">Number of particles:</label>
-                <input defaultValue={numOfParticles}
-                        type="number"
-                        name="numParticles" 
-                        onChange={(e) => setParticleNum(e.target.value)}
-                        min={3}
-                />
-                <label htmlFor="interval" className="forLabels">S axis interval</label>
-                <input defaultValue={sInterval}
-                        type="number"
-                        name="interval" 
-                        onChange={(e) => setSInterval(e.target.value)}
-                />
-            </div>
-        </>
-        :
+
+          { !sidebarOpen && !selectedMenu ?
         <div className='menu-options'>
             <Col className="settings-icon-wrapper pt-3">
                 <Row className="mb-3 g-0">
-                    <button className="menu-button" onClick={() => setSelectedMenu("beamSettings")}>
+                    <button 
+                        className="menu-button" 
+                        onClick={() => {
+                            setSelectedMenu("beamSettings");
+                            setSidebarOpen(true);
+                        }}
+                    >
                         <i className="fas fa-cog"></i>
                     </button>
                 </Row>
@@ -482,9 +457,49 @@ function App()
                     <button className="menu-button" onClick={() => setSelectedMenu("parameterGraphing")}>
                         <i className="fas fa-chart-line"></i>
                     </button>
-                </Row>   
+                </Row>
+                <Row className="mb-3 g-0">
+                    <button 
+                        className="menu-button" 
+                        onClick={() => {
+                            setSelectedMenu("particleSettings");
+                            setSidebarOpen(true);
+                            }}
+                        >
+                        <i className="fas fa-atom"></i>
+                    </button>
+                </Row> 
             </Col>
+        {/* <Sidebar collapsed={!sidebarOpen}>
+            <Menu>
+                <MenuItem icon={<CogIcon />} onClick={() => {setSelectedMenu('beamSettings'); setSidebarOpen(true)}}>
+                Beam Settings
+                </MenuItem>
+                <MenuItem icon={<ChartIcon />} onClick={() => setSelectedMenu('parameterGraphing')}>
+                Parameter Graphing
+                </MenuItem>
+                <MenuItem icon={<AtomIcon />} onClick={() => setSelectedMenu('particleSettings')}>
+                Particle Settings
+                </MenuItem>
+            </Menu>
+        </Sidebar> */}
         </div>
+        :
+        <div className="beamSettings">
+            <BeamSettings
+                setSelectedMenu={setSelectedMenu}
+                setSidebarOpen={setSidebarOpen}
+                excelToAPI={excelToAPI}
+                setBeamInput={setBeamInput}
+                currentBeamType={currentBeamType}
+                setBeamtypeToPass={setBeamtypeToPass}
+                beamtypeToPass={beamtypeToPass}
+                numOfParticles={numOfParticles}
+                setParticleNum={setParticleNum}
+                sInterval={sInterval}
+                setSInterval={setSInterval}
+            />
+         </div>
         }  
           <div className="main-content h-100 d-flex justify-content-center align-items-center">
             {loading ? <Mosaic color="#000000" size="small" text="Loading" textColor="#000000" />

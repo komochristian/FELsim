@@ -63,27 +63,6 @@ body {
     padding: 5px;
 }
 
-.close-button {
-    position: absolute;
-    top: 9px;
-    right: 9px;
-    background: none;
-    border: 1px solid #000000;
-    color: #000000;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 0px;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0;
-    outline: none;
-    transition: background-color 0.3s ease;
-  }
-
 button:hover {
     background-color: #d3d3d3;
     border: 1px solid black; /* Set border to black */
@@ -170,11 +149,6 @@ button:focus {
   text-decoration: none;
 }
 
-.forLabels {
-    margin: 3px;
-    display: block;
-}
-
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -194,6 +168,7 @@ input[type="number"] {
     display: flex;
     align-items: flex-start;
     background-color: #f5f4ef;
+    position: relative;
 }
 
 .settings-icon-wrapper {
