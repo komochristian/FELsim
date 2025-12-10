@@ -25,14 +25,6 @@ body {
     color: rgb(0, 0, 0);
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     overflow-y: scroll;
-}
-
-.menuOpen {
-    grid-column-start: col-3-start;
-    grid-column-end: col-4-start;
-}
-
-.menuClosed {
     grid-column-start: col-2-start;
     grid-column-end: col-4-start;
 }
@@ -54,12 +46,10 @@ body {
 }
 
 .beamSettings {
-    grid-column: col-1-start / col-3-start;
-    grid-row: row-1-start / row-2-start;
     margin: 0px;
     overflow-x: hidden;
     position: relative;
-    background-color: #f5f4ef;
+    background-color: #ffffff;
     padding: 5px;
 }
 
@@ -133,6 +123,7 @@ button:focus {
     font-weight: bold;
     font-size: 20px;
     padding: 10px;
+    margin: 5px;
 }
 
 .scrollMenu {
@@ -206,9 +197,14 @@ input[type="number"] {
     align-items: center;
   }
 
-  .custom-modal {
+  .parameter-modal {
     min-width: 1300px;
     min-height: 500px;
+  }
+
+  .setting-modal {
+    width: auto;
+    height: auto;
   }
 
 /* Highlight all cells in the selected row */

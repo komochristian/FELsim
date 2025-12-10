@@ -1,5 +1,6 @@
 import { React, useState } from 'react';
 import * as XLSX from 'xlsx';
+import { Row } from 'react-bootstrap';
 
 const ExcelUploadButton = ({excelToAPI}) => {
     
@@ -21,7 +22,9 @@ const ExcelUploadButton = ({excelToAPI}) => {
     };
 
     return <div>
-                <label className="excelLabel" htmlFor="excelButton">Upload Excel File</label>
+                <Row>
+                  <label htmlFor="excelButton">Upload Excel File:</label>
+                </Row>
                 <input name="excelButton" type="file" accept=".xlsx" onChange={fileHandler} />
             </div>
 };

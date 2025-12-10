@@ -22,11 +22,8 @@ import 'react-responsive-modal/styles.css';
 import ModalContent from './components/ModalContent/ModalContent';
 import { PRIVATEVARS, API_ROUTE, TWISS_OPTIONS } from './constants';
 import { Mosaic } from 'react-loading-indicators';
-import { Sidebar, Menu, MenuItem } from 'react-pro-sidebar';
-import { FaCog as CogIcon } from "react-icons/fa";
-import { FaChartLine as ChartIcon } from "react-icons/fa";
-import { FaAtom as AtomIcon } from "react-icons/fa";
 import BeamSettings from './components/BeamSettings/BeamSettings';
+import ParticleSettings from './components/ParticleSettings/ParticleSettings';
 
 function App()
 {
@@ -51,8 +48,7 @@ function App()
     const [selectedMenu, setSelectedMenu] = useState(null);
     const [selectedRowId, setSelectedRowId] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-
+    const [mev, setMeV] = useState(45);
 
     const showErrorWindow = (message) => {
         console.log("Error:", message);
@@ -75,6 +71,10 @@ function App()
         } 
         return false;         
     };
+
+    useEffect(() => {
+        console.log(beamlistSelected);
+    }, [beamlistSelected]);
 
     useEffect(() => {
         if (!showError) return ;
@@ -242,7 +242,8 @@ function App()
                 beamlineData: cleanedList,
                 num_particles: numOfParticles,
                 beamType: beamtypeToPass,
-                interval: sInterval
+                interval: sInterval,
+                kineticE: mev
             }
         
             const jsonBody = JSON.stringify(plottingParams, null, 2); 
@@ -326,16 +327,57 @@ function App()
             onClose={() => setSelectedMenu(null)} 
             center
             classNames={{
-                modal: "custom-modal", // Add a custom class to the modal
+                modal: "parameter-modal", // Add a custom class to the modal
             }} 
         >
             <div className="modal-content">
                 <ModalContent beamline={beamlistSelected} showErrorWindow={showErrorWindow} />
             </div>
-        </Modal> 
+        </Modal>
+        <Modal 
+            open={selectedMenu === 'beamSettings'} 
+            onClose={() => setSelectedMenu(null)} 
+            center
+            classNames={{
+                modal: "setting-modal", // Add a custom class to the modal
+            }} 
+        >
+            <div className="beamSettings">
+                <BeamSettings
+                    setSelectedMenu={setSelectedMenu}
+                    excelToAPI={excelToAPI}
+                    sInterval={sInterval}
+                    setSInterval={setSInterval}
+                    beamlistSelected={beamlistSelected}
+                    getBeamline={getBeamline}
+                />
+         </div>
+        </Modal>  
+        <Modal 
+            open={selectedMenu === 'particleSettings'} 
+            onClose={() => setSelectedMenu(null)} 
+            center
+            classNames={{
+                modal: "setting-modal", // Add a custom class to the modal
+            }} 
+        >
+            <ParticleSettings
+                setSelectedMenu={setSelectedMenu}
+                setBeamInput={setBeamInput}
+                currentBeamType={currentBeamType}
+                setBeamtypeToPass={setBeamtypeToPass}
+                beamtypeToPass={beamtypeToPass}
+                numOfParticles={numOfParticles}
+                setParticleNum={setParticleNum}
+                beamlistSelected={beamlistSelected}
+                getBeamline={getBeamline}
+                mev={mev}
+                setMeV={setMeV}
+            />
+        </Modal>
         <div className="layout">
         <FloatingInfoButton /> 
-        <div className={`sidebar ${sidebarOpen ? 'menuOpen' : 'menuClosed'}`}>
+        <div className={`sidebar`}>
             <h2>FEL simulator</h2>
             <div>
                 <Dropdown buttonText="Add Segment" 
@@ -386,26 +428,22 @@ function App()
                             onChange={handleChange}
                         />
                     </Column>
-                    {!sidebarOpen &&
-                    <>
-                        <Column flexGrow={1} fullText>
-                            <HeaderCell>angle</HeaderCell>
-                            <EditableCell
-                                dataKey="angle"
-                                dataType="number"
-                                onChange={handleChange}
-                            />
-                        </Column>
-                        <Column flexGrow={1} fullText>
-                            <HeaderCell>current</HeaderCell>
-                            <EditableCell
-                                dataKey="current"
-                                dataType="number"
-                                onChange={handleChange}
-                            />
-                        </Column> 
-                    </>
-                    }
+                    <Column flexGrow={1} fullText>
+                        <HeaderCell>angle</HeaderCell>
+                        <EditableCell
+                            dataKey="angle"
+                            dataType="number"
+                            onChange={handleChange}
+                        />
+                    </Column>
+                    <Column flexGrow={1} fullText>
+                        <HeaderCell>current</HeaderCell>
+                        <EditableCell
+                            dataKey="current"
+                            dataType="number"
+                            onChange={handleChange}
+                        />
+                    </Column>
                     <Column width={100}>
                         <HeaderCell>Action</HeaderCell>
                         <ActionCell dataKey="id" onEdit={handleEdit} onRemove={handleRemove} />
@@ -438,8 +476,6 @@ function App()
                             />
                 </Card>
           </div>
-
-          { !sidebarOpen && !selectedMenu ?
         <div className='menu-options'>
             <Col className="settings-icon-wrapper pt-3">
                 <Row className="mb-3 g-0">
@@ -447,7 +483,6 @@ function App()
                         className="menu-button" 
                         onClick={() => {
                             setSelectedMenu("beamSettings");
-                            setSidebarOpen(true);
                         }}
                     >
                         <i className="fas fa-cog"></i>
@@ -463,32 +498,16 @@ function App()
                         className="menu-button" 
                         onClick={() => {
                             setSelectedMenu("particleSettings");
-                            setSidebarOpen(true);
                             }}
                         >
                         <i className="fas fa-atom"></i>
                     </button>
                 </Row> 
             </Col>
-        {/* <Sidebar collapsed={!sidebarOpen}>
-            <Menu>
-                <MenuItem icon={<CogIcon />} onClick={() => {setSelectedMenu('beamSettings'); setSidebarOpen(true)}}>
-                Beam Settings
-                </MenuItem>
-                <MenuItem icon={<ChartIcon />} onClick={() => setSelectedMenu('parameterGraphing')}>
-                Parameter Graphing
-                </MenuItem>
-                <MenuItem icon={<AtomIcon />} onClick={() => setSelectedMenu('particleSettings')}>
-                Particle Settings
-                </MenuItem>
-            </Menu>
-        </Sidebar> */}
         </div>
-        :
-        <div className="beamSettings">
+        {/* <div className="beamSettings">
             <BeamSettings
                 setSelectedMenu={setSelectedMenu}
-                setSidebarOpen={setSidebarOpen}
                 excelToAPI={excelToAPI}
                 setBeamInput={setBeamInput}
                 currentBeamType={currentBeamType}
@@ -499,8 +518,7 @@ function App()
                 sInterval={sInterval}
                 setSInterval={setSInterval}
             />
-         </div>
-        }  
+         </div>  */}
           <div className="main-content h-100 d-flex justify-content-center align-items-center">
             {loading ? <Mosaic color="#000000" size="small" text="Loading" textColor="#000000" />
             :
