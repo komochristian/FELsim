@@ -16,31 +16,32 @@ const initialInputs = {
 const ParticleSettings = ({ setSelectedMenu, setBeamInput, currentBeamType, setBeamtypeToPass, beamtypeToPass,
     numOfParticles, setParticleNum, beamlistSelected, getBeamline, mev, setMeV }) => {
     const [tabValue, setTabValue] =  useState('one');
-    // const [inputs, setInputs] = useState(initialInputs);
     const { register, handleSubmit } = useForm({
         defaultValues: initialInputs,
       });
     
-      const onSubmit = (data) => {
+    //  TO DO: Add a schema validation with yup 
+    const onSubmit = (data) => {
         console.log("Form values:", data);
-      };
-      const axes = ["x", "y", "z"];
-      const letters = ["α", "β", "φ", "ε"];
-
-    // // Generic handler
-    // const handleInputChange = (plane, field, value) => {
-    //   setInputs(prev => ({
-    //     ...prev,
-    //     [plane]: {
-    //       ...prev[plane],
-    //       [field]: value,
-    //     },
-    //   }));
-    // };
+        setSelectedMenu(null);
+        getBeamline(beamlistSelected);
+    };
+    const axes = ["x", "y", "z"];
+    const letters = ["α", "β", "φ", "ε"];
 
     const handleChange = (event, newValue) => {
         setTabValue(newValue);
       };
+
+    const getBeamDistributionFromTwiss = async (fileJSON) => {  
+    const res =  await fetch(API_ROUTE + '/twiss-to-particles', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(fileJSON, null, 2),
+    });
+    };
 
     return (
         <Container className="d-flex flex-column align-items-center justify-content-center">
@@ -86,117 +87,36 @@ const ParticleSettings = ({ setSelectedMenu, setBeamInput, currentBeamType, setB
                     <Tab value="three" label="Import" />
                 </Tabs>
             </Box>
-
-            <Container>
-                {/* {['x', 'y', 'z'].map(plane => (
-                    <div key={plane}>
-                    <h5>{plane.toUpperCase()}</h5>
-                    {['α', 'β', 'φ', 'ε'].map(field => (
-                        <Col xs={3} key={field}>
-                            <input
-                            key={field}
-                            type="number"
-                            value={inputs[plane][field]}
-                            onChange={e => handleInputChange(plane, field, e.target.value)}
-                            // placeholder={`${plane} ${field}`}
-                            />
-                        </Col>
+            {tabValue === "one" && 
+                <Container>
+                    <Form onSubmit={handleSubmit(onSubmit)}>
+                    {axes.map((axis) => (
+                        <div key={axis} className="mb-4">
+                        <Row>
+                            {letters.map((letter) => (
+                            <Col md={3} key={letter}>
+                                <Form.Group controlId={`${axis}-${letter}`}>
+                                <Form.Label>{axis}: {letter}</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    {...register(`${axis}.${letter}`)}
+                                />
+                                </Form.Group>
+                            </Col>
+                            ))}
+                        </Row>
+                        </div>
                     ))}
+                    <div className="d-flex justify-content-center">
+                        <Button type="submit" variant="light">
+                            Simulate
+                        </Button>
                     </div>
-                ))} */}
-                <Form onSubmit={handleSubmit(onSubmit)}>
-                {axes.map((axis) => (
-                    <div key={axis} className="mb-4">
-                    <h5>{axis.toUpperCase()}</h5>
-
-                    <Row>
-                        {letters.map((letter) => (
-                        <Col md={3} key={letter}>
-                            <Form.Group controlId={`${axis}-${letter}`}>
-                            <Form.Label>{axis}.{letter}</Form.Label>
-                            <Form.Control
-                                type="text"
-                                {...register(`${axis}.${letter}`)}
-                            />
-                            </Form.Group>
-                        </Col>
-                        ))}
-                    </Row>
-                    </div>
-                ))}
-
-                <Button type="submit" variant="primary">
-                    Submit
-                </Button>
-                </Form>
-            </Container>
-            <Row className="mt-2">
-                <Button
-                    variant="light"
-                    onClick={() => {
-                        setSelectedMenu(null);
-                        getBeamline(beamlistSelected);
-                    }}
-                >
-                    Simulate
-                </Button>
-            </Row>
+                    </Form>
+                </Container>
+            }
         </Container>
     )
 };
 
 export default ParticleSettings;
-
-// PEAKGPT CODE PROVIDED
-// import { useForm } from "react-hook-form";
-// import Form from "react-bootstrap/Form";
-// import Row from "react-bootstrap/Row";
-// import Col from "react-bootstrap/Col";
-// import Button from "react-bootstrap/Button";
-
-// const initialInputs = {
-//   x: { α: "", β: "", φ: "", ε: "" },
-//   y: { α: "", β: "", φ: "", ε: "" },
-//   z: { α: "", β: "", φ: "", ε: "" },
-// };
-
-// export default function ExampleForm() {
-//   const { register, handleSubmit } = useForm({
-//     defaultValues: initialInputs,
-//   });
-
-//   const onSubmit = (data) => {
-//     console.log("Form values:", data);
-//   };
-
-//   const axes = ["x", "y", "z"];
-//   const letters = ["α", "β", "φ", "ε"];
-
-//   return (
-//     <Form onSubmit={handleSubmit(onSubmit)}>
-//       {axes.map((axis) => (
-//         <div key={axis} className="mb-4">
-//           <h5>{axis.toUpperCase()}</h5>
-
-//           <Row>
-//             {letters.map((letter) => (
-//               <Col md={3} key={letter}>
-//                 <Form.Group controlId={`${axis}-${letter}`}>
-//                   <Form.Label>{axis}.{letter}</Form.Label>
-//                   <Form.Control
-//                     type="text"
-//                     {...register(`${axis}.${letter}`)}
-//                   />
-//                 </Form.Group>
-//               </Col>
-//             ))}
-//           </Row>
-//         </div>
-//       ))}
-
-//       <Button type="submit" variant="primary">
-//         Submit
-//       </Button>
-//     </Form>
-//   );
-// }

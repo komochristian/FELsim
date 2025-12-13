@@ -730,3 +730,36 @@ class beam:
         else:
             return axes.hexbin(x, y, cmap=cmap, extent=shapeExtent, gridsize=self.BINS, zorder=zorder)
             #  cb = ax.figure.colorbar(hb, ax=ax, label='Point Count per Bin') # hb from axes.hexbin return 
+
+    def twiss_to_cov(self, alpha, beta, epsilon):
+        gamma = (1 + alpha**2) / beta
+        cov = epsilon * np.array([
+            [beta, -alpha],
+            [-alpha, gamma]
+        ])
+        return cov
+
+    def rotate_cov(self, cov, phi):
+        R = np.array([
+            [np.cos(phi), -np.sin(phi)],
+            [np.sin(phi),  np.cos(phi)]
+        ])
+        return R @ cov @ R.T
+
+    def gen_6d_from_twiss(self, twiss_params, num_particles=100):
+        # twiss_params: dict with keys 'x', 'y', 'z', each value is (alpha, beta, epsilon, phi)
+        cov_blocks = []
+        mean = np.zeros(6)
+        for i, plane in enumerate(['x', 'y', 'z']):
+            alpha, beta, epsilon, phi = twiss_params[plane]
+            cov2d = self.twiss_to_cov(alpha, beta, epsilon)
+            cov2d_rot = self.rotate_cov(cov2d, phi)
+            cov_blocks.append(cov2d_rot)
+        # Build 6D covariance matrix (block diagonal)
+        cov6d = np.block([
+            [cov_blocks[0], np.zeros((2,2)), np.zeros((2,2))],
+            [np.zeros((2,2)), cov_blocks[1], np.zeros((2,2))],
+            [np.zeros((2,2)), np.zeros((2,2)), cov_blocks[2]],
+        ])
+        particles = np.random.multivariate_normal(mean, cov6d, size=num_particles)
+        return particles
