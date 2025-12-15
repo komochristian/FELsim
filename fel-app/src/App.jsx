@@ -2,7 +2,6 @@ import React, {useState, useEffect} from 'react';
 import './App.css';
 import Dropdown from './components/Dropdown/Dropdown';
 import DropdownItem from './components/DropdownItem/DropdownItem';
-import ExcelUploadButton from './components/ExcelUploadButton/ExcelUploadButton';
 import LineGraph from './components/LineGraph/LineGraph';
 import ErrorWindow from './components/ErrorWindow/ErrorWindow';
 import Select from 'react-select';
@@ -33,7 +32,6 @@ function App()
     const [lineGraph, setLineGraph] = useState(null);
     const [beamlistSelected, setSelectedItems] = useState([]);
     const [currentS, setSValue] = useState(0);
-    const [currentBeamType, setBeamInput] = useState('electron');
     const [beamtypeToPass, setBeamtypeToPass] = useState('electron');
     const [twissDf, setTwissDf] = useState([]);
     const [totalLen, setTotalLen] = useState(0);
@@ -49,6 +47,11 @@ function App()
     const [selectedRowId, setSelectedRowId] = useState(null);
     const [loading, setLoading] = useState(false);
     const [mev, setMeV] = useState(45);
+    const [twissValues, setTwissValues] = useState({
+        x: { α: '0', β: '1', φ: '0', ε: '1' },
+        y: { α: '0', β: '1', φ: '0', ε: '1' },
+        z: { α: '0', β: '0', φ: '0', ε: '10' },
+    });
 
     const showErrorWindow = (message) => {
         console.log("Error:", message);
@@ -81,15 +84,6 @@ function App()
         const timer = setTimeout(() => setError(false), 4000);
         return () => clearTimeout(timer); 
     }, [showError]);
-
-    useEffect(() => {
-        if (currentBeamType === "proton") {
-            setBeamtypeToPass(() => "proton")
-        }
-        else if ( currentBeamType === "electron") {
-            setBeamtypeToPass(() => "electron")
-        }
-    }, [currentBeamType]);
 
     useEffect(() => {
         setSValue(() => 0);
@@ -317,6 +311,16 @@ function App()
         }
         return true;
     }
+
+    const ParticleSettingsSubmitHelper = (data) => {
+        console.log("Settings data received:", data);
+        setBeamtypeToPass(data.customIon ? data.customIon : data.beamType);
+        setMeV(data.kineticEnergy);
+        setParticleNum(data.numParticles);
+        if (data.beam_setup === "twiss") {
+            setTwissValues(data.twiss);
+        }
+    };
       
     return (
         <>
@@ -363,16 +367,11 @@ function App()
         >
             <ParticleSettings
                 setSelectedMenu={setSelectedMenu}
-                setBeamInput={setBeamInput}
-                currentBeamType={currentBeamType}
-                setBeamtypeToPass={setBeamtypeToPass}
                 beamtypeToPass={beamtypeToPass}
                 numOfParticles={numOfParticles}
-                setParticleNum={setParticleNum}
-                beamlistSelected={beamlistSelected}
-                getBeamline={getBeamline}
                 mev={mev}
-                setMeV={setMeV}
+                submitHelper={ParticleSettingsSubmitHelper}
+                twissValues={twissValues}
             />
         </Modal>
         <div className="layout">

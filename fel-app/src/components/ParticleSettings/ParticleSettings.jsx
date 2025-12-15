@@ -5,26 +5,30 @@ import Box from '@mui/material/Box';
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-
-const initialInputs = {
-    x: { α: '', β: '', φ: '', ε: '' },
-    y: { α: '', β: '', φ: '', ε: '' },
-    z: { α: '', β: '', φ: '', ε: '' },
-  };
-
-
-const ParticleSettings = ({ setSelectedMenu, setBeamInput, currentBeamType, setBeamtypeToPass, beamtypeToPass,
-    numOfParticles, setParticleNum, beamlistSelected, getBeamline, mev, setMeV }) => {
-    const [tabValue, setTabValue] =  useState('one');
-    const { register, handleSubmit } = useForm({
-        defaultValues: initialInputs,
+const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtypeToPass,
+    numOfParticles , mev}) => {
+    const [tabValue, setTabValue] =  useState('twiss');
+    const {
+        register,
+        handleSubmit,
+        watch,
+        reset,
+        formState: { isDirty }
+      } = useForm({
+        defaultValues: {
+          beamType: beamtypeToPass,
+          customIon: "",
+          numParticles: numOfParticles,
+          kineticEnergy: mev,
+          twiss: twissValues,
+        }
       });
     
     //  TO DO: Add a schema validation with yup 
     const onSubmit = (data) => {
-        console.log("Form values:", data);
         setSelectedMenu(null);
-        getBeamline(beamlistSelected);
+        data.beam_setup = tabValue;
+        submitHelper(data);
     };
     const axes = ["x", "y", "z"];
     const letters = ["α", "β", "φ", "ε"];
@@ -44,79 +48,105 @@ const ParticleSettings = ({ setSelectedMenu, setBeamInput, currentBeamType, setB
     };
 
     return (
-        <Container className="d-flex flex-column align-items-center justify-content-center">
-            <h4>Particle Settings</h4>
-            <label htmlFor="beamtypeSelect" className="forLabels">Select Beam type:</label>
-            <select name="beamtypeSelect" 
-                    onChange={(e) => setBeamInput(e.target.value)}
-                    value={currentBeamType}>
+        <Form onSubmit={handleSubmit(onSubmit)}>
+            <Container className="d-flex flex-column align-items-center justify-content-center">
+
+                <h4>Particle Settings</h4>
+
+                {/* Beam Type */}
+                <Form.Label className="forLabels">Select Beam type:</Form.Label>
+                <Form.Select {...register("beamType")}>
                 <option value="electron">Electron</option>
                 <option value="proton">Proton</option>
                 <option value="otherIon">Other Ion</option>
-            </select>
-            {
-                (currentBeamType !== "electron" && currentBeamType !== "proton") && (
-                <input
-                    type="text"
-                    onChange={(e) => setBeamtypeToPass(e.target.value)}
-                    value={beamtypeToPass}
-                />)
-            }
-            <label htmlFor="numParticles" className="forLabels">Number of particles:</label>
-            <input defaultValue={numOfParticles}
-                    type="number"
-                    name="numParticles" 
-                    onChange={(e) => setParticleNum(e.target.value)}
-                    min={3}
-            />
-            <label htmlFor="kineticEnergy" className="forLabels">Kinetic Energy (MeV):</label>
-            <input defaultValue={mev}
-                    type="number"
-                    name="kineticEnergy" 
-                    onChange={(e) => setMeV(e.target.value)}
-                    min={0}
-            />
-            <Box>
-                <Tabs
-                    value={tabValue}
-                    onChange={handleChange}
-                    centered
-                >
-                    <Tab value="one" label="Twiss Parameters" />
-                    <Tab value="two" label="Base Distributions" />
-                    <Tab value="three" label="Import" />
+                {beamtypeToPass !== "electron" && beamtypeToPass !== "proton" && (
+                    <option value={beamtypeToPass}>{beamtypeToPass}</option>
+                )}
+                </Form.Select>
+
+                {/* Custom Ion Name */}
+                {watch("beamType") === "otherIon" && (
+                <Form.Control
+                    className="mt-2"
+                    placeholder="Ion name"
+                    {...register("customIon")}
+                />
+                )}
+
+                {/* Number of particles */}
+                <Form.Label className="forLabels mt-3">
+                Number of particles:
+                </Form.Label>
+                <Form.Control
+                type="number"
+                min={3}
+                {...register("numParticles", { valueAsNumber: true })}
+                />
+
+                {/* Kinetic Energy */}
+                <Form.Label className="forLabels mt-3">
+                Kinetic Energy (MeV):
+                </Form.Label>
+                <Form.Control
+                type="number"
+                min={0}
+                {...register("kineticEnergy", { valueAsNumber: true })}
+                />
+
+                {/* Tabs */}
+                <Box sx={{ mt: 3 }}>
+                <Tabs value={tabValue} onChange={handleChange} centered>
+                    <Tab value="twiss" label="Twiss Parameters" />
+                    <Tab value="base_dist" label="Base Distributions" />
+                    <Tab value="import" label="Import" />
                 </Tabs>
-            </Box>
-            {tabValue === "one" && 
-                <Container>
-                    <Form onSubmit={handleSubmit(onSubmit)}>
+                </Box>
+
+                {/* Tab Content */}
+                {tabValue === "twiss" && (
+                <Container className="mt-3">
                     {axes.map((axis) => (
-                        <div key={axis} className="mb-4">
+                    <div key={axis} className="mb-4">
                         <Row>
-                            {letters.map((letter) => (
+                        {letters.map((letter) => (
                             <Col md={3} key={letter}>
-                                <Form.Group controlId={`${axis}-${letter}`}>
-                                <Form.Label>{axis}: {letter}</Form.Label>
+                            <Form.Group controlId={`${axis}-${letter}`}>
+                                <Form.Label>
+                                {axis}: {letter}
+                                </Form.Label>
                                 <Form.Control
-                                    type="text"
-                                    {...register(`${axis}.${letter}`)}
+                                type="number"
+                                {...register(`twiss.${axis}.${letter}`)}
                                 />
-                                </Form.Group>
+                            </Form.Group>
                             </Col>
-                            ))}
+                        ))}
                         </Row>
-                        </div>
-                    ))}
-                    <div className="d-flex justify-content-center">
-                        <Button type="submit" variant="light">
-                            Simulate
-                        </Button>
                     </div>
-                    </Form>
+                    ))}
                 </Container>
-            }
-        </Container>
+                )}
+
+                {/* Submit */}
+                <div className="d-flex justify-content-center mt-4">
+                <Button type="submit" variant="light">
+                    Save
+                </Button>
+                </div>
+
+            </Container>
+        </Form>
     )
 };
 
 export default ParticleSettings;
+ 
+// Optional Enhancements (Highly Recommended)
+
+// Disable Simulate unless isDirty
+
+// Warn on modal close if isDirty
+
+// Add schema validation (Zod/Yup)
+
+// Persist last-used values via reset()

@@ -47,8 +47,6 @@ const LineGraph = ({totalLen, twissData, setSValue, beamline, twissAxis, scroll,
         data={cleanedTwissData.filter(entry => !unselectedAxis.includes(entry.id))}
         margin={{ top: 10, right: 25, bottom: 40, left: 50 }}
         yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: false, reverse: false }}
-
-
         // PLOT BEAM SEGMENTS FOR PREVIEW
         xScale={{
             type: 'linear',
