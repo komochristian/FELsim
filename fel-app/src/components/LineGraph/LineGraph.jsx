@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 const LineGraph = ({totalLen, twissData, setSValue, beamline, twissAxis, scroll, setScroll}) => {
     const [unselectedAxis, setUnselectedAxis] = useState([]);
+    const [mouseX, setMouseX] = useState(0);
 
     // Remove Duplicate s indices in the array
     const removeDuplicateX = (dataArray) => {
@@ -24,6 +25,32 @@ const LineGraph = ({totalLen, twissData, setSValue, beamline, twissAxis, scroll,
         cleanedTwissData[1].color = !unselectedAxis.includes(cleanedTwissData[1].id) ? '#0000CF' : '#000000'; // Blue
         cleanedTwissData[2].color = !unselectedAxis.includes(cleanedTwissData[2].id) ? '#00CF00' : '#000000'; // Green
     }
+
+    // make tooltip not go off page if user puts mouse on the left side of the screen
+
+    const CustomSliceTooltip = ({ slice }) => {
+        return (
+            <div
+                style={{
+                    background: 'white',
+                    padding: '6px',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                }}
+            >
+                <strong>s = {slice.points[0].data.xFormatted}</strong>
+                {slice.points.map(point => (
+                    <div
+                        key={point.id}
+                        style={{ color: point.serieColor }}
+                    >
+                        {point.seriesId.at(-1)}: {point.data.yFormatted}
+                    </div>
+                ))}
+            </div>
+        );
+    };
 
     // WORK IN PROGRESS TO DISPLAY S
     // const CustomTooltip = ({ point }) => (
@@ -65,6 +92,9 @@ const LineGraph = ({totalLen, twissData, setSValue, beamline, twissAxis, scroll,
         enableTouchCrosshair={true}
         useMesh={true}
         enableSlices={'x'}
+        sliceTooltip={({ slice }) => (
+            <CustomSliceTooltip slice={slice} />
+        )}
         // tooltip={({point}) => <CustomTooltip point={point} />}
 
         //onClick={(e) => setSValue(e.points[0].data['x'])} // USE if enableSlices IS 'x'
@@ -75,10 +105,10 @@ const LineGraph = ({totalLen, twissData, setSValue, beamline, twissAxis, scroll,
                 if (scroll) setScroll(false);
             }
         }
+
+        // TO DO MOVE TOOLTIP ON LEFT SIDE TO START WITH
         onMouseMove={
-            scroll
-                ? (e) => setSValue(e.points[0].data['x'])
-                : undefined
+            scroll ? (e) => setSValue(e.points[0].data['x']) : undefined
         }
 
         legends={[

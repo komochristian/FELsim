@@ -5,6 +5,16 @@ import Box from '@mui/material/Box';
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
+const ascii_to_greek = (char) => {
+    const greekMap = {
+        'alpha': 'α',
+        'beta': 'β',
+        'phi': 'φ',
+        'epsilon': 'ε'
+    };
+    return greekMap[char] || char;
+};
+
 const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtypeToPass,
     numOfParticles , mev}) => {
     const [tabValue, setTabValue] =  useState('twiss');
@@ -20,6 +30,7 @@ const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtype
           customIon: "",
           numParticles: numOfParticles,
           kineticEnergy: mev,
+          box_distribution: "gaussian",
           twiss: twissValues,
         }
       });
@@ -30,9 +41,7 @@ const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtype
         data.beam_setup = tabValue;
         submitHelper(data);
     };
-    const axes = ["x", "y", "z"];
-    const letters = ["α", "β", "φ", "ε"];
-
+    
     const handleChange = (event, newValue) => {
         setTabValue(newValue);
       };
@@ -56,12 +65,12 @@ const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtype
                 {/* Beam Type */}
                 <Form.Label className="forLabels">Select Beam type:</Form.Label>
                 <Form.Select {...register("beamType")}>
-                <option value="electron">Electron</option>
-                <option value="proton">Proton</option>
-                <option value="otherIon">Other Ion</option>
-                {beamtypeToPass !== "electron" && beamtypeToPass !== "proton" && (
-                    <option value={beamtypeToPass}>{beamtypeToPass}</option>
-                )}
+                    <option value="electron">Electron</option>
+                    <option value="proton">Proton</option>
+                    <option value="otherIon">Other Ion</option>
+                    {beamtypeToPass !== "electron" && beamtypeToPass !== "proton" && (
+                        <option value={beamtypeToPass}>{beamtypeToPass}</option>
+                    )}
                 </Form.Select>
 
                 {/* Custom Ion Name */}
@@ -75,23 +84,32 @@ const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtype
 
                 {/* Number of particles */}
                 <Form.Label className="forLabels mt-3">
-                Number of particles:
+                    Number of particles:
                 </Form.Label>
                 <Form.Control
-                type="number"
-                min={3}
-                {...register("numParticles", { valueAsNumber: true })}
+                    type="number"
+                    min={3}
+                    {...register("numParticles", { valueAsNumber: true })}
                 />
 
                 {/* Kinetic Energy */}
                 <Form.Label className="forLabels mt-3">
-                Kinetic Energy (MeV):
+                    Kinetic Energy (MeV):
                 </Form.Label>
                 <Form.Control
-                type="number"
-                min={0}
-                {...register("kineticEnergy", { valueAsNumber: true })}
+                    type="number"
+                    min={0}
+                    {...register("kineticEnergy", { valueAsNumber: true })}
                 />
+
+                {/* Combo box distribution */}
+                <Form.Label className="forLabels mt-3">
+                    Distribution:
+                </Form.Label>
+                <Form.Select {...register("box_distribution")}>
+                    <option value="gaussian">Gaussian</option>
+                    <option value="uniform">Uniform</option>
+                </Form.Select>
 
                 {/* Tabs */}
                 <Box sx={{ mt: 3 }}>
@@ -105,24 +123,24 @@ const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtype
                 {/* Tab Content */}
                 {tabValue === "twiss" && (
                 <Container className="mt-3">
-                    {axes.map((axis) => (
-                    <div key={axis} className="mb-4">
-                        <Row>
-                        {letters.map((letter) => (
-                            <Col md={3} key={letter}>
-                            <Form.Group controlId={`${axis}-${letter}`}>
-                                <Form.Label>
-                                {axis}: {letter}
-                                </Form.Label>
-                                <Form.Control
-                                type="number"
-                                {...register(`twiss.${axis}.${letter}`)}
-                                />
-                            </Form.Group>
-                            </Col>
-                        ))}
-                        </Row>
-                    </div>
+                    {Object.entries(twissValues).map(([axis, params]) => (
+                        <div key={axis}>
+                            <Row>
+                            {Object.entries(params).map(([param, value]) => (
+                                <Col md={3} key={param}>
+                                <Form.Group controlId={`${axis}-${param}`}>
+                                    <Form.Label>
+                                    {axis}: {ascii_to_greek(param)}
+                                    </Form.Label>
+                                    <Form.Control
+                                    type="number"
+                                    {...register(`twiss.${axis}.${param}`)}
+                                    />
+                                </Form.Group>
+                                </Col>
+                            ))}
+                            </Row>
+                        </div>
                     ))}
                 </Container>
                 )}

@@ -24,6 +24,17 @@ ORIGINS = [f'http://localhost:{FRONTEND_PORT}', f"localhost:{FRONTEND_PORT}"]
 #ORIGINS = ["http://localhost:5173", "localhost:5173"]
 moduleName = 'beamline'
 
+class AxisTwiss(BaseModel):
+    alpha: float
+    beta: float
+    phi: float
+    epsilon: float
+
+class TwissParameters(BaseModel):
+    x: AxisTwiss
+    y: AxisTwiss
+    z: AxisTwiss
+
 class BeamlineInfo(BaseModel):
     #__root__: Dict[str, Dict[str, Any]]
     segmentName: str
@@ -39,6 +50,8 @@ class PlottingParameters(BaseModel):
     saveData: bool = False
     matchScaling: bool = True
     scatter: bool = True
+    beam_setup: str = 'twiss'
+    twiss: TwissParameters = None
     #  I THINK WE NEED SAVE FIG AND SHAPE
 
 class LineAxObject(BaseModel):
@@ -82,7 +95,10 @@ app.add_middleware(
 )
 
 def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
-    beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], plotParams.num_particles) 
+    beam_dist = None
+    print(plotParams.beam_setup)
+    if plotParams.beam_setup == 'twiss': beam_dist = ebeam.gen_6d_from_twiss(plotParams.twiss.model_dump(), plotParams.num_particles)
+    else: beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], plotParams.num_particles)
     schem = draw_beamline()
     axList, lineAxObj = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True, interval=plotParams.interval)
     fig = lineAxObj['axis'].figure

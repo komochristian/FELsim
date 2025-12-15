@@ -48,10 +48,11 @@ function App()
     const [loading, setLoading] = useState(false);
     const [mev, setMeV] = useState(45);
     const [twissValues, setTwissValues] = useState({
-        x: { α: '0', β: '1', φ: '0', ε: '1' },
-        y: { α: '0', β: '1', φ: '0', ε: '1' },
-        z: { α: '0', β: '0', φ: '0', ε: '10' },
+        x: { alpha: '0', beta: '1', phi: '0', epsilon: '1' },
+        y: { alpha: '0', beta: '1', phi: '0', epsilon: '1' },
+        z: { alpha: '0', beta: '0', phi: '0', epsilon: '10' },
     });
+    const [beamSetup, setBeamSetup] = useState("twiss");
 
     const showErrorWindow = (message) => {
         console.log("Error:", message);
@@ -237,7 +238,9 @@ function App()
                 num_particles: numOfParticles,
                 beamType: beamtypeToPass,
                 interval: sInterval,
-                kineticE: mev
+                kineticE: mev,
+                beam_setup: beamSetup,
+                twiss: twissValues,
             }
         
             const jsonBody = JSON.stringify(plottingParams, null, 2); 
@@ -319,6 +322,13 @@ function App()
         setParticleNum(data.numParticles);
         if (data.beam_setup === "twiss") {
             setTwissValues(data.twiss);
+            setBeamSetup("twiss");
+        }
+        else if (data.beam_setup === "base_dist") {
+            setBeamSetup("base_dist");
+        }
+        else if (data.beam_setup === "import") {
+            setBeamSetup("import");
         }
     };
       
