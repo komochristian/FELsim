@@ -16,7 +16,7 @@ const ascii_to_greek = (char) => {
 };
 
 const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtypeToPass,
-    numOfParticles , mev}) => {
+    numOfParticles , mev, base_distribution}) => {
     const [tabValue, setTabValue] =  useState('base_dist');
     const {
         register,
@@ -32,6 +32,7 @@ const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtype
           kineticEnergy: mev,
           box_distribution: "gaussian",
           twiss: twissValues,
+          base_distribution: base_distribution
         }
       });
     
@@ -146,8 +147,25 @@ const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtype
 
                 {tabValue === "base_dist" && (
                 <Container className="mt-3">
-                        <Row><h2>Work in Progress, please contact repository owner!</h2></Row>
-                        <Row><h5>This tab will use a normal Gaussian distribution</h5></Row>
+                    {Object.entries(base_distribution).map(([sigma, axes]) => (
+                        <div key={sigma}>
+                            <Row>
+                            {Object.entries(axes).map(([axis, value]) => (
+                                <Col md={4} key={axis}>
+                                <Form.Group controlId={`${sigma}-${axis}`}>
+                                    <Form.Label>
+                                    {sigma}{axis}
+                                    </Form.Label>
+                                    <Form.Control
+                                    type="number"
+                                    {...register(`base_distribution.${sigma}.${axis}`)}
+                                    />
+                                </Form.Group>
+                                </Col>
+                            ))}
+                            </Row>
+                        </div>
+                    ))}
                 </Container>
                 )}
 

@@ -14,7 +14,7 @@ import 'rsuite/dist/rsuite.min.css';
 import ActionCell from './components/ActionCell/ActionCell';
 import EditableCell from './components/EditableCell/EditableCell';
 import NormalCell from './components/NormalCell/NormalCell';
-import { Col, Row, Card } from 'react-bootstrap';
+import { Col, Row, Card, Overlay } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
@@ -52,7 +52,15 @@ function App()
         y: { alpha: '0', beta: '1', phi: '0', epsilon: '1' },
         z: { alpha: '0', beta: '1', phi: '0', epsilon: '10' },
     });
+    const [base_distribution, setBaseDistribution] = useState(
+        {
+            sigma_x: {x: 0, y: 0, z: 0},
+            sigma_y: {x: 0, y: 0, z: 0},
+        }
+    );
     const [beamSetup, setBeamSetup] = useState("twiss");
+    const [showGraphSettings, setShowGraphSettings] = useState(false);
+    const [graphTarget, setTarget] = useState(null);
 
     const showErrorWindow = (message) => {
         console.log("Error:", message);
@@ -320,11 +328,13 @@ function App()
         setBeamtypeToPass(data.customIon ? data.customIon : data.beamType);
         setMeV(data.kineticEnergy);
         setParticleNum(data.numParticles);
+        setBaseDistribution(data.base_distribution);
+        setTwissValues(data.twiss);
         if (data.beam_setup === "twiss") {
-            setTwissValues(data.twiss);
             setBeamSetup("twiss");
         }
         else if (data.beam_setup === "base_dist") {
+            
             setBeamSetup("base_dist");
         }
         else if (data.beam_setup === "import") {
@@ -382,6 +392,7 @@ function App()
                 mev={mev}
                 submitHelper={ParticleSettingsSubmitHelper}
                 twissValues={twissValues}
+                base_distribution={base_distribution}
             />
         </Modal>
         <div className="layout">
@@ -459,7 +470,66 @@ function App()
                     </Column>
                 </Table>
             </div>
-            <Card className="mt-3">
+          </div>
+        <div className='menu-options'>
+            <Col className="settings-icon-wrapper pt-3 h-100 d-flex flex-column">
+                <Row className="mb-3 g-0">
+                    <button 
+                        className="menu-button" 
+                        onClick={() => {
+                            setSelectedMenu("beamSettings");
+                        }}
+                    >
+                        <i className="fas fa-cog"></i>
+                    </button>
+                </Row>
+                <Row className="mb-3 g-0">
+                    <button className="menu-button" onClick={() => setSelectedMenu("parameterGraphing")}>
+                        <i class="fa-solid fa-chart-area"></i>
+                    </button>
+                </Row>
+                <Row className="mb-3 g-0">
+                    <button 
+                        className="menu-button" 
+                        onClick={() => {
+                            setSelectedMenu("particleSettings");
+                            }}
+                        >
+                        <i className="fas fa-atom"></i>
+                    </button>
+                </Row> 
+                <Row className="g-0 mt-auto mb-3">
+                    <button 
+                        className="menu-button"
+                        onClick={(e) => {
+                            setShowGraphSettings(!showGraphSettings);
+                            setTarget(e.target);
+                        }}
+                    >
+                        <i className="fas fa-chart-line"></i>
+                    </button>
+                </Row>
+            </Col>
+            <Overlay
+                show={showGraphSettings}
+                target={graphTarget}
+                placement="right"
+                containerPadding={20}
+                popperConfig={{
+                    modifiers: [
+                      {
+                        name: "offset",
+                        options: {
+                          offset: [0, 16], // [skid, distance]
+                        },
+                      },
+                    ],
+                  }}
+                rootClose
+                onHide={() => setShowGraphSettings(false)}
+            >
+            {(props) => (
+                <Card {...props} className="mt-3">
                 <Card.Header>
                     Graph settings
                 </Card.Header>
@@ -484,35 +554,8 @@ function App()
                             }}
                             />
                 </Card>
-          </div>
-        <div className='menu-options'>
-            <Col className="settings-icon-wrapper pt-3">
-                <Row className="mb-3 g-0">
-                    <button 
-                        className="menu-button" 
-                        onClick={() => {
-                            setSelectedMenu("beamSettings");
-                        }}
-                    >
-                        <i className="fas fa-cog"></i>
-                    </button>
-                </Row>
-                <Row className="mb-3 g-0">
-                    <button className="menu-button" onClick={() => setSelectedMenu("parameterGraphing")}>
-                        <i className="fas fa-chart-line"></i>
-                    </button>
-                </Row>
-                <Row className="mb-3 g-0">
-                    <button 
-                        className="menu-button" 
-                        onClick={() => {
-                            setSelectedMenu("particleSettings");
-                            }}
-                        >
-                        <i className="fas fa-atom"></i>
-                    </button>
-                </Row> 
-            </Col>
+            )}
+            </Overlay>
         </div>
         {/* <div className="beamSettings">
             <BeamSettings
