@@ -17,7 +17,7 @@ const ascii_to_greek = (char) => {
 
 const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtypeToPass,
     numOfParticles , mev}) => {
-    const [tabValue, setTabValue] =  useState('twiss');
+    const [tabValue, setTabValue] =  useState('base_dist');
     const {
         register,
         handleSubmit,
@@ -120,7 +120,6 @@ const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtype
                 </Tabs>
                 </Box>
 
-                {/* Tab Content */}
                 {tabValue === "twiss" && (
                 <Container className="mt-3">
                     {Object.entries(twissValues).map(([axis, params]) => (
@@ -143,6 +142,20 @@ const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtype
                         </div>
                     ))}
                 </Container>
+                )}
+
+                {tabValue === "base_dist" && (
+                <Container className="mt-3">
+                        <Row><h2>Work in Progress, please contact repository owner!</h2></Row>
+                        <Row><h5>This tab will use a normal Gaussian distribution</h5></Row>
+                </Container>
+                )}
+
+                {tabValue === "import" && (
+                    <Container className="mt-3">
+                        <Row><h2>Work in Progress, please contact repository owner!</h2></Row>
+                        <Row><h5>This tab will use a normal Gaussian distribution</h5></Row>
+                    </Container>
                 )}
 
                 {/* Submit */}

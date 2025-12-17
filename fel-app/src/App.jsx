@@ -50,7 +50,7 @@ function App()
     const [twissValues, setTwissValues] = useState({
         x: { alpha: '0', beta: '1', phi: '0', epsilon: '1' },
         y: { alpha: '0', beta: '1', phi: '0', epsilon: '1' },
-        z: { alpha: '0', beta: '0', phi: '0', epsilon: '10' },
+        z: { alpha: '0', beta: '1', phi: '0', epsilon: '10' },
     });
     const [beamSetup, setBeamSetup] = useState("twiss");
 
