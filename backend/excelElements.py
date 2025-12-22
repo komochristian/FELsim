@@ -88,10 +88,15 @@ class ExcelElements:
             angle_wedge = float(row['Dipole wedge (deg)']) if pd.notna(row['Dipole wedge (deg)']) else 0.0
             gap_wedge = float(row['Gap wedge (m)']) if pd.notna(row['Gap wedge (m)']) else 0.0
             pole_gap = float(row['Pole gap (m)']) if pd.notna(row['Pole gap (m)']) else 0.0
-            
-            if pd.notna(row['Fringe Field Enge coefficients']) and row['Fringe Field Enge coefficients'].strip():
-                enge_fct = [float(val.strip()) for val in row['Fringe Field Enge coefficients'].split(',') 
-                           if val.strip()]
+
+            enge_raw = row['Fringe Field Enge coefficients']
+            if pd.notna(enge_raw):
+                if isinstance(enge_raw, str) and enge_raw.strip():
+                    enge_fct = [float(val.strip()) for val in enge_raw.split(',') if val.strip()]
+                elif isinstance(enge_raw, (int, float)):
+                    enge_fct = [float(enge_raw)]
+                else:
+                    enge_fct = []
             else:
                 enge_fct = []
             
