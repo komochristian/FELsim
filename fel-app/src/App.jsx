@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import './App.css';
 import Dropdown from './components/Dropdown/Dropdown';
 import DropdownItem from './components/DropdownItem/DropdownItem';
@@ -23,6 +23,7 @@ import { PRIVATEVARS, API_ROUTE, TWISS_OPTIONS } from './constants';
 import { Mosaic } from 'react-loading-indicators';
 import BeamSettings from './components/BeamSettings/BeamSettings';
 import ParticleSettings from './components/ParticleSettings/ParticleSettings';
+import PlotMenu from './components/PlotMenu/PlotMenu';
 
 function App()
 {
@@ -341,6 +342,19 @@ function App()
             setBeamSetup("import");
         }
     };
+
+    const SaveFig = () => {
+        if (!dotGraphs || dotGraphs.length === 0 || !dotGraphs.get(currentS) || dotGraphs.size === 0) {
+            showErrorWindow("No simulation loaded to save");
+            return;
+        }
+        const link = document.createElement('a');
+        link.href = dotGraphs.get(currentS);
+        link.download = `beam_plot_${currentS}.png`; // or any filename
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
       
     return (
         <>
@@ -400,19 +414,20 @@ function App()
         <div className={`sidebar`}>
             <h2>FEL simulator</h2>
             <div>
-                <Dropdown buttonText="Add Segment" 
-                        contentText={
-                            <>
-                                {items.map((item) => (
-                                    <DropdownItem 
-                                        key={item}
-                                        onClick={() => handleItemClick(item)}
-                                    >
-                                        {`${item}`}
-                                    </DropdownItem>
-                                ))}
-                            </>
-                        }
+                <Dropdown 
+                    buttonText="Add Segment" 
+                    contentText={
+                        <>
+                            {items.map((item) => (
+                                <DropdownItem 
+                                    key={item}
+                                    onClick={() => handleItemClick(item)}
+                                >
+                                    {`${item}`}
+                                </DropdownItem>
+                            ))}
+                        </>
+                    }
                 />
                 <button
                     type="button"
@@ -557,36 +572,25 @@ function App()
             )}
             </Overlay>
         </div>
-        {/* <div className="beamSettings">
-            <BeamSettings
-                setSelectedMenu={setSelectedMenu}
-                excelToAPI={excelToAPI}
-                setBeamInput={setBeamInput}
-                currentBeamType={currentBeamType}
-                setBeamtypeToPass={setBeamtypeToPass}
-                beamtypeToPass={beamtypeToPass}
-                numOfParticles={numOfParticles}
-                setParticleNum={setParticleNum}
-                sInterval={sInterval}
-                setSInterval={setSInterval}
+        <div className="main-content h-100 d-flex justify-content-center align-items-center">
+            <PlotMenu 
+                saveFig={SaveFig}
             />
-         </div>  */}
-          <div className="main-content h-100 d-flex justify-content-center align-items-center">
             {loading ? <Mosaic color="#000000" size="small" text="Loading" textColor="#000000" />
             :
             (dotGraphs.size > 0 ? <img src={dotGraphs.get(currentS)}/> : <h1>No simulation loaded</h1>)
             }
-          </div>
-          <div className="twiss-graph">
-                <LineGraph twissData={twissDf}
-                           setSValue={setSValue} 
-                           beamline={beamlistSelected}
-                           totalLen={totalLen}
-                           twissAxis={currentTwissParam}
-                           scroll={scroll}
-                           setScroll={setScroll}>
-                </LineGraph>
-          </div>
+        </div>
+        <div className="twiss-graph">
+            <LineGraph 
+            twissData={twissDf}
+            setSValue={setSValue} 
+            beamline={beamlistSelected}
+            totalLen={totalLen}
+            twissAxis={currentTwissParam}
+            scroll={scroll}
+            setScroll={setScroll} />
+        </div>
         </div>
         </>
     );

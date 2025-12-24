@@ -3,7 +3,7 @@ import {Tooltip} from 'react-tooltip';
 
 const FloatingInfoButton = () => {
   return (
-    <div>
+    <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 100}}>
       {/* Floating Button */}
       <button
         data-tooltip-id="info-tooltip"
@@ -26,9 +26,9 @@ const FloatingInfoButton = () => {
                            For questions, contact: komochristian@gmail.com"
         data-tooltip-place="left"
         style={{
-          position: 'fixed',
-          top: '10px',
-          right: '10px',
+          position: 'absolute',
+          top: '1px',
+          right: '3px',
           backgroundColor: '#000000',
           color: '#fff',
           border: 'none',
