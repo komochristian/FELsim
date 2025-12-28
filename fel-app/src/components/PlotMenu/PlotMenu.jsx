@@ -17,7 +17,10 @@ const PlotMenu = ({ saveFig, openSPositionMenu }) => {
                     top: 0,
                     left: 0,
                     margin: '8px',
-                    zIndex: 10
+                    zIndex: 10,
+                    border: '1px solid #000000',
+                    backgroundColor: '#FFFFFF',
+
                 }}
             >
                 <i className="fas fa-bars"></i>

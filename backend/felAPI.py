@@ -100,6 +100,7 @@ def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
     if plotParams.beam_setup == 'twiss': beam_dist = ebeam.gen_6d_from_twiss(plotParams.twiss.model_dump(), plotParams.num_particles)
     else: beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], plotParams.num_particles)
     schem = draw_beamline()
+    schem.DEFAULTINTERVALROUND = 10
     axList, lineAxObj = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True, interval=plotParams.interval)
     fig = lineAxObj['axis'].figure
     buf = io.BytesIO()
