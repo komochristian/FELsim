@@ -1,7 +1,7 @@
 import { ResponsiveLine } from '@nivo/line'
 import { useState } from 'react';
 
-const LineGraph = ({totalLen, twissData, setSValue, beamline, twissAxis, scroll, setScroll}) => {
+const LineGraph = ({totalLen, twissData, setSValue, beamline, twissAxis, scroll, setScroll }) => {
     const [unselectedAxis, setUnselectedAxis] = useState([]);
     const [mouseX, setMouseX] = useState(0);
 
@@ -28,7 +28,7 @@ const LineGraph = ({totalLen, twissData, setSValue, beamline, twissAxis, scroll,
 
     // make tooltip not go off page if user puts mouse on the left side of the screen
     const CustomSliceTooltip = ({ slice }) => {
-        console.log(slice);
+        // console.log(slice);
         return (
             <div
                 style={{

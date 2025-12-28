@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import Overlay from 'react-bootstrap/Overlay';
 import { Container, Row, Button, Col } from "react-bootstrap";
 
-const PlotMenu = ({ saveFig }) => {
+const PlotMenu = ({ saveFig, openSPositionMenu }) => {
     const targetRef = useRef(null);
     const [showPlotMenu, setShowPlotMenu] = useState(false);
 
@@ -28,7 +28,7 @@ const PlotMenu = ({ saveFig }) => {
                 placement="right"
             >
                 <Container 
-                    className="bg-white border border-dark rounded shadow-sm p-1 ms-3"
+                    className="bg-white border border-dark rounded shadow-sm p-1 ms-1"
                     onMouseEnter={() => setShowPlotMenu(true)}
                     onMouseLeave={() => setShowPlotMenu(false)}
                     style={{
@@ -43,8 +43,10 @@ const PlotMenu = ({ saveFig }) => {
                             >
                                 Download PNG
                             </Button>
-                            <Button className='me-2 h-auto'>
-                                test
+                            <Button 
+                                className='me-2 h-auto'
+                                onClick={() => openSPositionMenu(true)}>
+                                Go to S position
                             </Button>
                         </Col>
                     </Row>

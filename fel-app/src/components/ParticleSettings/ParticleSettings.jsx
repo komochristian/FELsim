@@ -16,8 +16,8 @@ const ascii_to_greek = (char) => {
 };
 
 const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtypeToPass,
-    numOfParticles , mev, base_distribution}) => {
-    const [tabValue, setTabValue] =  useState('base_dist');
+    numOfParticles , mev, base_distribution, beamSetup}) => {
+    const [tabValue, setTabValue] =  useState(beamSetup);
     const {
         register,
         handleSubmit,

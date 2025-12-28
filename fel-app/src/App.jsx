@@ -24,6 +24,7 @@ import { Mosaic } from 'react-loading-indicators';
 import BeamSettings from './components/BeamSettings/BeamSettings';
 import ParticleSettings from './components/ParticleSettings/ParticleSettings';
 import PlotMenu from './components/PlotMenu/PlotMenu';
+import GoToSPosition from './components/GoToSPosition/GoToSPosition';
 
 function App()
 {
@@ -59,9 +60,10 @@ function App()
             sigma_y: {x: 0, y: 0, z: 0},
         }
     );
-    const [beamSetup, setBeamSetup] = useState("twiss");
+    const [beamSetup, setBeamSetup] = useState("base_dist");
     const [showGraphSettings, setShowGraphSettings] = useState(false);
     const [graphTarget, setTarget] = useState(null);
+    const [sPositionMenu, openSPositionMenu] = useState(false);
 
     const showErrorWindow = (message) => {
         console.log("Error:", message);
@@ -91,7 +93,16 @@ function App()
 
     useEffect(() => {
         if (!showError) return ;
-        const timer = setTimeout(() => setError(false), 4000);
+        const timer = setTimeout(() => {
+            setError(false);
+            
+            const secondTimer = setTimeout(() => {
+                setErrorMessage('');
+            }, 300);
+
+            // cleanup inner timer
+            return () => clearTimeout(secondTimer);
+        }, 4000);
         return () => clearTimeout(timer); 
     }, [showError]);
 
@@ -335,7 +346,6 @@ function App()
             setBeamSetup("twiss");
         }
         else if (data.beam_setup === "base_dist") {
-            
             setBeamSetup("base_dist");
         }
         else if (data.beam_setup === "import") {
@@ -354,6 +364,22 @@ function App()
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    };
+
+    const goToSPos = (data) => {
+        openSPositionMenu(false);
+        if (!dotGraphs || dotGraphs.size === 0 || dotGraphs.length === 0) { showErrorWindow("No simulation loaded"); return; }
+        const target = data.s_pos;
+        if (dotGraphs.get(target)) {
+             setSValue(target);
+             return;
+        };
+
+        const arr = Array.from(dotGraphs.keys());
+        const closestS = arr.reduce((prev, curr) =>
+            Math.abs(curr - target) < Math.abs(prev - target) ? curr : prev
+        );
+        setSValue(closestS);
     };
       
     return (
@@ -407,6 +433,16 @@ function App()
                 submitHelper={ParticleSettingsSubmitHelper}
                 twissValues={twissValues}
                 base_distribution={base_distribution}
+                beamSetup={beamSetup}
+            />
+        </Modal>
+        <Modal
+            open={sPositionMenu}
+            onClose={() => openSPositionMenu(false)}
+            center
+        >
+            <GoToSPosition
+                goToSPos={goToSPos}
             />
         </Modal>
         <div className="layout">
@@ -500,7 +536,7 @@ function App()
                 </Row>
                 <Row className="mb-3 g-0">
                     <button className="menu-button" onClick={() => setSelectedMenu("parameterGraphing")}>
-                        <i class="fa-solid fa-chart-area"></i>
+                        <i className="fa-solid fa-chart-area"></i>
                     </button>
                 </Row>
                 <Row className="mb-3 g-0">
@@ -575,6 +611,7 @@ function App()
         <div className="main-content h-100 d-flex justify-content-center align-items-center">
             <PlotMenu 
                 saveFig={SaveFig}
+                openSPositionMenu={openSPositionMenu}
             />
             {loading ? <Mosaic color="#000000" size="small" text="Loading" textColor="#000000" />
             :
