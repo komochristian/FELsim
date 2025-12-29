@@ -14,7 +14,7 @@ import 'rsuite/dist/rsuite.min.css';
 import ActionCell from './components/ActionCell/ActionCell';
 import EditableCell from './components/EditableCell/EditableCell';
 import NormalCell from './components/NormalCell/NormalCell';
-import { Col, Row, Card, Overlay } from 'react-bootstrap';
+import { Col, Row, Card, Overlay, Button } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
@@ -25,6 +25,7 @@ import BeamSettings from './components/BeamSettings/BeamSettings';
 import ParticleSettings from './components/ParticleSettings/ParticleSettings';
 import PlotMenu from './components/PlotMenu/PlotMenu';
 import GoToSPosition from './components/GoToSPosition/GoToSPosition';
+import SimulationModel from './components/SimulationModel/SimulationModel';
 
 function App()
 {
@@ -63,7 +64,6 @@ function App()
     const [beamSetup, setBeamSetup] = useState("base_dist");
     const [showGraphSettings, setShowGraphSettings] = useState(false);
     const [graphTarget, setTarget] = useState(null);
-    const [sPositionMenu, openSPositionMenu] = useState(false);
 
     const showErrorWindow = (message) => {
         console.log("Error:", message);
@@ -284,7 +284,8 @@ function App()
             const lineAx = lineAxObj['axis'];
 
             handleTwiss(JSON.parse(lineAxObj['twiss']), lineAxObj['x_axis']);
-
+            
+            //  Must use map to maintain key consistency
             const cleanResult = new Map(
                 Object.entries(result).map(([key, value]) => [
                     parseFloat(key),
@@ -367,7 +368,7 @@ function App()
     };
 
     const goToSPos = (data) => {
-        openSPositionMenu(false);
+        setSelectedMenu(null);
         if (!dotGraphs || dotGraphs.size === 0 || dotGraphs.length === 0) { showErrorWindow("No simulation loaded"); return; }
         const target = data.s_pos;
         if (dotGraphs.get(target)) {
@@ -437,8 +438,15 @@ function App()
             />
         </Modal>
         <Modal
-            open={sPositionMenu}
-            onClose={() => openSPositionMenu(false)}
+            open={selectedMenu === 'simulationModel'} 
+            onClose={() => setSelectedMenu(null)} 
+            center
+        >
+            <SimulationModel></SimulationModel>
+        </Modal>
+        <Modal
+            open={selectedMenu === 's_pos_select'}
+            onClose={() => setSelectedMenu(null)}
             center
         >
             <GoToSPosition
@@ -449,29 +457,32 @@ function App()
         <FloatingInfoButton /> 
         <div className={`sidebar`}>
             <h2>FEL simulator</h2>
-            <div>
-                <Dropdown 
-                    buttonText="Add Segment" 
-                    contentText={
-                        <>
-                            {items.map((item) => (
-                                <DropdownItem 
-                                    key={item}
-                                    onClick={() => handleItemClick(item)}
-                                >
-                                    {`${item}`}
-                                </DropdownItem>
-                            ))}
-                        </>
-                    }
-                />
-                <button
-                    type="button"
-                    className="simButton"
-                    onClick={() => getBeamline(beamlistSelected)}>
-                    Simulate
-                </button>
-            </div>
+            <Row>
+                <Col>
+                    <Dropdown 
+                        buttonText="Add Segment" 
+                        contentText={
+                            <>
+                                {items.map((item) => (
+                                    <DropdownItem 
+                                        key={item}
+                                        onClick={() => handleItemClick(item)}
+                                    >
+                                        {`${item}`}
+                                    </DropdownItem>
+                                ))}
+                            </>
+                        }
+                    />
+                    <Button
+                        onClick={() => getBeamline(beamlistSelected)}
+                        variant="light"
+                        className="rounded-0 fw-bold border border-dark"
+                    >
+                        Simulate
+                    </Button>
+                </Col>
+            </Row>
             <h4>Beam setup</h4>
             <div className="scrollBox">
                 {/* ALLOW EDITTING OF ALL PARAMETERS LATER ON */}
@@ -549,6 +560,16 @@ function App()
                         <i className="fas fa-atom"></i>
                     </button>
                 </Row> 
+                <Row className="mb-3 g-0">
+                    <button 
+                        className="menu-button" 
+                        onClick={() => {
+                            setSelectedMenu("simulationModel");
+                            }}
+                    >
+                       <i class="fa-solid fa-network-wired"></i>
+                    </button>
+                </Row> 
                 <Row className="g-0 mt-auto mb-3">
                     <button 
                         className="menu-button"
@@ -611,7 +632,7 @@ function App()
         <div className="main-content h-100 d-flex justify-content-center align-items-center">
             <PlotMenu 
                 saveFig={SaveFig}
-                openSPositionMenu={openSPositionMenu}
+                setSelectedMenu={setSelectedMenu}
             />
             {loading ? <Mosaic color="#000000" size="small" text="Loading" textColor="#000000" />
             :

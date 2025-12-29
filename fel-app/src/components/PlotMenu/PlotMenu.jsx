@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import Overlay from 'react-bootstrap/Overlay';
 import { Container, Row, Button, Col } from "react-bootstrap";
 
-const PlotMenu = ({ saveFig, openSPositionMenu }) => {
+const PlotMenu = ({ saveFig, setSelectedMenu }) => {
     const targetRef = useRef(null);
     const [showPlotMenu, setShowPlotMenu] = useState(false);
 
@@ -31,15 +31,13 @@ const PlotMenu = ({ saveFig, openSPositionMenu }) => {
                 placement="right"
             >
                 <Container 
-                    className="bg-white border border-dark rounded shadow-sm p-1 ms-1"
+                    className="bg-white border border-dark rounded shadow-sm p-1 ms-1 d-inline-block"
+                    style={{ width: "fit-content", maxWidth: "100vw" }}
                     onMouseEnter={() => setShowPlotMenu(true)}
                     onMouseLeave={() => setShowPlotMenu(false)}
-                    style={{
-                        width: '400px'
-                    }}
                 >
-                    <Row>
-                        <Col>
+                    <Row className='d-inline-block'>
+                        <Col xs='auto'>
                             <Button 
                                 className='me-2 h-auto'
                                 onClick={() => saveFig()}
@@ -48,7 +46,7 @@ const PlotMenu = ({ saveFig, openSPositionMenu }) => {
                             </Button>
                             <Button 
                                 className='me-2 h-auto'
-                                onClick={() => openSPositionMenu(true)}>
+                                onClick={() => setSelectedMenu('s_pos_select')}>
                                 Go to S position
                             </Button>
                         </Col>
