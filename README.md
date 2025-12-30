@@ -35,3 +35,8 @@ npm run dev
 
 4. Access app at: http://localhost:5173/ 
 
+
+
+
+## Documentation
+https://docs.google.com/document/d/1dWrnrAh5NK7wX0UzH4LToEC9UzlSGCQBZpvEENmjYh4/edit?tab=t.0
