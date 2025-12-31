@@ -210,5 +210,10 @@ input[type="number"] {
 
 /* Highlight all cells in the selected row */
 .rs-table-row.highlight-row .rs-table-cell {
-    background: #e6f7ff !important;
+    background: #18acf0 !important;
   }
+
+  .table-hover-row {
+    cursor: pointer;
+  }
+  

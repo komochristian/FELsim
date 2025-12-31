@@ -495,7 +495,9 @@ function App()
                             } else 
                             setSelectedRowId(rowData.id)
                         }}
-                        rowClassName={rowData => rowData?.id === selectedRowId ? 'highlight-row' : ''}
+                        rowClassName={rowData =>
+                            `${rowData?.id === selectedRowId ? 'highlight-row' : ''} table-hover-row`
+                        }
                         >
                     <Column flexGrow={1} fullText>
                         <HeaderCell>Name</HeaderCell>

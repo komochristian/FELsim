@@ -1,5 +1,5 @@
 
-import { Table, Input, InputNumber } from 'rsuite';
+import { Table, Input, InputNumber, Whisper, Tooltip } from 'rsuite';
 const { Cell } = Table;
 import 'rsuite/dist/rsuite.min.css'; 
 
@@ -26,6 +26,11 @@ const EditableCell = ({ rowData, dataType, dataKey, onChange, onEdit, ...props }
     }
   
     return (
+      <Whisper
+      trigger="hover"
+      speaker={<Tooltip>click to select insert position</Tooltip>}
+      placement="top" // Adjust placement as needed (e.g., 'bottom', 'left', 'right')
+    >
       <Cell
         {...props}
         className={editing ? 'table-cell-editing' : ''}
@@ -42,6 +47,8 @@ const EditableCell = ({ rowData, dataType, dataKey, onChange, onEdit, ...props }
           value
         )}
       </Cell>
+      </Whisper>
+
     );
   };
 

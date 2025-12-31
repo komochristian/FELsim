@@ -28,7 +28,8 @@ const LineGraph = ({totalLen, twissData, setSValue, beamline, twissAxis, scroll,
 
     // make tooltip not go off page if user puts mouse on the left side of the screen
     const CustomSliceTooltip = ({ slice }) => {
-        // console.log(slice);
+        // console.log('slice', slice);
+        // console.log('slice x value', slice.points[0].x);
         return (
             <div
                 style={{
@@ -37,8 +38,10 @@ const LineGraph = ({totalLen, twissData, setSValue, beamline, twissAxis, scroll,
                     border: '1px solid #aaa',
                     borderRadius: 4,
                     whiteSpace: 'nowrap',
-                    marginLeft: 12,
-                  }}
+
+                    transform: 'translate(+60%, -80%)',
+                    pointerEvents: 'none'
+                }}
             >
                 <strong>s = {slice.points[0].data.xFormatted}</strong>
                 {slice.points.map(point => (

@@ -244,6 +244,8 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
 
         schem = draw_beamline()
         ebeam = beam()
+
+        #  TODO: make the user able to configure the particle distribution
         beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000)
 
         # print("Plotting initial beamline up to segment", cleanedBeamlist)
