@@ -18,9 +18,10 @@ import math
 import numpy as np
 
 load_dotenv('../.env')  # Only during dev testing when not using Dockerfile...
-FRONTEND_PORT = os.getenv('FRONTEND_PORT')
+# FRONTEND_PORT = os.getenv('FRONTEND_PORT')
+FRONTEND_PORT = 5173
 
-ORIGINS = [f'http://localhost:{FRONTEND_PORT}', f"localhost:{FRONTEND_PORT}"]
+ORIGINS = [f'http://0.0.0.0:{FRONTEND_PORT}', f"0.0.0.0:{FRONTEND_PORT}"]
 #ORIGINS = ["http://localhost:5173", "localhost:5173"]
 moduleName = 'beamline'
 

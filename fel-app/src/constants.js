@@ -1,6 +1,6 @@
 export const PRIVATEVARS = ['color', 'startPos', 'endPos', 'name', 'id', 'status'];  // USE THIS SO USERS CANT EDIT THESE VALUES
 export const MODALPRIVATEVARS = [...PRIVATEVARS, 'fringeType'];
-export const API_ROUTE = `http://localhost:${import.meta.env.VITE_BACKEND_API_PORT ?? 8000}`;
+export const API_ROUTE = `http://0.0.0.0:${import.meta.env.VITE_BACKEND_API_PORT ?? 8000}`;
 export const TWISS_OPTIONS = [
     { value: '\\epsilon (\\pi.mm.mrad)', label: '\\epsilon (\\pi.mm.mrad)', modal_val: 'emittance' },
     { value: '\\alpha', label: '\\alpha', modal_val: 'alpha' },
