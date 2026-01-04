@@ -30,7 +30,7 @@ import SimulationModel from './components/SimulationModel/SimulationModel';
 function App()
 {
     console.log(API_ROUTE);
-    const [beamSegmentInfo, setData] = useState(null);
+    const [beamSegmentInfo, setBeamSegmentInfo] = useState(null);
     const [dotGraphs, setDotGraphs] = useState([]);
     const [lineGraph, setLineGraph] = useState(null);
     const [beamlistSelected, setSelectedItems] = useState([]);
@@ -113,7 +113,7 @@ function App()
     useEffect(() => {
         fetch(API_ROUTE + '/beamsegmentinfo')
             .then((response) => response.json())
-            .then((json) => setData(json))
+            .then((json) => setBeamSegmentInfo(json))
             .catch((err) => console.error("Error loading beam segment info:", err));
         }, []);
     //console.log(beamSegmentInfo);

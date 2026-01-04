@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Body, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Any, Dict, List, Optional
 from ebeam import beam
 from beamline import *
@@ -17,11 +17,14 @@ import copy
 import math
 import numpy as np
 
+description = """
+FEL beamline API used to interact with Python FEL and beamline simulation library.
+"""
+
 load_dotenv('../.env')  # Only during dev testing when not using Dockerfile...
 FRONTEND_PORT = os.getenv('FRONTEND_PORT')
 
 ORIGINS = [f'http://localhost:{FRONTEND_PORT}', f"localhost:{FRONTEND_PORT}"]
-#ORIGINS = ["http://localhost:5173", "localhost:5173"]
 moduleName = 'beamline'
 
 class AxisTwiss(BaseModel):
@@ -83,7 +86,45 @@ class GraphPlotData(BaseModel):
     parameter_value: float
     data: List[GraphPlotPointResponse]
 
-app = FastAPI()
+class ExcelBeamlineElement(BaseModel):
+    Nomenclature: Optional[str] = Field(None, alias=' Nomenclature', description="Element nomenclature")
+    z_start_m: Optional[float] = Field(None, alias='z start (m)', description="Start position in meters")
+    z_mid_m: Optional[float] = Field(None, alias='z mid (m)', description="Mid position in meters")
+    z_end_m: Optional[float] = Field(None, alias='z end (m)', description="End position in meters")
+    Current_A: Optional[float] = Field(None, alias='Current A)', description="Current in Amperes")
+    Pole_gap_m: Optional[float] = Field(None, alias='Pole gap (m)', description="Pole gap in meters")
+    Element_name: Optional[str] = Field(None, alias='Element name', description="Name of the element")
+    Channel_num: Optional[int] = Field(None, alias='Channel #', description="Channel number")
+    Sector: Optional[str] = Field(None, alias='Sector', description="Sector name")
+    Element: Optional[str] = Field(None, alias='Element', description="Element type")
+
+
+    class Config:
+        allow_population_by_field_name = True
+        schema_extra = {
+            "example": {
+                " Nomenclature": "LIN.QPF.004",
+                "z start (m)": 0.358775,
+                "z mid (m)": 0.403225,
+                "z end (m)": 0.447675,
+                "Current A)": 0.8857,
+                "Pole gap (m)": 0.027,
+                "Element name": "Quad",
+                "Channel #": 20,
+                "Sector": "LIN",
+                "Element": "QPF"
+            }
+        }
+
+app = FastAPI(
+    title="FEL Simulation API",
+    description=description,
+    version="1.0.0",
+    contact={
+        "name": "Christian Komo",
+        "email": "komochristian@gmail.com",
+    },
+)
 ebeam = beam()
 # Allow requests from your frontend (CORS!)
 app.add_middleware(
@@ -134,17 +175,9 @@ def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
     pngObject = AxesPNGData(**{'images': images, 'line_graph': lineAxObj})
     return pngObject
 
-def beamlineToJson():
-    pass
-
 @app.get("/")
 def root():
-    return {"Hello" : "World!"}
-
-@app.post("/get-dist")
-def gen_beam(particle_num : int): 
-    beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], particle_num).tolist()
-    return beam_dist
+    return {"FEL Beamline Simulation API"}
 
 @app.post("/excel-to-beamline")
 def excelToBeamline(excelJson: list[Dict[str, Any]]) -> list[dict[str, dict[str, Any]]]:
@@ -175,6 +208,18 @@ def excelToBeamline(excelJson: list[Dict[str, Any]]) -> list[dict[str, dict[str,
 
 @app.post("/axes")
 def loadAxes(plotParams: PlottingParameters) -> AxesPNGData:
+    """
+    Endpoint to return results of beamline simulation.
+    Twiss data and particle plot images included.
+
+    Parameters
+    ----------
+    -plotParams: Object containing beamline and simulation parameters
+
+    Returns
+    -------
+    - pngObject: Object containing base64 encoded particle plot images and twiss data
+    """
     try:
         beamline = importlib.import_module("beamline")
         beamlist = []
@@ -194,6 +239,13 @@ def loadAxes(plotParams: PlottingParameters) -> AxesPNGData:
 
 @app.get("/beamsegmentinfo")
 def getBeamSegmentInfo():
+    """
+    Returns most up to date beam segments available for beamline construction
+
+    Returns
+    -------
+    beanSegInfo: Dictionary containing beam segment class names and their parameters with default values
+    """
     module = importlib.import_module(moduleName)
     classes = inspect.getmembers(module, inspect.isclass)
     classes_in_module = [cls for name, cls in classes if cls.__module__ == moduleName and cls.__name__ not in ["Beamline", "lattice"]]
@@ -221,6 +273,17 @@ def getBeamSegmentInfo():
 
 @app.post("/plot-parameters")
 def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
+    """
+    Returns twiss data as a function of different parameter values of a segment
+
+    Parameters
+    ----------
+    graphParams: Object containing beamline and simulation parameters
+
+    Returns
+    -------
+    plotInfo: List of objects containing twiss data plotted against parameter value
+    """
     LABELMAPPING = {
         r'$\epsilon$ ($\pi$.mm.mrad)': 'emittance',
         r'$\alpha$': 'alpha',
