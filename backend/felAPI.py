@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 import copy
 import math
 import numpy as np
-from ApiSchemas import ExcelBeamlineElement, PlottingParameters, LineAxObject, AxesPNGData, GraphParameters, GraphPlotData
+from ApiSchemas import ExcelBeamlineElement, PlottingParameters, LineAxObject, AxesPNGData, GraphParameters, GraphPlotData, BeamSegmentsInfo
 
 description = """
 FEL beamline API used to interact with Python FEL and beamline simulation library.
@@ -48,6 +48,18 @@ app.add_middleware(
 )
 
 def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
+    """
+    Generates beamline simulation and returns base64 encoded images and twiss data.
+
+    Parameters
+    ----------
+    - beamlist: List of beamline segments
+    - plotParams: Object containing beamline and simulation parameters
+
+    Returns
+    -------
+    - pngObject: Object containing base64 encoded particle plot images and twiss data
+    """
     beam_dist = None
     # print(plotParams.beam_setup)
     if plotParams.beam_setup == 'twiss': beam_dist = ebeam.gen_6d_from_twiss(plotParams.twiss.model_dump(), plotParams.num_particles)
@@ -76,11 +88,6 @@ def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
      
     lineAxObj['axis'] = lineAx_img
     lineAxObj['twiss'] = lineAxObj['twiss'].to_json()
-    beamsegmentJson = []
-    #for segment in lineAxObj['beamsegment']:
-    #    beamsegmentJson.append(segment.__dict__)
-    lineAxObj['beamsegment'] = beamsegmentJson
-    #print(beamsegmentJson)
 
     lineAxObj = LineAxObject(**lineAxObj)
     pngObject = AxesPNGData(**{'images': images, 'line_graph': lineAxObj})
@@ -91,7 +98,7 @@ def root():
     return {"FEL Beamline Simulation API"}
 
 @app.post("/excel-to-beamline")
-def excelToBeamline(excelJson: List[ExcelBeamlineElement]) -> list[dict[str, dict[str, Any]]]:
+def excelToBeamline(excelJson: List[ExcelBeamlineElement]) -> List[BeamSegmentsInfo]:
     """
     Takes JSON formatted excel data and returns beamline object
     **Check Pydantic schema for data format
@@ -124,8 +131,14 @@ def excelToBeamline(excelJson: List[ExcelBeamlineElement]) -> list[dict[str, dic
                 paramsDict.update({name: paramVal})
                     
             jsonBeamlist.append({className: paramsDict})
-
-        return jsonBeamlist
+        beamlist_json_fixed = []
+        for item in jsonBeamlist:
+            for key, value in item.items():
+                new_dict = {'name': key}
+                new_dict.update(value)
+                beamlist_json_fixed.append(new_dict)
+        print(beamlist_json_fixed)
+        return beamlist_json_fixed
     except ValidationError as e:
         print("Pydantic validation error:", e)
         return {"error": str(e)}

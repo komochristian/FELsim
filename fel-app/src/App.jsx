@@ -157,9 +157,7 @@ function App()
     const setSelectedItemsHandler = (segList) => {
         console.log("segList from excel:", segList);
         const cleanedSegList = segList.map((segment) => {
-            const name = Object.keys(segment)[0];             
-            return handleSegmentColor({ "name": name,
-                                        ...segment[name]});
+            return handleSegmentColor(segment);
         });
         beamlistHandler(cleanedSegList);
     };
@@ -222,7 +220,6 @@ function App()
         const beamObj = handleSegmentColor({[item]: structuredClone(beamSegmentInfo[item])});
         const cleanedObj = {"name": item,
                             ...beamObj[item]};
-        console.log('cleanedObj', cleanedObj);
         const insertIndice = selectedRowId !== null ? selectedRowId : beamlistSelected.length;
         const updatedList = [...beamlistSelected.slice(0, insertIndice), cleanedObj, ...beamlistSelected.slice(insertIndice)];
         setSelectedRowId((id) => id === null ? null : id + 1);

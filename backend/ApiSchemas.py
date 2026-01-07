@@ -1,6 +1,13 @@
 from pydantic import BaseModel, Field
 from typing import Any, Dict, List, Optional
 
+class BeamSegmentsInfo(BaseModel):
+    name: str
+    length: float
+
+    class Config:
+        extra = 'allow'
+
 class AxisTwiss(BaseModel):
     alpha: float
     beta: float
