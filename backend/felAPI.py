@@ -1,6 +1,6 @@
-from fastapi import FastAPI, Body, HTTPException
-from pydantic import BaseModel, Field
-from typing import Any, Dict, List, Optional
+from fastapi import FastAPI, HTTPException
+from pydantic import ValidationError
+from typing import Any, List
 from ebeam import beam
 from beamline import *
 from schematic import *
@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 import copy
 import math
 import numpy as np
+from ApiSchemas import ExcelBeamlineElement, PlottingParameters, LineAxObject, AxesPNGData, GraphParameters, GraphPlotData
 
 description = """
 FEL beamline API used to interact with Python FEL and beamline simulation library.
@@ -26,95 +27,6 @@ FRONTEND_PORT = os.getenv('FRONTEND_PORT')
 
 ORIGINS = [f'http://localhost:{FRONTEND_PORT}', f"localhost:{FRONTEND_PORT}"]
 moduleName = 'beamline'
-
-class AxisTwiss(BaseModel):
-    alpha: float
-    beta: float
-    phi: float
-    epsilon: float
-
-class TwissParameters(BaseModel):
-    x: AxisTwiss
-    y: AxisTwiss
-    z: AxisTwiss
-
-class BeamlineInfo(BaseModel):
-    #__root__: Dict[str, Dict[str, Any]]
-    segmentName: str
-    parameters: Dict[str, Any]
-
-class PlottingParameters(BaseModel):
-    beamlineData: list[BeamlineInfo]
-    beamType: str = 'electron'
-    num_particles: int
-    kineticE: int = 45
-    interval: float = 1
-    defineLim: bool = True
-    saveData: bool = False
-    matchScaling: bool = True
-    scatter: bool = True
-    beam_setup: str = 'twiss'
-    twiss: TwissParameters = None
-    #  I THINK WE NEED SAVE FIG AND SHAPE
-
-class LineAxObject(BaseModel):
-    axis: str # temporary placeholder axes
-    twiss: str
-    x_axis: list[float]
-    beamsegment: list
-
-class AxesPNGData(BaseModel):
-    images: Dict[float, Any]
-    line_graph: LineAxObject
-
-class GraphParameters(BaseModel):
-    beam_index: int
-    target_parameter: str
-    target_s_pos: float
-    beamline_data: list[BeamlineInfo]
-    min: int | float = 0
-    max: int | float = 10
-    custom_step: int | float = 1
-
-class GraphPlotPointResponse(BaseModel):
-    x: float | None
-    y: float | None
-    z: float | None
-    twiss_parameter: str
-
-class GraphPlotData(BaseModel):
-    parameter_value: float
-    data: List[GraphPlotPointResponse]
-
-class ExcelBeamlineElement(BaseModel):
-    Nomenclature: Optional[str] = Field(None, alias=' Nomenclature', description="Element nomenclature")
-    z_start_m: Optional[float] = Field(None, alias='z start (m)', description="Start position in meters")
-    z_mid_m: Optional[float] = Field(None, alias='z mid (m)', description="Mid position in meters")
-    z_end_m: Optional[float] = Field(None, alias='z end (m)', description="End position in meters")
-    Current_A: Optional[float] = Field(None, alias='Current A)', description="Current in Amperes")
-    Pole_gap_m: Optional[float] = Field(None, alias='Pole gap (m)', description="Pole gap in meters")
-    Element_name: Optional[str] = Field(None, alias='Element name', description="Name of the element")
-    Channel_num: Optional[int] = Field(None, alias='Channel #', description="Channel number")
-    Sector: Optional[str] = Field(None, alias='Sector', description="Sector name")
-    Element: Optional[str] = Field(None, alias='Element', description="Element type")
-
-
-    class Config:
-        allow_population_by_field_name = True
-        schema_extra = {
-            "example": {
-                " Nomenclature": "LIN.QPF.004",
-                "z start (m)": 0.358775,
-                "z mid (m)": 0.403225,
-                "z end (m)": 0.447675,
-                "Current A)": 0.8857,
-                "Pole gap (m)": 0.027,
-                "Element name": "Quad",
-                "Channel #": 20,
-                "Sector": "LIN",
-                "Element": "QPF"
-            }
-        }
 
 app = FastAPI(
     title="FEL Simulation API",
@@ -137,7 +49,7 @@ app.add_middleware(
 
 def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
     beam_dist = None
-    print(plotParams.beam_setup)
+    # print(plotParams.beam_setup)
     if plotParams.beam_setup == 'twiss': beam_dist = ebeam.gen_6d_from_twiss(plotParams.twiss.model_dump(), plotParams.num_particles)
     else: beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], plotParams.num_particles)
     schem = draw_beamline()
@@ -163,7 +75,6 @@ def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
         images.update({index: img_base64})
      
     lineAxObj['axis'] = lineAx_img
-    print(lineAxObj['twiss'])
     lineAxObj['twiss'] = lineAxObj['twiss'].to_json()
     beamsegmentJson = []
     #for segment in lineAxObj['beamsegment']:
@@ -180,9 +91,22 @@ def root():
     return {"FEL Beamline Simulation API"}
 
 @app.post("/excel-to-beamline")
-def excelToBeamline(excelJson: list[Dict[str, Any]]) -> list[dict[str, dict[str, Any]]]:
+def excelToBeamline(excelJson: List[ExcelBeamlineElement]) -> list[dict[str, dict[str, Any]]]:
+    """
+    Takes JSON formatted excel data and returns beamline object
+    **Check Pydantic schema for data format
+
+    Parameters
+    ----------
+    - excelJson: List of beamline elements from excel file
+
+    Returns
+    -------
+    - beamline: List of beamline segments as dictionaries
+    """
     try:
-        excelHandler = ExcelElements(excelJson)
+        excelJson_formatted = [item.model_dump(exclude_none=True, by_alias=True) for item in excelJson]
+        excelHandler = ExcelElements(excelJson_formatted)
         beamlist = excelHandler.create_beamline()
 
         jsonBeamlist = []
@@ -202,8 +126,11 @@ def excelToBeamline(excelJson: list[Dict[str, Any]]) -> list[dict[str, dict[str,
             jsonBeamlist.append({className: paramsDict})
 
         return jsonBeamlist
+    except ValidationError as e:
+        print("Pydantic validation error:", e)
+        return {"error": str(e)}
     except Exception as e:
-        print(e)
+        print("Error: ", e)
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/axes")
