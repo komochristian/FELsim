@@ -41,7 +41,6 @@ class PlottingParameters(BaseModel):
 class LineAxObject(BaseModel):
     twiss: str
     x_axis: list[float]
-    beamsegment: list
 
 class AxesPNGData(BaseModel):
     images: Dict[float, Any]

@@ -138,7 +138,6 @@ def excelToBeamline(excelJson: List[ExcelBeamlineElement]) -> List[BeamSegmentsI
                 new_dict = {'name': key}
                 new_dict.update(value)
                 beamlist_json_fixed.append(new_dict)
-        print(beamlist_json_fixed)
         return beamlist_json_fixed
     except ValidationError as e:
         print("Pydantic validation error:", e)

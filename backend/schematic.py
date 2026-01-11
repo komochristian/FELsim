@@ -476,9 +476,8 @@ class draw_beamline:
             
         if apiCall:
             lineAxElements = {
-                'twiss': twiss_aggregated_df, # All other elements for nivo plotting
-                'x_axis': x_axis,
-                'beamsegment': beamSegments
+                'twiss': twiss_aggregated_df,
+                'x_axis': x_axis
             }
             return apiAxData, lineAxElements
 
