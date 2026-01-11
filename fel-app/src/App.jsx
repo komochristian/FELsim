@@ -32,7 +32,6 @@ function App()
     console.log(API_ROUTE);
     const [beamSegmentInfo, setData] = useState(null);
     const [dotGraphs, setDotGraphs] = useState([]);
-    const [lineGraph, setLineGraph] = useState(null);
     const [beamlistSelected, setSelectedItems] = useState([]);
     const [currentS, setSValue] = useState(0);
     const [beamtypeToPass, setBeamtypeToPass] = useState('electron');
@@ -281,7 +280,6 @@ function App()
             const axImages = await res.json();
             const result = axImages['images'];
             const lineAxObj = axImages['line_graph'];
-            const lineAx = lineAxObj['axis'];
 
             handleTwiss(JSON.parse(lineAxObj['twiss']), lineAxObj['x_axis']);
             
@@ -294,7 +292,6 @@ function App()
                 );
 
             setDotGraphs(cleanResult);
-            setLineGraph(`data:image/png;base64,${lineAx}`);
             //console.log("returned api result:", result);
             //console.log("newSubArr:", cleanResult);
         } finally {
