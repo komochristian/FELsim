@@ -39,7 +39,7 @@ class beam:
         self.lost_cmap = 'binary'  # Color map for lost particles
         self.BINS = 20  # Histogram bin count
 
-    def ellipse_sym(self, xc, yc, twiss_axis, n=1, num_pts=40):
+    def ellipse_sym(self, xc, yc, twiss_axis, n=1, num_pts=40, unicode=False):
         '''
         Calculates and returns meshgrid coordinates (X, Y) and the evaluated implicit
         ellipse equation values (Z) for plotting an n-sigma ellipse.
@@ -70,10 +70,17 @@ class beam:
                                   $\gamma (x-x_c)^2 + 2\alpha (x-x_c)(y-y_c) + \beta (y-y_c)^2 - \epsilon_{n} = 0$,
                                   where $\epsilon_{n} = n \times \epsilon$.
         '''
-        emittance = n * twiss_axis[r"$\epsilon$ ($\pi$.mm.mrad)"]
-        alpha = twiss_axis[r"$\alpha$"]
-        beta = twiss_axis[r"$\beta$ (m)"]
-        gamma = twiss_axis[r"$\gamma$ (rad/m)"]
+        emmittance = alpha = beta = gamma = 0.0
+        if unicode:
+            emittance = n * twiss_axis["ε (π·mm·mrad)"]
+            alpha = twiss_axis["α"]
+            beta = twiss_axis["β (m)"]
+            gamma = twiss_axis["γ (rad/m)"]
+        else:
+            emittance = n * twiss_axis[r"$\epsilon$ ($\pi$.mm.mrad)"]
+            alpha = twiss_axis[r"$\alpha$"]
+            beta = twiss_axis[r"$\beta$ (m)"]
+            gamma = twiss_axis[r"$\gamma$ (rad/m)"]
 
         # Ellipse bounds
         x_max = xc + np.sqrt(emittance / (gamma - alpha ** 2 / beta))
@@ -89,7 +96,7 @@ class beam:
         Z = gamma * (X - xc)** 2 + 2 * alpha * (X - xc) * (Y - yc) + beta * (Y - yc) ** 2 - emittance
         return X, Y, Z
 
-    def cal_twiss(self, dist_6d, ddof=1):
+    def cal_twiss(self, dist_6d, ddof=1, unicode=False):
         '''
         Calculates the Twiss parameters (emittance, alpha, beta, gamma, dispersion,
         dispersion prime, and phase advance) for each of the three phase space axes (x, y, z)
@@ -114,8 +121,20 @@ class beam:
         '''
         dist_avg = np.mean(dist_6d, axis=0)
         dist_cov = np.cov(dist_6d, rowvar=False, ddof=ddof)
-
-        label_twiss = [r"$\epsilon$ ($\pi$.mm.mrad)", r"$\alpha$", r"$\beta$ (m)", r"$\gamma$ (rad/m)", r"$D$ (mm)",
+        
+        label_twiss = []
+        if unicode:
+            label_twiss = [
+                "ε (π·mm·mrad)",
+                "α",
+                "β (m)",
+                "γ (rad/m)",
+                "D (mm)",
+                "D′ (mrad)",
+                "φ (deg)"
+            ]
+        else:
+            label_twiss = [r"$\epsilon$ ($\pi$.mm.mrad)", r"$\alpha$", r"$\beta$ (m)", r"$\gamma$ (rad/m)", r"$D$ (mm)",
                        r"$D^{\prime}$ (mrad)", r"$\phi$ (deg)"]
 
         label_axes = ["x", "y", "z"]
@@ -513,7 +532,7 @@ class beam:
 
 
 
-    def getXYZ(self, dist_6d):
+    def getXYZ(self, dist_6d, unicode=False):
         '''
         Calculates Twiss parameters and generates points for 1-sigma and 6-sigma ellipses
         for 2D phase spaces (x-x', y-y', z-z').
@@ -534,21 +553,22 @@ class beam:
         '''
         num_pts = 60  # Used for implicit plot of the ellipse
         ddof = 1  # Unbiased Bessel correction for standard deviation calculation
-        dist_avg, dist_cov, twiss = self.cal_twiss(dist_6d, ddof=ddof)
+        dist_avg, dist_cov, twiss = self.cal_twiss(dist_6d, ddof=ddof, unicode=unicode)
         std6 = []
         std1 = []
         for i, axis in enumerate(twiss.index):
             # Access Twiss parameters for the current axis
             twiss_axis = twiss.loc[axis]
-            X, Y, Z = self.ellipse_sym(dist_avg[2 * i], dist_avg[2 * i + 1], twiss_axis, n=1, num_pts=num_pts)
+            X, Y, Z = self.ellipse_sym(dist_avg[2 * i], dist_avg[2 * i + 1], twiss_axis, n=1, num_pts=num_pts, unicode=unicode)
             std1.append([X,Y,Z])
-            X, Y, Z = self.ellipse_sym(dist_avg[2 * i], dist_avg[2 * i + 1], twiss_axis, n=6, num_pts=num_pts)
+            X, Y, Z = self.ellipse_sym(dist_avg[2 * i], dist_avg[2 * i + 1], twiss_axis, n=6, num_pts=num_pts, unicode=unicode)
             std6.append([X,Y,Z])
         
         return std1, std6, dist_6d, twiss
 
-    def plotXYZ(self, dist_6d, std1, std6, twiss, ax1, ax2, ax3, ax4, 
-                maxVals = [0,0,0,0,0,0], minVals = [0,0,0,0,0,0], defineLim=True, shape={}, scatter=False):
+    def plotXYZ(self, dist_6d, std1, std6, twiss, ax1, ax2, ax3, ax4,
+                maxVals = [0,0,0,0,0,0], minVals = [0,0,0,0,0,0], defineLim=True,
+                shape={}, scatter=False, unicode=False):
         '''
         Plots 2D phase spaces (x-x', y-y', z-z') and the x-y spatial distribution
         with Twiss parameters and optional aperture shapes.
@@ -587,11 +607,36 @@ class beam:
 
         #  Define SymPy symbols for plotting
         x_sym, y_sym = sp.symbols('x y')
-        x_labels = [r'Position $x$ (mm)', r'Position $y$ (mm)', r'Relative Bunch ToF $\Delta t$ $/$ $T_{rf}$ $(10^{-3})$', r'Position $x$ (mm)']
-        y_labels = [r'Phase $x^{\prime}$ (mrad)', r'Phase $y^{\prime}$ (mrad)', r'Relative Energy $\Delta W / W_0$ $(10^{-3})$',
-                    r'Position $y$ (mm)']
-        label_twiss_z = ["$\epsilon$ ($\pi$.$10^{-6}$)", r"$\alpha$", r"$\beta$", r"$\gamma$", r"$D$ (m)",
-                       r"$D^{\prime}$ (mrad)", r"$\phi$ (deg)"]
+
+        x_labels, y_labels, label_twiss_z = [], [], []
+        if unicode:
+            x_labels = [
+                "Position x (mm)",
+                "Position y (mm)",
+                "Relative Bunch ToF Δt / T₍rf₎ (10⁻³)",
+                "Position x (mm)"
+            ]
+            y_labels = [
+                "Phase x′ (mrad)",
+                "Phase y′ (mrad)",
+                "Relative Energy ΔW / W₀ (10⁻³)",
+                "Position y (mm)"
+            ]
+            label_twiss_z = [
+                "ε (π·10⁻⁶)",
+                "α",
+                "β",
+                "γ",
+                "D (m)",
+                "D′ (mrad)",
+                "φ (deg)"
+            ]
+        else:
+            x_labels = [r'Position $x$ (mm)', r'Position $y$ (mm)', r'Relative Bunch ToF $\Delta t$ $/$ $T_{rf}$ $(10^{-3})$', r'Position $x$ (mm)']
+            y_labels = [r'Phase $x^{\prime}$ (mrad)', r'Phase $y^{\prime}$ (mrad)', r'Relative Energy $\Delta W / W_0$ $(10^{-3})$',
+                        r'Position $y$ (mm)']
+            label_twiss_z = ["$\epsilon$ ($\pi$.$10^{-6}$)", r"$\alpha$", r"$\beta$", r"$\gamma$", r"$D$ (m)",
+                        r"$D^{\prime}$ (mrad)", r"$\phi$ (deg)"]
         
         #  Plot x-x', y-y', z-z' phase spaces
         for i, axis in enumerate(twiss.index):
@@ -756,7 +801,7 @@ class beam:
             beta = float(params['beta'])
             epsilon = float(params['epsilon'])
             phi = float(params['phi'])
-            print(f"Generating covariance for plane {plane} with alpha={alpha}, beta={beta}, epsilon={epsilon}, phi={phi}")
+            # print(f"Generating covariance for plane {plane} with alpha={alpha}, beta={beta}, epsilon={epsilon}, phi={phi}")
             cov2d = self.twiss_to_cov(alpha, beta, epsilon)
             cov2d_rot = self.rotate_cov(cov2d, phi)
             cov_blocks.append(cov2d_rot)

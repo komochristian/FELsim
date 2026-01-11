@@ -321,7 +321,7 @@ class draw_beamline:
     def plotBeamPositionTransform(self, matrixVariables, beamSegments, interval: float = -1, defineLim = True,
                                    saveData = False, saveFig = False, shape = {}, plot = True, spacing = True,
                                    matchScaling = True, showIndice = False, scatter=False, apiCall = False,
-                                   rendering = True):
+                                   rendering = True, unicode=False):
         '''
         Simulates movement of particles through an accelerator beamline
 
@@ -369,7 +369,7 @@ class draw_beamline:
             matplotlib.use('Agg')
         # Initialize values
         ebeam = beam()
-        result = ebeam.getXYZ(matrixVariables)
+        result = ebeam.getXYZ(matrixVariables, unicode=unicode)
         twiss = result[3]
         plot6dValues = {0: result}
         twiss_aggregated_df = pd.DataFrame(
@@ -410,7 +410,7 @@ class draw_beamline:
                         maxVals, minVals = self.checkMinMax(matrixVariables, maxVals, minVals)
 
                     # Calculate twiss parameters from particle data
-                    result = ebeam.getXYZ(matrixVariables)
+                    result = ebeam.getXYZ(matrixVariables, unicode=unicode)
                     twiss = result[3]
                     plot6dValues.update({x_axis[-1]: result})
 
@@ -433,7 +433,7 @@ class draw_beamline:
                         maxVals, minVals = self.checkMinMax(matrixVariables, maxVals, minVals)
 
                     # Calculate twiss parameters from particle data
-                    result = ebeam.getXYZ(matrixVariables)
+                    result = ebeam.getXYZ(matrixVariables, unicode=unicode)
                     twiss = result[3]
                     plot6dValues.update({x_axis[-1]: result})
 
@@ -472,14 +472,14 @@ class draw_beamline:
 
         if rendering:
             apiAxData, ax5 = self.currentcreateUI(plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
-                x_axis, spacing, beamSegments, showIndice, plot, apiCall)
+                x_axis, spacing, beamSegments, showIndice, plot, apiCall, unicode)
             
         if apiCall:
-            lineAxElements = {'axis': ax5, # temporary placeholder ax
-                        'twiss': twiss_aggregated_df, # All other elements for nivo plotting
-                        'x_axis': x_axis,
-                        'beamsegment': beamSegments
-                         }
+            lineAxElements = {
+                'twiss': twiss_aggregated_df, # All other elements for nivo plotting
+                'x_axis': x_axis,
+                'beamsegment': beamSegments
+            }
             return apiAxData, lineAxElements
 
         return twiss_aggregated_df
@@ -560,7 +560,7 @@ class draw_beamline:
             return lineList, ax6, ax5
 
     def currentcreateUI(self, plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
-                x_axis, spacing, beamSegments, showIndice, plot, apiCall):
+                x_axis, spacing, beamSegments, showIndice, plot, apiCall, unicode=False):
             ebeam = beam()
 
             #  Configure graph shape
@@ -593,7 +593,7 @@ class draw_beamline:
 
             # Update the phase space plots to match that closest z coordinate
             ebeam.plotXYZ(matrix[2], matrix[0], matrix[1], matrix[3], ax1, ax2, ax3, ax4, maxVals, minVals, defineLim,
-                            shape, scatter=scatter)
+                            shape, scatter=scatter, unicode=unicode)
 
             #  Plot and configure line graph data
             ax5 = plt.subplot(gs[2, :])
@@ -613,11 +613,12 @@ class draw_beamline:
                     ax2.clear()
                     ax3.clear()
                     ax4.clear() 
-                    ebeam.plotXYZ(mat[2], mat[0], mat[1], mat[3], ax1, ax2, ax3, ax4, maxVals, minVals, defineLim, shape, scatter=scatter)
-                    plt.tight_layout()
+                    ebeam.plotXYZ(mat[2], mat[0], mat[1], mat[3], ax1, ax2, ax3, ax4, maxVals, minVals, defineLim, shape, scatter=scatter, unicode=unicode)
+                    fig.tight_layout()
 
                     #axesDict.append([ax1,ax2,ax3,ax4])
                     axesDict.update({index: ax1}) # Only need one it seems... must dwelve furthur
+                    plt.close(fig)
                 #fig.clf()
                 deadFig, ax5 = plt.subplots(figsize=(10,1))
                 lineList, ax6, m = self.createLinePlot(ax5, twiss_aggregated_df, x_axis, spacing, showIndice, beamSegments)
@@ -645,7 +646,7 @@ class draw_beamline:
                 ax4.clear()
                 scrollbar.label.set_text("z: " + str(val))
                 ebeam.plotXYZ(matrix[2], matrix[0], matrix[1], matrix[3], ax1, ax2, ax3, ax4, maxVals, minVals,
-                                defineLim, shape, scatter=scatter)
+                                defineLim, shape, scatter=scatter, unicode=unicode)
                 fig.canvas.draw_idle()
             scrollbar.on_changed(update_scroll)
 

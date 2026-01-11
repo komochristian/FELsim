@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 import copy
 import math
 import numpy as np
+import time  # Use to simulate delays when testing
 
 load_dotenv('../.env')  # Only during dev testing when not using Dockerfile...
 # FRONTEND_PORT = os.getenv('FRONTEND_PORT')
@@ -57,7 +58,6 @@ class PlottingParameters(BaseModel):
     #  I THINK WE NEED SAVE FIG AND SHAPE
 
 class LineAxObject(BaseModel):
-    axis: str # temporary placeholder axes
     twiss: str
     x_axis: list[float]
     beamsegment: list
@@ -86,7 +86,6 @@ class GraphPlotData(BaseModel):
     data: List[GraphPlotPointResponse]
 
 app = FastAPI()
-ebeam = beam()
 # Allow requests from your frontend (CORS!)
 app.add_middleware(
     CORSMiddleware,
@@ -97,19 +96,17 @@ app.add_middleware(
 )
 
 def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
+    ebeam = beam()
+    schem = draw_beamline()
     beam_dist = None
-    print(plotParams.beam_setup)
+    # print(plotParams.beam_setup)
     if plotParams.beam_setup == 'twiss': beam_dist = ebeam.gen_6d_from_twiss(plotParams.twiss.model_dump(), plotParams.num_particles)
     else: beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], plotParams.num_particles)
-    schem = draw_beamline()
     schem.DEFAULTINTERVALROUND = 10
-    axList, lineAxObj = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True, interval=plotParams.interval)
-    fig = lineAxObj['axis'].figure
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png",bbox_inches="tight")
-    buf.seek(0)
-    lineAx_img = base64.b64encode(buf.read()).decode("utf-8")
-    buf.close()
+    axList, lineAxObj = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, 
+                                                        apiCall=True, scatter=True, interval=plotParams.interval
+                                                        , unicode=True #  Needed to avoid parsing errors
+                                                        )
 
     images = {}
     for index, axes in axList.items():
@@ -123,8 +120,7 @@ def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
 
         images.update({index: img_base64})
      
-    lineAxObj['axis'] = lineAx_img
-    print(lineAxObj['twiss'])
+    # print(lineAxObj['twiss'])
     lineAxObj['twiss'] = lineAxObj['twiss'].to_json()
     beamsegmentJson = []
     #for segment in lineAxObj['beamsegment']:
@@ -145,6 +141,7 @@ def root():
 
 @app.post("/get-dist")
 def gen_beam(particle_num : int): 
+    ebeam = beam()
     beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], particle_num).tolist()
     return beam_dist
 

@@ -53,4 +53,4 @@ COPY . .
 EXPOSE 8000
 
 # Run the application.
-CMD ["./runServer.sh"]
+CMD ["./deploymentServer.sh"]
