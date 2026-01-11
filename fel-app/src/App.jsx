@@ -30,7 +30,7 @@ import SimulationModel from './components/SimulationModel/SimulationModel';
 function App()
 {
     console.log(API_ROUTE);
-    const [beamSegmentInfo, setData] = useState(null);
+    const [beamSegmentInfo, setBeamSegmentInfo] = useState(null);
     const [dotGraphs, setDotGraphs] = useState([]);
     const [beamlistSelected, setSelectedItems] = useState([]);
     const [currentS, setSValue] = useState(0);
@@ -112,7 +112,7 @@ function App()
     useEffect(() => {
         fetch(API_ROUTE + '/beamsegmentinfo')
             .then((response) => response.json())
-            .then((json) => setData(json))
+            .then((json) => setBeamSegmentInfo(json))
             .catch((err) => console.error("Error loading beam segment info:", err));
         }, []);
     //console.log(beamSegmentInfo);
@@ -156,9 +156,7 @@ function App()
     const setSelectedItemsHandler = (segList) => {
         console.log("segList from excel:", segList);
         const cleanedSegList = segList.map((segment) => {
-            const name = Object.keys(segment)[0];             
-            return handleSegmentColor({ "name": name,
-                                        ...segment[name]});
+            return handleSegmentColor(segment);
         });
         beamlistHandler(cleanedSegList);
     };
@@ -221,7 +219,6 @@ function App()
         const beamObj = handleSegmentColor({[item]: structuredClone(beamSegmentInfo[item])});
         const cleanedObj = {"name": item,
                             ...beamObj[item]};
-        console.log('cleanedObj', cleanedObj);
         const insertIndice = selectedRowId !== null ? selectedRowId : beamlistSelected.length;
         const updatedList = [...beamlistSelected.slice(0, insertIndice), cleanedObj, ...beamlistSelected.slice(insertIndice)];
         setSelectedRowId((id) => id === null ? null : id + 1);

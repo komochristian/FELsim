@@ -1,6 +1,6 @@
-from fastapi import FastAPI, Body, HTTPException
-from pydantic import BaseModel
-from typing import Any, Dict, List, Optional
+from fastapi import FastAPI, HTTPException
+from pydantic import ValidationError
+from typing import Any, List
 from ebeam import beam
 from beamline import *
 from schematic import *
@@ -16,7 +16,12 @@ from dotenv import load_dotenv
 import copy
 import math
 import numpy as np
+from ApiSchemas import ExcelBeamlineElement, PlottingParameters, LineAxObject, AxesPNGData, GraphParameters, GraphPlotData, BeamSegmentsInfo
 import time  # Use to simulate delays when testing
+
+description = """
+FEL beamline API used to interact with Python FEL and beamline simulation library.
+"""
 
 load_dotenv('../.env')  # Only during dev testing when not using Dockerfile...
 # FRONTEND_PORT = os.getenv('FRONTEND_PORT')
@@ -27,65 +32,15 @@ ORIGINS = [f'http://0.0.0.0:{FRONTEND_PORT}', f"0.0.0.0:{FRONTEND_PORT}",
 #ORIGINS = ["http://localhost:5173", "localhost:5173"]
 moduleName = 'beamline'
 
-class AxisTwiss(BaseModel):
-    alpha: float
-    beta: float
-    phi: float
-    epsilon: float
-
-class TwissParameters(BaseModel):
-    x: AxisTwiss
-    y: AxisTwiss
-    z: AxisTwiss
-
-class BeamlineInfo(BaseModel):
-    #__root__: Dict[str, Dict[str, Any]]
-    segmentName: str
-    parameters: Dict[str, Any]
-
-class PlottingParameters(BaseModel):
-    beamlineData: list[BeamlineInfo]
-    beamType: str = 'electron'
-    num_particles: int
-    kineticE: int = 45
-    interval: float = 1
-    defineLim: bool = True
-    saveData: bool = False
-    matchScaling: bool = True
-    scatter: bool = True
-    beam_setup: str = 'twiss'
-    twiss: TwissParameters = None
-    #  I THINK WE NEED SAVE FIG AND SHAPE
-
-class LineAxObject(BaseModel):
-    twiss: str
-    x_axis: list[float]
-    beamsegment: list
-
-class AxesPNGData(BaseModel):
-    images: Dict[float, Any]
-    line_graph: LineAxObject
-
-class GraphParameters(BaseModel):
-    beam_index: int
-    target_parameter: str
-    target_s_pos: float
-    beamline_data: list[BeamlineInfo]
-    min: int | float = 0
-    max: int | float = 10
-    custom_step: int | float = 1
-
-class GraphPlotPointResponse(BaseModel):
-    x: float | None
-    y: float | None
-    z: float | None
-    twiss_parameter: str
-
-class GraphPlotData(BaseModel):
-    parameter_value: float
-    data: List[GraphPlotPointResponse]
-
-app = FastAPI()
+app = FastAPI(
+    title="FEL Simulation API",
+    description=description,
+    version="1.0.0",
+    contact={
+        "name": "Christian Komo",
+        "email": "komochristian@gmail.com",
+    },
+)
 # Allow requests from your frontend (CORS!)
 app.add_middleware(
     CORSMiddleware,
@@ -96,6 +51,18 @@ app.add_middleware(
 )
 
 def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
+    """
+    Generates beamline simulation and returns base64 encoded images and twiss data.
+
+    Parameters
+    ----------
+    - beamlist: List of beamline segments
+    - plotParams: Object containing beamline and simulation parameters
+
+    Returns
+    -------
+    - pngObject: Object containing base64 encoded particle plot images and twiss data
+    """
     ebeam = beam()
     schem = draw_beamline()
     beam_dist = None
@@ -122,33 +89,32 @@ def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
      
     # print(lineAxObj['twiss'])
     lineAxObj['twiss'] = lineAxObj['twiss'].to_json()
-    beamsegmentJson = []
-    #for segment in lineAxObj['beamsegment']:
-    #    beamsegmentJson.append(segment.__dict__)
-    lineAxObj['beamsegment'] = beamsegmentJson
-    #print(beamsegmentJson)
 
     lineAxObj = LineAxObject(**lineAxObj)
     pngObject = AxesPNGData(**{'images': images, 'line_graph': lineAxObj})
     return pngObject
 
-def beamlineToJson():
-    pass
-
 @app.get("/")
 def root():
-    return {"Hello" : "World!"}
-
-@app.post("/get-dist")
-def gen_beam(particle_num : int): 
-    ebeam = beam()
-    beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], particle_num).tolist()
-    return beam_dist
+    return {"FEL Beamline Simulation API"}
 
 @app.post("/excel-to-beamline")
-def excelToBeamline(excelJson: list[Dict[str, Any]]) -> list[dict[str, dict[str, Any]]]:
+def excelToBeamline(excelJson: List[ExcelBeamlineElement]) -> List[BeamSegmentsInfo]:
+    """
+    Takes JSON formatted excel data and returns beamline object
+    **Check Pydantic schema for data format
+
+    Parameters
+    ----------
+    - excelJson: List of beamline elements from excel file
+
+    Returns
+    -------
+    - beamline: List of beamline segments as dictionaries
+    """
     try:
-        excelHandler = ExcelElements(excelJson)
+        excelJson_formatted = [item.model_dump(exclude_none=True, by_alias=True) for item in excelJson]
+        excelHandler = ExcelElements(excelJson_formatted)
         beamlist = excelHandler.create_beamline()
 
         jsonBeamlist = []
@@ -166,14 +132,35 @@ def excelToBeamline(excelJson: list[Dict[str, Any]]) -> list[dict[str, dict[str,
                 paramsDict.update({name: paramVal})
                     
             jsonBeamlist.append({className: paramsDict})
-
-        return jsonBeamlist
+        beamlist_json_fixed = []
+        for item in jsonBeamlist:
+            for key, value in item.items():
+                new_dict = {'name': key}
+                new_dict.update(value)
+                beamlist_json_fixed.append(new_dict)
+        print(beamlist_json_fixed)
+        return beamlist_json_fixed
+    except ValidationError as e:
+        print("Pydantic validation error:", e)
+        return {"error": str(e)}
     except Exception as e:
-        print(e)
+        print("Error: ", e)
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/axes")
 def loadAxes(plotParams: PlottingParameters) -> AxesPNGData:
+    """
+    Endpoint to return results of beamline simulation.
+    Twiss data and particle plot images included.
+
+    Parameters
+    ----------
+    -plotParams: Object containing beamline and simulation parameters
+
+    Returns
+    -------
+    - pngObject: Object containing base64 encoded particle plot images and twiss data
+    """
     try:
         beamline = importlib.import_module("beamline")
         beamlist = []
@@ -193,6 +180,13 @@ def loadAxes(plotParams: PlottingParameters) -> AxesPNGData:
 
 @app.get("/beamsegmentinfo")
 def getBeamSegmentInfo():
+    """
+    Returns most up to date beam segments available for beamline construction
+
+    Returns
+    -------
+    beanSegInfo: Dictionary containing beam segment class names and their parameters with default values
+    """
     module = importlib.import_module(moduleName)
     classes = inspect.getmembers(module, inspect.isclass)
     classes_in_module = [cls for name, cls in classes if cls.__module__ == moduleName and cls.__name__ not in ["Beamline", "lattice"]]
@@ -220,6 +214,17 @@ def getBeamSegmentInfo():
 
 @app.post("/plot-parameters")
 def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
+    """
+    Returns twiss data as a function of different parameter values of a segment
+
+    Parameters
+    ----------
+    graphParams: Object containing beamline and simulation parameters
+
+    Returns
+    -------
+    plotInfo: List of objects containing twiss data plotted against parameter value
+    """
     LABELMAPPING = {
         r'$\epsilon$ ($\pi$.mm.mrad)': 'emittance',
         r'$\alpha$': 'alpha',
