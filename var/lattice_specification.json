@@ -1,0 +1,375 @@
+{
+  "beamline": {
+    "metadata": {
+      "format_version": 2,
+      "name": "UH_FEL_Beamline",
+      "version": "2.0",
+      "description": "University of Hawaii FEL beamline specification (PALS-aligned)",
+      "author": "UH FEL group",
+      "date": "2025-01-15",
+      "reference_energy_mev": 45.0,
+      "particle_type": "electron"
+    },
+
+    "beam_parameters": {
+      "particle": {
+        "type": "electron",
+        "kinetic_energy_mev": 45.0,
+        "mass_mev": 0.51099895,
+        "charge_e": -1
+      },
+      "rf_frequency_hz": 2.856e9
+    },
+
+    "elements": [
+      {
+        "name": "D_LIN_01",
+        "kind": "Drift",
+        "s_start_m": 0.0,
+        "s_end_m": 0.358775,
+        "length_m": 0.358775,
+        "parameters": {},
+        "metadata": {
+          "sector": "LIN"
+        }
+      },
+
+      {
+        "name": "LQ1",
+        "kind": "Quadrupole",
+        "polarity": "focusing",
+        "s_start_m": 0.358775,
+        "s_end_m": 0.447675,
+        "length_m": 0.0889,
+        "parameters": {
+          "current_a": 0.885719
+        },
+        "aperture_m": 0.027,
+        "optimization": {
+          "variable": "I_LQ1",
+          "bounds": [0.0, 10.0]
+        },
+        "metadata": {
+          "nomenclature": "LIN.QPF.004",
+          "element_name": "Quad",
+          "channel": 20,
+          "sector": "LIN"
+        }
+      },
+
+      {
+        "name": "BPM_LIN",
+        "kind": "Instrument",
+        "instrument_type": "BPM",
+        "s_start_m": 0.447675,
+        "s_end_m": 0.447675,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "element_name": "Beam position monitor",
+          "sector": "LIN"
+        }
+      },
+
+      {
+        "name": "LQ2",
+        "kind": "Quadrupole",
+        "polarity": "defocusing",
+        "s_start_m": 0.644525,
+        "s_end_m": 0.733425,
+        "length_m": 0.0889,
+        "parameters": {
+          "current_a": 1.05289
+        },
+        "aperture_m": 0.027,
+        "optimization": {
+          "variable": "I_LQ2",
+          "bounds": [0.0, 10.0]
+        },
+        "metadata": {
+          "nomenclature": "LIN.QPD.007",
+          "element_name": "Quad",
+          "channel": 21,
+          "label": "LQ2",
+          "sector": "LIN"
+        }
+      },
+
+      {
+        "name": "VC1",
+        "kind": "Kicker",
+        "plane": "vertical",
+        "s_start_m": 0.733425,
+        "s_end_m": 0.733425,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "LIN.STV.007",
+          "element_name": "V. Corrector",
+          "channel": 22,
+          "label": "VC1",
+          "sector": "LIN"
+        }
+      },
+
+      {
+        "name": "OS1",
+        "kind": "Instrument",
+        "instrument_type": "OTR",
+        "s_start_m": 1.632864,
+        "s_end_m": 1.632864,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "DC1.OTR.016",
+          "element_name": "OTR Screen",
+          "label": "OS1",
+          "sector": "DC1"
+        }
+      },
+
+      {
+        "name": "DC1_DPW_ENT",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 1.697921,
+        "s_end_m": 1.707921,
+        "length_m": 0.01,
+        "parameters": {
+          "wedge_angle_deg": 0.0,
+          "dipole_angle_deg": 1.5,
+          "dipole_length_m": 0.0889,
+          "pole_gap_m": 0.014478
+        },
+        "fringe_fields": {
+          "enge_coefficients": null
+        },
+        "metadata": {
+          "nomenclature": "DC1.DPW.017",
+          "sector": "DC1"
+        }
+      },
+
+      {
+        "name": "DC1_DPH_1A",
+        "kind": "SBend",
+        "s_start_m": 1.707921,
+        "s_end_m": 1.796821,
+        "length_m": 0.0889,
+        "parameters": {
+          "bending_angle_deg": 1.5,
+          "dipole_length_m": 0.0889,
+          "pole_gap_m": 0.014478
+        },
+        "fringe_fields": {
+          "enge_coefficients": null
+        },
+        "metadata": {
+          "nomenclature": "DC1.DPH.018",
+          "element_name": "Split Bend 1 start",
+          "channel": 26,
+          "label": "DPHa",
+          "sector": "DC1"
+        }
+      },
+
+      {
+        "name": "DC1_DPW_EXIT",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 1.796821,
+        "s_end_m": 1.806821,
+        "length_m": 0.01,
+        "parameters": {
+          "wedge_angle_deg": 1.5,
+          "dipole_angle_deg": 1.5,
+          "dipole_length_m": 0.0889,
+          "pole_gap_m": 0.014478
+        },
+        "fringe_fields": {
+          "enge_coefficients": null
+        },
+        "metadata": {
+          "nomenclature": "DC1.DPW.018",
+          "sector": "DC1"
+        }
+      },
+
+      {
+        "name": "DC1_DPHQ",
+        "kind": "Quadrupole",
+        "polarity": "focusing",
+        "s_start_m": 2.033041,
+        "s_end_m": 2.121941,
+        "length_m": 0.0889,
+        "parameters": {
+          "current_a": 3.816604
+        },
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC1.QPF.021",
+          "element_name": "Chromacity quad",
+          "channel": 28,
+          "label": "DPHQ",
+          "sector": "DC1"
+        }
+      },
+
+      {
+        "name": "FC1_DPW_ENT",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 11.099409,
+        "s_end_m": 11.109409,
+        "length_m": 0.01,
+        "parameters": {
+          "wedge_angle_deg": 0.0,
+          "dipole_angle_deg": 11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "fringe_fields": {
+          "enge_coefficients": [56.49, -50.79, 19.32, -3.621, 0.3315, -0.01193]
+        },
+        "metadata": {
+          "nomenclature": "FC1.DPW.111",
+          "sector": "FC1"
+        }
+      },
+
+      {
+        "name": "FC1_DPH_1",
+        "kind": "SBend",
+        "s_start_m": 11.109409,
+        "s_end_m": 11.146798,
+        "length_m": 0.037389,
+        "parameters": {
+          "bending_angle_deg": 11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "fringe_fields": {
+          "enge_coefficients": null
+        },
+        "metadata": {
+          "nomenclature": "FC1.DPH.111",
+          "element_name": "MkIII chicane dipole",
+          "sector": "FC1"
+        }
+      },
+
+      {
+        "name": "FEL_UND_1",
+        "kind": "Wiggler",
+        "s_start_m": 12.388967,
+        "s_end_m": 12.929467,
+        "length_m": 0.5405,
+        "parameters": {
+          "period_m": null,
+          "num_periods": null,
+          "K_parameter": null,
+          "peak_field_t": null
+        },
+        "metadata": {
+          "nomenclature": "FEL.UND.127",
+          "element_name": "MkIII undulator",
+          "sector": "FEL"
+        }
+      },
+
+      {
+        "name": "SOL_EXAMPLE",
+        "kind": "Solenoid",
+        "s_start_m": null,
+        "s_end_m": null,
+        "length_m": 0.2,
+        "parameters": {
+          "field_t": 0.5
+        },
+        "metadata": {
+          "element_name": "Example solenoid (not in current beamline)"
+        }
+      },
+
+      {
+        "name": "SXT_EXAMPLE",
+        "kind": "Sextupole",
+        "s_start_m": null,
+        "s_end_m": null,
+        "length_m": 0.1,
+        "parameters": {
+          "strength": 0.0
+        },
+        "metadata": {
+          "element_name": "Example sextupole (not in current beamline)"
+        }
+      },
+
+      {
+        "name": "RFC_EXAMPLE",
+        "kind": "RFCavity",
+        "s_start_m": null,
+        "s_end_m": null,
+        "length_m": 1.0,
+        "parameters": {
+          "voltage_mv": null,
+          "frequency_hz": null,
+          "phase_deg": null
+        },
+        "metadata": {
+          "element_name": "Example RF cavity (not in current beamline)"
+        }
+      }
+    ],
+
+    "lattice_structure": {
+      "sectors": [
+        {
+          "name": "LIN",
+          "description": "Linac section",
+          "element_names": ["D_LIN_01", "LQ1", "BPM_LIN", "LQ2", "VC1"]
+        },
+        {
+          "name": "DC1",
+          "description": "Dogleg chicane 1",
+          "element_names": ["OS1", "DC1_DPW_ENT", "DC1_DPH_1A", "DC1_DPW_EXIT", "DC1_DPHQ"]
+        },
+        {
+          "name": "FC1",
+          "description": "FEL chicane 1",
+          "element_names": ["FC1_DPW_ENT", "FC1_DPH_1"]
+        },
+        {
+          "name": "FEL",
+          "description": "FEL undulator section",
+          "element_names": ["FEL_UND_1"]
+        }
+      ]
+    },
+
+    "global_settings": {
+      "coordinate_system": "felsim",
+      "length_unit": "m",
+      "angle_unit": "deg",
+      "field_unit": "T",
+      "current_unit": "A",
+      "energy_unit": "MeV",
+      "quadrupole_gradient_coefficient_t_per_a_per_m": 2.694
+    },
+
+    "simulator_specific": {
+      "cosy": {
+        "order": 3,
+        "dimensions": 2,
+        "use_enge_coefficients": true,
+        "dipole_aperture_m": 0.0127,
+        "quad_aperture_m": 0.027
+      },
+      "rftrack": {
+        "default_aperture_m": 0.05,
+        "space_charge": false
+      },
+      "felsim": {
+        "fringe_delta_z_m": 0.01,
+        "fringe_origin_factor": 0.99
+      }
+    }
+  }
+}

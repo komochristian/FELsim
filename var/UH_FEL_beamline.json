@@ -1,0 +1,2173 @@
+{
+  "beamline": {
+    "metadata": {
+      "format_version": 1,
+      "name": "UH_FEL_Beamline",
+      "version": "1.0",
+      "description": "University of Hawaii FEL beamline",
+      "reference_energy_mev": 45.0,
+      "particle_type": "electron"
+    },
+    "beam_parameters": {
+      "particle": {
+        "type": "electron",
+        "kinetic_energy_mev": 45.0,
+        "mass_mev": 0.51099895,
+        "charge_e": -1
+      },
+      "rf_frequency_hz": 2856000000.0
+    },
+    "elements": [
+      {
+        "name": "LIN_QPF_004",
+        "type": "QUADRUPOLE",
+        "s_start_m": 0.358775,
+        "s_end_m": 0.44767500000000005,
+        "length_m": 0.08890000000000003,
+        "parameters": {
+          "current_a": 0.885719309299156
+        },
+        "polarity": "focusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "LIN.QPF.004",
+          "element_name": "Quad",
+          "channel": 20,
+          "sector": "LIN"
+        }
+      },
+      {
+        "name": "LIN_BPM",
+        "type": "BPM",
+        "s_start_m": 0.44767500000000005,
+        "s_end_m": 0.44767500000000005,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "element_name": "Beam position monitor",
+          "sector": "LIN"
+        }
+      },
+      {
+        "name": "LQ2",
+        "type": "QUADRUPOLE",
+        "s_start_m": 0.644525,
+        "s_end_m": 0.733425,
+        "length_m": 0.08889999999999998,
+        "parameters": {
+          "current_a": 1.0528901226285
+        },
+        "polarity": "defocusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "LIN.QPD.007",
+          "element_name": "Quad",
+          "channel": 21,
+          "label": "LQ2",
+          "sector": "LIN"
+        }
+      },
+      {
+        "name": "VC1",
+        "type": "CORRECTOR_V",
+        "s_start_m": 0.733425,
+        "s_end_m": 0.733425,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "LIN.STV.007",
+          "element_name": "V. Corrector",
+          "channel": 22,
+          "label": "VC1",
+          "sector": "LIN"
+        }
+      },
+      {
+        "name": "LSP",
+        "type": "SPECTROMETER",
+        "s_start_m": 0.733425,
+        "s_end_m": 0.733425,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "LIN.SPC.007",
+          "element_name": "Spectrometer",
+          "channel": 23,
+          "label": "LSP",
+          "sector": "LIN"
+        }
+      },
+      {
+        "name": "VC2",
+        "type": "CORRECTOR_V",
+        "s_start_m": 0.733425,
+        "s_end_m": 0.733425,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "LIN.STV.007",
+          "element_name": "V. Corrector",
+          "channel": 24,
+          "label": "VC2",
+          "sector": "LIN"
+        }
+      },
+      {
+        "name": "OS1",
+        "type": "OTR",
+        "s_start_m": 1.632864,
+        "s_end_m": 1.632864,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "DC1.OTR.016",
+          "element_name": "OTR Screen",
+          "label": "OS1",
+          "sector": "DC1"
+        }
+      },
+      {
+        "name": "DC1_DPW_017",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 1.697921,
+        "s_end_m": 1.707921,
+        "length_m": 0.010000000000000009,
+        "parameters": {
+          "wedge_angle_deg": 0.0,
+          "dipole_angle_deg": 1.5,
+          "dipole_length_m": 0.0889,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC1.DPW.017",
+          "sector": "DC1"
+        }
+      },
+      {
+        "name": "DPHa",
+        "type": "DIPOLE",
+        "s_start_m": 1.707921,
+        "s_end_m": 1.796821,
+        "length_m": 0.08889999999999998,
+        "parameters": {
+          "bending_angle_deg": 1.5,
+          "dipole_length_m": 0.0889,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC1.DPH.018",
+          "element_name": "Split Bend 1 start",
+          "channel": 26,
+          "label": "DPHa",
+          "sector": "DC1"
+        }
+      },
+      {
+        "name": "DC1_DPW_018",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 1.796821,
+        "s_end_m": 1.806821,
+        "length_m": 0.010000000000000009,
+        "parameters": {
+          "wedge_angle_deg": 1.5,
+          "dipole_angle_deg": 1.5,
+          "dipole_length_m": 0.0889,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC1.DPW.018",
+          "sector": "DC1"
+        }
+      },
+      {
+        "name": "DPHQ",
+        "type": "QUADRUPOLE",
+        "s_start_m": 2.033041,
+        "s_end_m": 2.121941,
+        "length_m": 0.0889000000000002,
+        "parameters": {
+          "current_a": 3.816603563474388
+        },
+        "polarity": "focusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC1.QPF.021",
+          "element_name": "Chromacity quad",
+          "channel": 28,
+          "label": "DPHQ",
+          "sector": "DC1"
+        }
+      },
+      {
+        "name": "DC1_DPW_024",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 2.348161,
+        "s_end_m": 2.358161,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 0.75,
+          "dipole_angle_deg": 1.5,
+          "dipole_length_m": 0.0889,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC1.DPW.024",
+          "sector": "DC1"
+        }
+      },
+      {
+        "name": "DPHb",
+        "type": "DIPOLE",
+        "s_start_m": 2.358161,
+        "s_end_m": 2.447061,
+        "length_m": 0.0889000000000002,
+        "parameters": {
+          "bending_angle_deg": 1.5,
+          "dipole_length_m": 0.0889,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC1.DPH.024",
+          "element_name": "Split Bend 1 end",
+          "channel": 26,
+          "label": "DPHb",
+          "sector": "DC1"
+        }
+      },
+      {
+        "name": "DC1_DPW_025",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 2.447061,
+        "s_end_m": 2.457061,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 0.75,
+          "dipole_angle_deg": 1.5,
+          "dipole_length_m": 0.0889,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC1.DPW.025",
+          "sector": "DC1"
+        }
+      },
+      {
+        "name": "BPM1",
+        "type": "BPM",
+        "s_start_m": 2.457061,
+        "s_end_m": 2.457061,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "element_name": "Beam position monitor",
+          "label": "BPM1",
+          "sector": "DC1"
+        }
+      },
+      {
+        "name": "F1QA",
+        "type": "QUADRUPOLE",
+        "s_start_m": 2.735351,
+        "s_end_m": 2.8242510000000003,
+        "length_m": 0.0889000000000002,
+        "parameters": {
+          "current_a": 2.5798069784706756
+        },
+        "polarity": "defocusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC2.QPD.028",
+          "element_name": "Quad",
+          "channel": 29,
+          "label": "F1QA",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "F1QB",
+        "type": "QUADRUPOLE",
+        "s_start_m": 2.8674310000000003,
+        "s_end_m": 2.9563310000000005,
+        "length_m": 0.0889000000000002,
+        "parameters": {
+          "current_a": 4.565701559020045
+        },
+        "polarity": "focusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC2.QPF.029",
+          "element_name": "Quad",
+          "channel": 30,
+          "label": "F1QB",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "F1QC",
+        "type": "QUADRUPOLE",
+        "s_start_m": 2.9995110000000005,
+        "s_end_m": 3.0884110000000007,
+        "length_m": 0.0889000000000002,
+        "parameters": {
+          "current_a": 2.5798069784706756
+        },
+        "polarity": "defocusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC2.QPD.030",
+          "element_name": "Quad",
+          "channel": 31,
+          "label": "F1QC",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "OS2",
+        "type": "OTR",
+        "s_start_m": 3.2187890000000006,
+        "s_end_m": 3.2187890000000006,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "DC2.OTR.032",
+          "element_name": "OTR Screen",
+          "label": "OS2",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "DC2_DPW_033",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 3.287910000000001,
+        "s_end_m": 3.297910000000001,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 2.018,
+          "dipole_angle_deg": -4.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC2.DPW.033",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "DPHa_2",
+        "type": "DIPOLE",
+        "s_start_m": 3.297910000000001,
+        "s_end_m": 3.3385500000000006,
+        "length_m": 0.04063999999999979,
+        "parameters": {
+          "bending_angle_deg": -4.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC2.DPH.033",
+          "element_name": "Split Bend 2 start",
+          "channel": 32,
+          "label": "DPHa",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "DC2_DPW_033_2",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 3.3385500000000006,
+        "s_end_m": 3.3485500000000004,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 2.018,
+          "dipole_angle_deg": -4.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC2.DPW.033",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "DPHQ_2",
+        "type": "QUADRUPOLE",
+        "s_start_m": 3.5544800000000008,
+        "s_end_m": 3.643380000000001,
+        "length_m": 0.0889000000000002,
+        "parameters": {
+          "current_a": 4.491462509279882
+        },
+        "polarity": "focusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC2.QPF.036",
+          "element_name": "Chromacity quad",
+          "channel": 34,
+          "label": "DPHQ",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "DC2_DPW_039",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 3.8493100000000013,
+        "s_end_m": 3.859310000000001,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 2.018,
+          "dipole_angle_deg": -4.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC2.DPW.039",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "DPHb_2",
+        "type": "DIPOLE",
+        "s_start_m": 3.859310000000001,
+        "s_end_m": 3.899950000000001,
+        "length_m": 0.04063999999999979,
+        "parameters": {
+          "bending_angle_deg": -4.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC2.DPH.039",
+          "element_name": "Split Bend 2 end",
+          "channel": 32,
+          "label": "DPHb",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "DC2_DPW_039_2",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 3.899950000000001,
+        "s_end_m": 3.9099500000000007,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 2.018,
+          "dipole_angle_deg": -4.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC2.DPW.039",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "VC3",
+        "type": "CORRECTOR_V",
+        "s_start_m": 3.9099500000000007,
+        "s_end_m": 3.9099500000000007,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "DC2.STV.039",
+          "element_name": "V. Corrector",
+          "channel": 35,
+          "label": "VC3",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "HC1",
+        "type": "CORRECTOR_H",
+        "s_start_m": 3.9099500000000007,
+        "s_end_m": 3.9099500000000007,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "DC2.STH.039",
+          "element_name": "H. Corrector",
+          "channel": 36,
+          "label": "HC1",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "F2QA",
+        "type": "QUADRUPOLE",
+        "s_start_m": 4.151867000000001,
+        "s_end_m": 4.240767000000001,
+        "length_m": 0.08889999999999976,
+        "parameters": {
+          "current_a": 1.5961395694135116
+        },
+        "polarity": "defocusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC2.QPD.042",
+          "element_name": "Quad",
+          "channel": 37,
+          "label": "F2QA",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "F2QB",
+        "type": "QUADRUPOLE",
+        "s_start_m": 4.291567000000001,
+        "s_end_m": 4.380467,
+        "length_m": 0.08889999999999976,
+        "parameters": {
+          "current_a": 3.080920564216778
+        },
+        "polarity": "focusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC2.QPF.043",
+          "element_name": "Quad",
+          "channel": 38,
+          "label": "F2QB",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "F2QC",
+        "type": "QUADRUPOLE",
+        "s_start_m": 4.431267,
+        "s_end_m": 4.520167,
+        "length_m": 0.08889999999999976,
+        "parameters": {
+          "current_a": 1.5961395694135116
+        },
+        "polarity": "defocusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC2.QPD.045",
+          "element_name": "Quad",
+          "channel": 39,
+          "label": "F2QC",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "BPM2",
+        "type": "BPM",
+        "s_start_m": 4.520167,
+        "s_end_m": 4.520167,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "element_name": "Beam position monitor",
+          "label": "BPM2",
+          "sector": "DC2"
+        }
+      },
+      {
+        "name": "F2QD",
+        "type": "QUADRUPOLE",
+        "s_start_m": 4.935127,
+        "s_end_m": 5.024026999999999,
+        "length_m": 0.08889999999999976,
+        "parameters": {
+          "current_a": 1.5961395694135116
+        },
+        "polarity": "defocusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC3.QPD.050",
+          "element_name": "Quad",
+          "channel": 40,
+          "label": "F2QD",
+          "sector": "DC3"
+        }
+      },
+      {
+        "name": "F2QE",
+        "type": "QUADRUPOLE",
+        "s_start_m": 5.074826999999999,
+        "s_end_m": 5.163726999999999,
+        "length_m": 0.08889999999999976,
+        "parameters": {
+          "current_a": 3.080920564216778
+        },
+        "polarity": "focusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC3.QPF.051",
+          "element_name": "Quad",
+          "channel": 41,
+          "label": "F2QE",
+          "sector": "DC3"
+        }
+      },
+      {
+        "name": "F2QF",
+        "type": "QUADRUPOLE",
+        "s_start_m": 5.214526999999999,
+        "s_end_m": 5.303426999999998,
+        "length_m": 0.08889999999999976,
+        "parameters": {
+          "current_a": 1.5961395694135116
+        },
+        "polarity": "defocusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC3.QPD.053",
+          "element_name": "Quad",
+          "channel": 42,
+          "label": "F2QF",
+          "sector": "DC3"
+        }
+      },
+      {
+        "name": "OS3",
+        "type": "OTR",
+        "s_start_m": 5.498498999999998,
+        "s_end_m": 5.498498999999998,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "DC3.OTR.055",
+          "element_name": "OTR Screen",
+          "label": "OS3",
+          "sector": "DC3"
+        }
+      },
+      {
+        "name": "DC3_DPW_056",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 5.564444999999998,
+        "s_end_m": 5.574444999999998,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 2.536,
+          "dipole_angle_deg": 5.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC3.DPW.056",
+          "sector": "DC3"
+        }
+      },
+      {
+        "name": "DPHa_3",
+        "type": "DIPOLE",
+        "s_start_m": 5.574444999999998,
+        "s_end_m": 5.615084999999998,
+        "length_m": 0.04063999999999979,
+        "parameters": {
+          "bending_angle_deg": 5.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC3.DPH.056",
+          "element_name": "Split Bend 3 start",
+          "channel": 45,
+          "label": "DPHa",
+          "sector": "DC3"
+        }
+      },
+      {
+        "name": "DC3_DPW_056_2",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 5.615084999999998,
+        "s_end_m": 5.625084999999998,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 2.536,
+          "dipole_angle_deg": 5.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC3.DPW.056",
+          "sector": "DC3"
+        }
+      },
+      {
+        "name": "DPHQ_3",
+        "type": "QUADRUPOLE",
+        "s_start_m": 5.830984999999998,
+        "s_end_m": 5.919884999999998,
+        "length_m": 0.08889999999999976,
+        "parameters": {
+          "current_a": 4.49072011878248
+        },
+        "polarity": "focusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC3.QPF.059",
+          "element_name": "Chromacity quad",
+          "channel": 47,
+          "label": "DPHQ",
+          "sector": "DC3"
+        }
+      },
+      {
+        "name": "DC3_DPW_061",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 6.125784999999999,
+        "s_end_m": 6.1357849999999985,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 2.536,
+          "dipole_angle_deg": 5.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC3.DPW.061",
+          "sector": "DC3"
+        }
+      },
+      {
+        "name": "DPHb_3",
+        "type": "DIPOLE",
+        "s_start_m": 6.1357849999999985,
+        "s_end_m": 6.176424999999998,
+        "length_m": 0.04063999999999979,
+        "parameters": {
+          "bending_angle_deg": 5.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC3.DPH.062",
+          "element_name": "Split Bend 3 end",
+          "channel": 45,
+          "label": "DPHb",
+          "sector": "DC3"
+        }
+      },
+      {
+        "name": "DC3_DPW_062",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 6.176424999999998,
+        "s_end_m": 6.186424999999998,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 2.536,
+          "dipole_angle_deg": 5.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC3.DPW.062",
+          "sector": "DC3"
+        }
+      },
+      {
+        "name": "VC4",
+        "type": "CORRECTOR_V",
+        "s_start_m": 6.186424999999998,
+        "s_end_m": 6.186424999999998,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "DC3.STV.062",
+          "element_name": "V. Corrector",
+          "channel": 43,
+          "label": "VC4",
+          "sector": "DC3"
+        }
+      },
+      {
+        "name": "HC2",
+        "type": "CORRECTOR_H",
+        "s_start_m": 6.186424999999998,
+        "s_end_m": 6.186424999999998,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "DC3.STH.062",
+          "element_name": "H. Corrector",
+          "channel": 44,
+          "label": "HC2",
+          "sector": "DC3"
+        }
+      },
+      {
+        "name": "F3QA",
+        "type": "QUADRUPOLE",
+        "s_start_m": 6.369464999999998,
+        "s_end_m": 6.458364999999998,
+        "length_m": 0.08889999999999976,
+        "parameters": {
+          "current_a": 2.255753526354863
+        },
+        "polarity": "defocusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC3.QPD.064",
+          "element_name": "Quad",
+          "channel": 48,
+          "label": "F3QA",
+          "sector": "DC3"
+        }
+      },
+      {
+        "name": "F3QB",
+        "type": "QUADRUPOLE",
+        "s_start_m": 6.557754999999998,
+        "s_end_m": 6.646654999999997,
+        "length_m": 0.08889999999999976,
+        "parameters": {
+          "current_a": 1.6718634001484785
+        },
+        "polarity": "focusing",
+        "metadata": {
+          "nomenclature": "DC3.QPF.066",
+          "element_name": "Quad",
+          "channel": 49,
+          "label": "F3QB",
+          "sector": "DC3"
+        }
+      },
+      {
+        "name": "BPM3",
+        "type": "BPM",
+        "s_start_m": 7.110128999999997,
+        "s_end_m": 7.110128999999997,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "element_name": "Beam position monitor",
+          "label": "BPM3",
+          "sector": "IPC"
+        }
+      },
+      {
+        "name": "IPXS",
+        "type": "XRS",
+        "s_start_m": 7.110128999999997,
+        "s_end_m": 7.110128999999997,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "IPC.XRS.071",
+          "element_name": "X-ray screen (IP)",
+          "label": "IPXS",
+          "sector": "IPC"
+        }
+      },
+      {
+        "name": "IPOS",
+        "type": "OTR",
+        "s_start_m": 7.110128999999997,
+        "s_end_m": 7.110128999999997,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "element_name": "OTR Screen",
+          "label": "IPOS",
+          "sector": "IPC"
+        }
+      },
+      {
+        "name": "IPSW",
+        "type": "BSW",
+        "s_start_m": 7.110128999999997,
+        "s_end_m": 7.110128999999997,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "element_name": "Scanning wire",
+          "label": "IPSW",
+          "sector": "IPC"
+        }
+      },
+      {
+        "name": "VC5",
+        "type": "CORRECTOR_V",
+        "s_start_m": 7.110128999999997,
+        "s_end_m": 7.110128999999997,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "DC4.STV.000",
+          "element_name": "V. Corrector",
+          "channel": 51,
+          "label": "VC5",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "F3QC",
+        "type": "QUADRUPOLE",
+        "s_start_m": 7.325619999999997,
+        "s_end_m": 7.414519999999997,
+        "length_m": 0.08889999999999976,
+        "parameters": {
+          "current_a": 0.024870081662954718
+        },
+        "polarity": "focusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC4.QPF.074",
+          "element_name": "Quad",
+          "channel": 50,
+          "label": "F3QC",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "F3QD",
+        "type": "QUADRUPOLE",
+        "s_start_m": 7.469919999999997,
+        "s_end_m": 7.558819999999996,
+        "length_m": 0.08889999999999976,
+        "parameters": {
+          "current_a": 0.001
+        },
+        "polarity": "defocusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC4.QPD.075",
+          "element_name": "Quad",
+          "channel": 59,
+          "label": "F3QD",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "OS4",
+        "type": "OTR",
+        "s_start_m": 7.773068999999996,
+        "s_end_m": 7.773068999999996,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "DC4.OTR.078",
+          "element_name": "OTR Screen",
+          "label": "OS4",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "DC4_DPW_078",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 7.840919999999996,
+        "s_end_m": 7.850919999999996,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 2.018,
+          "dipole_angle_deg": -4.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC4.DPW.078",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "DPHa_4",
+        "type": "DIPOLE",
+        "s_start_m": 7.850919999999996,
+        "s_end_m": 7.891559999999996,
+        "length_m": 0.04063999999999979,
+        "parameters": {
+          "bending_angle_deg": -4.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC4.DPH.079",
+          "element_name": "Split Bend 4 start",
+          "channel": 52,
+          "label": "DPHa",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "DC4_DPW_079",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 7.891559999999996,
+        "s_end_m": 7.9015599999999955,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 2.018,
+          "dipole_angle_deg": -4.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC4.DPW.079",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "DPHQ_4",
+        "type": "QUADRUPOLE",
+        "s_start_m": 8.107489999999995,
+        "s_end_m": 8.196389999999996,
+        "length_m": 0.08890000000000065,
+        "parameters": {
+          "current_a": 4.491462509279882
+        },
+        "polarity": "focusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC4.QPF.082",
+          "element_name": "Chromacity quad",
+          "channel": 53,
+          "label": "DPHQ",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "DC4_DPW_084",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 8.402319999999996,
+        "s_end_m": 8.412319999999996,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 2.018,
+          "dipole_angle_deg": -4.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC4.DPW.084",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "DPHb_4",
+        "type": "DIPOLE",
+        "s_start_m": 8.412319999999996,
+        "s_end_m": 8.452959999999996,
+        "length_m": 0.04063999999999979,
+        "parameters": {
+          "bending_angle_deg": -4.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC4.DPH.084",
+          "element_name": "Split Bend 4 end",
+          "channel": 52,
+          "label": "DPHb",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "DC4_DPW_085",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 8.452959999999996,
+        "s_end_m": 8.462959999999995,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 2.018,
+          "dipole_angle_deg": -4.0,
+          "dipole_length_m": 0.04064,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC4.DPW.085",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "F4QA",
+        "type": "QUADRUPOLE",
+        "s_start_m": 8.607685999999996,
+        "s_end_m": 8.696585999999996,
+        "length_m": 0.08890000000000065,
+        "parameters": {
+          "current_a": 1.5961395694135116
+        },
+        "polarity": "defocusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC4.QPF.087",
+          "element_name": "Quad",
+          "channel": 56,
+          "label": "F4QA",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "F4QB",
+        "type": "QUADRUPOLE",
+        "s_start_m": 8.732780999999996,
+        "s_end_m": 8.821680999999996,
+        "length_m": 0.08890000000000065,
+        "parameters": {
+          "current_a": 3.5
+        },
+        "polarity": "focusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC4.QPD.088",
+          "element_name": "Quad",
+          "channel": 57,
+          "label": "F4QB",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "F4QC",
+        "type": "QUADRUPOLE",
+        "s_start_m": 8.857875999999996,
+        "s_end_m": 8.946775999999996,
+        "length_m": 0.08890000000000065,
+        "parameters": {
+          "current_a": 1.5961395694135116
+        },
+        "polarity": "defocusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC4.QPF.089",
+          "element_name": "Quad",
+          "channel": 58,
+          "label": "F4QC",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "DC4_STH",
+        "type": "CORRECTOR_H",
+        "s_start_m": 8.946775999999996,
+        "s_end_m": 8.946775999999996,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "element_name": "H. Corrector",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "VC6",
+        "type": "CORRECTOR_V",
+        "s_start_m": 8.946775999999996,
+        "s_end_m": 8.946775999999996,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "DC4.STV.089",
+          "element_name": "V. Corrector",
+          "channel": 60,
+          "label": "VC6",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "BPM4",
+        "type": "BPM",
+        "s_start_m": 8.946775999999996,
+        "s_end_m": 8.946775999999996,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "element_name": "Beam position monitor",
+          "label": "BPM4",
+          "sector": "DC4"
+        }
+      },
+      {
+        "name": "OS5",
+        "type": "OTR",
+        "s_start_m": 9.222365999999996,
+        "s_end_m": 9.222365999999996,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "DC5.OTR.092",
+          "element_name": "OTR Screen",
+          "label": "OS5",
+          "sector": "DC5"
+        }
+      },
+      {
+        "name": "DC5_DPW_093",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 9.293772999999996,
+        "s_end_m": 9.303772999999996,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 0.75,
+          "dipole_angle_deg": 1.5,
+          "dipole_length_m": 0.0889,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC5.DPW.093",
+          "sector": "DC5"
+        }
+      },
+      {
+        "name": "DPHa_5",
+        "type": "DIPOLE",
+        "s_start_m": 9.303772999999996,
+        "s_end_m": 9.392672999999997,
+        "length_m": 0.08890000000000065,
+        "parameters": {
+          "bending_angle_deg": 1.5,
+          "dipole_length_m": 0.0889,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC5.DPH.093",
+          "element_name": "Split Bend 5 start",
+          "channel": 61,
+          "label": "DPHa",
+          "sector": "DC5"
+        }
+      },
+      {
+        "name": "DC5_DPW_094",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 9.392672999999997,
+        "s_end_m": 9.402672999999997,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 0.75,
+          "dipole_angle_deg": 1.5,
+          "dipole_length_m": 0.0889,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC5.DPW.094",
+          "sector": "DC5"
+        }
+      },
+      {
+        "name": "DC5_STH",
+        "type": "CORRECTOR_H",
+        "s_start_m": 9.402672999999997,
+        "s_end_m": 9.402672999999997,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "element_name": "H. Corrector",
+          "sector": "DC5"
+        }
+      },
+      {
+        "name": "DPHQ_5",
+        "type": "QUADRUPOLE",
+        "s_start_m": 9.628892999999996,
+        "s_end_m": 9.717792999999997,
+        "length_m": 0.08890000000000065,
+        "parameters": {
+          "current_a": 3.816603563474388
+        },
+        "polarity": "focusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC5.QPF.097",
+          "element_name": "Chromacity quad",
+          "label": "DPHQ",
+          "sector": "DC5"
+        }
+      },
+      {
+        "name": "DC5_STH_2",
+        "type": "CORRECTOR_H",
+        "s_start_m": 9.717792999999997,
+        "s_end_m": 9.717792999999997,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "element_name": "H. Corrector",
+          "sector": "DC5"
+        }
+      },
+      {
+        "name": "DC5_DPW_099",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 9.944012999999996,
+        "s_end_m": 9.954012999999996,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 1.5,
+          "dipole_angle_deg": 1.5,
+          "dipole_length_m": 0.0889,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC5.DPW.099",
+          "sector": "DC5"
+        }
+      },
+      {
+        "name": "DPHb_5",
+        "type": "DIPOLE",
+        "s_start_m": 9.954012999999996,
+        "s_end_m": 10.042912999999997,
+        "length_m": 0.08890000000000065,
+        "parameters": {
+          "bending_angle_deg": 1.5,
+          "dipole_length_m": 0.0889,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC5.DPH.100",
+          "element_name": "Split Bend 5 end",
+          "channel": 61,
+          "label": "DPHb",
+          "sector": "DC5"
+        }
+      },
+      {
+        "name": "DC5_DPW_100",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 10.042912999999997,
+        "s_end_m": 10.052912999999997,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 0.0,
+          "dipole_angle_deg": 1.5,
+          "dipole_length_m": 0.0889,
+          "pole_gap_m": 0.014478
+        },
+        "metadata": {
+          "nomenclature": "DC5.DPW.100",
+          "sector": "DC5"
+        }
+      },
+      {
+        "name": "UBQ1",
+        "type": "QUADRUPOLE",
+        "s_start_m": 10.212076999999997,
+        "s_end_m": 10.300976999999998,
+        "length_m": 0.08890000000000065,
+        "parameters": {
+          "current_a": 1.5961395694135116
+        },
+        "polarity": "defocusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC5.QPF.103",
+          "element_name": "Quad",
+          "channel": 62,
+          "label": "UBQ1",
+          "sector": "DC5"
+        }
+      },
+      {
+        "name": "VC7",
+        "type": "CORRECTOR_V",
+        "s_start_m": 10.300976999999998,
+        "s_end_m": 10.300976999999998,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "DC5.STV.103",
+          "element_name": "V. Corrector",
+          "channel": 65,
+          "label": "VC7",
+          "sector": "DC5"
+        }
+      },
+      {
+        "name": "FBPM",
+        "type": "BPM",
+        "s_start_m": 10.300976999999998,
+        "s_end_m": 10.300976999999998,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "element_name": "Beam position monitor",
+          "label": "FBPM",
+          "sector": "DC5"
+        }
+      },
+      {
+        "name": "UBQ2",
+        "type": "QUADRUPOLE",
+        "s_start_m": 10.609205999999999,
+        "s_end_m": 10.698106,
+        "length_m": 0.08890000000000065,
+        "parameters": {
+          "current_a": 3.080920564216778
+        },
+        "polarity": "focusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC5.QPD.107",
+          "element_name": "Quad",
+          "channel": 63,
+          "label": "UBQ2",
+          "sector": "DC5"
+        }
+      },
+      {
+        "name": "UBQ3",
+        "type": "QUADRUPOLE",
+        "s_start_m": 10.736206,
+        "s_end_m": 10.825106,
+        "length_m": 0.08890000000000065,
+        "parameters": {
+          "current_a": 1.5961395694135116
+        },
+        "polarity": "defocusing",
+        "aperture_m": 0.027,
+        "metadata": {
+          "nomenclature": "DC5.QPF.108",
+          "element_name": "Quad",
+          "channel": 64,
+          "label": "UBQ3",
+          "sector": "DC5"
+        }
+      },
+      {
+        "name": "FC1_DPW_111",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 11.099409,
+        "s_end_m": 11.109409,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 0.0,
+          "dipole_angle_deg": 11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "fringe_fields": {
+          "enge_coefficients": [
+            56.49,
+            -50.79,
+            19.32,
+            -3.621,
+            0.3315,
+            -0.01193
+          ]
+        },
+        "metadata": {
+          "nomenclature": "FC1.DPW.111",
+          "sector": "FC1"
+        }
+      },
+      {
+        "name": "FC1_DPH_111",
+        "type": "DIPOLE",
+        "s_start_m": 11.109409,
+        "s_end_m": 11.146797999999999,
+        "length_m": 0.03738899999999923,
+        "parameters": {
+          "bending_angle_deg": 11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC1.DPH.111",
+          "element_name": "MkIII chicane dipole",
+          "sector": "FC1"
+        }
+      },
+      {
+        "name": "FC1_DPW_112",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 11.146797999999999,
+        "s_end_m": 11.156797999999998,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 11.25,
+          "dipole_angle_deg": 11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC1.DPW.112",
+          "sector": "FC1"
+        }
+      },
+      {
+        "name": "FC1_DPW_115",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 11.465962,
+        "s_end_m": 11.475961999999999,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 11.25,
+          "dipole_angle_deg": -11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "fringe_fields": {
+          "enge_coefficients": [
+            56.49,
+            -50.79,
+            19.32,
+            -3.621,
+            0.3315,
+            -0.01193
+          ]
+        },
+        "metadata": {
+          "nomenclature": "FC1.DPW.115",
+          "sector": "FC1"
+        }
+      },
+      {
+        "name": "FC1_DPH_115",
+        "type": "DIPOLE",
+        "s_start_m": 11.475961999999999,
+        "s_end_m": 11.513350999999998,
+        "length_m": 0.03738899999999923,
+        "parameters": {
+          "bending_angle_deg": -11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC1.DPH.115",
+          "element_name": "MkIII chicane dipole",
+          "sector": "FC1"
+        }
+      },
+      {
+        "name": "FC1_DPW_115_2",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 11.513350999999998,
+        "s_end_m": 11.523350999999998,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 0.0,
+          "dipole_angle_deg": -11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC1.DPW.115",
+          "sector": "FC1"
+        }
+      },
+      {
+        "name": "FC1_OTR_116",
+        "type": "OTR",
+        "s_start_m": 11.608770999999999,
+        "s_end_m": 11.608770999999999,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "FC1.OTR.116",
+          "element_name": "OTR Screen",
+          "sector": "FC1"
+        }
+      },
+      {
+        "name": "FC1_DPW_117",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 11.694191,
+        "s_end_m": 11.704191,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 0.0,
+          "dipole_angle_deg": -11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "fringe_fields": {
+          "enge_coefficients": [
+            56.49,
+            -50.79,
+            19.32,
+            -3.621,
+            0.3315,
+            -0.01193
+          ]
+        },
+        "metadata": {
+          "nomenclature": "FC1.DPW.117",
+          "sector": "FC1"
+        }
+      },
+      {
+        "name": "FC1_DPH_117",
+        "type": "DIPOLE",
+        "s_start_m": 11.704191,
+        "s_end_m": 11.741579999999999,
+        "length_m": 0.03738899999999923,
+        "parameters": {
+          "bending_angle_deg": -11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC1.DPH.117",
+          "element_name": "MkIII chicane dipole",
+          "sector": "FC1"
+        }
+      },
+      {
+        "name": "FC1_DPW_117_2",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 11.741579999999999,
+        "s_end_m": 11.751579999999999,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 11.25,
+          "dipole_angle_deg": -11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC1.DPW.117",
+          "sector": "FC1"
+        }
+      },
+      {
+        "name": "FC1_DPW_121",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 12.060744,
+        "s_end_m": 12.070744,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 11.25,
+          "dipole_angle_deg": 11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "fringe_fields": {
+          "enge_coefficients": [
+            56.49,
+            -50.79,
+            19.32,
+            -3.621,
+            0.3315,
+            -0.01193
+          ]
+        },
+        "metadata": {
+          "nomenclature": "FC1.DPW.121",
+          "sector": "FC1"
+        }
+      },
+      {
+        "name": "FC1_DPH_121",
+        "type": "DIPOLE",
+        "s_start_m": 12.070744,
+        "s_end_m": 12.108132999999999,
+        "length_m": 0.03738899999999923,
+        "parameters": {
+          "bending_angle_deg": 11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC1.DPH.121",
+          "element_name": "MkIII chicane dipole",
+          "sector": "FC1"
+        }
+      },
+      {
+        "name": "FC1_DPW_121_2",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 12.108132999999999,
+        "s_end_m": 12.118132999999998,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 0.0,
+          "dipole_angle_deg": 11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC1.DPW.121",
+          "sector": "FC1"
+        }
+      },
+      {
+        "name": "FEL_OTR_123",
+        "type": "OTR",
+        "s_start_m": 12.319866999999999,
+        "s_end_m": 12.319866999999999,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "FEL.OTR.123",
+          "element_name": "OTR Screen",
+          "sector": "FEL"
+        }
+      },
+      {
+        "name": "FEL_UND_127",
+        "type": "UNDULATOR",
+        "s_start_m": 12.388967,
+        "s_end_m": 12.929466999999999,
+        "length_m": 0.5404999999999998,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "FEL.UND.127",
+          "element_name": "MkIII undulator",
+          "sector": "FEL"
+        }
+      },
+      {
+        "name": "FEL_OTR_129",
+        "type": "OTR",
+        "s_start_m": 12.929466999999999,
+        "s_end_m": 12.929466999999999,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "FEL.OTR.129",
+          "element_name": "OTR Screen",
+          "sector": "FEL"
+        }
+      },
+      {
+        "name": "FEL_UND_132",
+        "type": "UNDULATOR",
+        "s_start_m": 12.929466999999999,
+        "s_end_m": 13.469966999999999,
+        "length_m": 0.5404999999999998,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "FEL.UND.132",
+          "element_name": "MkIII undulator",
+          "sector": "FEL"
+        }
+      },
+      {
+        "name": "FEL_OTR_135",
+        "type": "OTR",
+        "s_start_m": 13.539067,
+        "s_end_m": 13.539067,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "FEL.OTR.135",
+          "element_name": "OTR Screen",
+          "sector": "FEL"
+        }
+      },
+      {
+        "name": "FC2_DPW_137",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 13.741437,
+        "s_end_m": 13.751437,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 0.0,
+          "dipole_angle_deg": 11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "fringe_fields": {
+          "enge_coefficients": [
+            56.49,
+            -50.79,
+            19.32,
+            -3.621,
+            0.3315,
+            -0.01193
+          ]
+        },
+        "metadata": {
+          "nomenclature": "FC2.DPW.137",
+          "sector": "FC2"
+        }
+      },
+      {
+        "name": "FC2_DPH_138",
+        "type": "DIPOLE",
+        "s_start_m": 13.751437,
+        "s_end_m": 13.788825999999998,
+        "length_m": 0.03738899999999923,
+        "parameters": {
+          "bending_angle_deg": 11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC2.DPH.138",
+          "element_name": "MkIII chicane dipole",
+          "sector": "FC2"
+        }
+      },
+      {
+        "name": "FC2_DPW_138",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 13.788825999999998,
+        "s_end_m": 13.798825999999998,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 11.25,
+          "dipole_angle_deg": 11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC2.DPW.138",
+          "sector": "FC2"
+        }
+      },
+      {
+        "name": "FC2_DPW_141",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 14.10799,
+        "s_end_m": 14.117989999999999,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 11.25,
+          "dipole_angle_deg": -11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "fringe_fields": {
+          "enge_coefficients": [
+            56.49,
+            -50.79,
+            19.32,
+            -3.621,
+            0.3315,
+            -0.01193
+          ]
+        },
+        "metadata": {
+          "nomenclature": "FC2.DPW.141",
+          "sector": "FC2"
+        }
+      },
+      {
+        "name": "FC2_DPH_141",
+        "type": "DIPOLE",
+        "s_start_m": 14.117989999999999,
+        "s_end_m": 14.155378999999998,
+        "length_m": 0.03738899999999923,
+        "parameters": {
+          "bending_angle_deg": -11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC2.DPH.141",
+          "element_name": "MkIII chicane dipole",
+          "sector": "FC2"
+        }
+      },
+      {
+        "name": "FC2_DPW_142",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 14.155378999999998,
+        "s_end_m": 14.165378999999998,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 0.0,
+          "dipole_angle_deg": -11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC2.DPW.142",
+          "sector": "FC2"
+        }
+      },
+      {
+        "name": "FC2_OTR_143",
+        "type": "OTR",
+        "s_start_m": 14.250798999999999,
+        "s_end_m": 14.250798999999999,
+        "length_m": 0.0,
+        "parameters": {},
+        "metadata": {
+          "nomenclature": "FC2.OTR.143",
+          "element_name": "OTR Screen",
+          "sector": "FC2"
+        }
+      },
+      {
+        "name": "FC2_DPW_143",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 14.336219,
+        "s_end_m": 14.346219,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 0.0,
+          "dipole_angle_deg": -11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "fringe_fields": {
+          "enge_coefficients": [
+            56.49,
+            -50.79,
+            19.32,
+            -3.621,
+            0.3315,
+            -0.01193
+          ]
+        },
+        "metadata": {
+          "nomenclature": "FC2.DPW.143",
+          "sector": "FC2"
+        }
+      },
+      {
+        "name": "FC2_DPH_144",
+        "type": "DIPOLE",
+        "s_start_m": 14.346219,
+        "s_end_m": 14.383607999999999,
+        "length_m": 0.03738899999999923,
+        "parameters": {
+          "bending_angle_deg": -11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC2.DPH.144",
+          "element_name": "MkIII chicane dipole",
+          "sector": "FC2"
+        }
+      },
+      {
+        "name": "FC2_DPW_144",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 14.383607999999999,
+        "s_end_m": 14.393607999999999,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 11.25,
+          "dipole_angle_deg": -11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC2.DPW.144",
+          "sector": "FC2"
+        }
+      },
+      {
+        "name": "FC2_DPW_147",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 14.702772,
+        "s_end_m": 14.712772,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 11.25,
+          "dipole_angle_deg": 11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "fringe_fields": {
+          "enge_coefficients": [
+            56.49,
+            -50.79,
+            19.32,
+            -3.621,
+            0.3315,
+            -0.01193
+          ]
+        },
+        "metadata": {
+          "nomenclature": "FC2.DPW.147",
+          "sector": "FC2"
+        }
+      },
+      {
+        "name": "FC2_DPH_147",
+        "type": "DIPOLE",
+        "s_start_m": 14.712772,
+        "s_end_m": 14.750160999999999,
+        "length_m": 0.03738899999999923,
+        "parameters": {
+          "bending_angle_deg": 11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC2.DPH.147",
+          "element_name": "MkIII chicane dipole",
+          "sector": "FC2"
+        }
+      },
+      {
+        "name": "FC2_DPW_148",
+        "type": "DIPOLE_WEDGE",
+        "s_start_m": 14.750160999999999,
+        "s_end_m": 14.760160999999998,
+        "length_m": 0.009999999999999787,
+        "parameters": {
+          "wedge_angle_deg": 0.0,
+          "dipole_angle_deg": 11.25,
+          "dipole_length_m": 0.037389,
+          "pole_gap_m": 0.0127
+        },
+        "metadata": {
+          "nomenclature": "FC2.DPW.148",
+          "sector": "FC2"
+        }
+      }
+    ],
+    "lattice_structure": {
+      "sectors": [
+        {
+          "name": "LIN",
+          "element_names": [
+            "LIN_QPF_004",
+            "LIN_BPM",
+            "LQ2",
+            "VC1",
+            "LSP",
+            "VC2"
+          ]
+        },
+        {
+          "name": "DC1",
+          "element_names": [
+            "OS1",
+            "DC1_DPW_017",
+            "DPHa",
+            "DC1_DPW_018",
+            "DPHQ",
+            "DC1_DPW_024",
+            "DPHb",
+            "DC1_DPW_025",
+            "BPM1"
+          ]
+        },
+        {
+          "name": "DC2",
+          "element_names": [
+            "F1QA",
+            "F1QB",
+            "F1QC",
+            "OS2",
+            "DC2_DPW_033",
+            "DPHa_2",
+            "DC2_DPW_033_2",
+            "DPHQ_2",
+            "DC2_DPW_039",
+            "DPHb_2",
+            "DC2_DPW_039_2",
+            "VC3",
+            "HC1",
+            "F2QA",
+            "F2QB",
+            "F2QC",
+            "BPM2"
+          ]
+        },
+        {
+          "name": "DC3",
+          "element_names": [
+            "F2QD",
+            "F2QE",
+            "F2QF",
+            "OS3",
+            "DC3_DPW_056",
+            "DPHa_3",
+            "DC3_DPW_056_2",
+            "DPHQ_3",
+            "DC3_DPW_061",
+            "DPHb_3",
+            "DC3_DPW_062",
+            "VC4",
+            "HC2",
+            "F3QA",
+            "F3QB"
+          ]
+        },
+        {
+          "name": "IPC",
+          "element_names": [
+            "BPM3",
+            "IPXS",
+            "IPOS",
+            "IPSW"
+          ]
+        },
+        {
+          "name": "DC4",
+          "element_names": [
+            "VC5",
+            "F3QC",
+            "F3QD",
+            "OS4",
+            "DC4_DPW_078",
+            "DPHa_4",
+            "DC4_DPW_079",
+            "DPHQ_4",
+            "DC4_DPW_084",
+            "DPHb_4",
+            "DC4_DPW_085",
+            "F4QA",
+            "F4QB",
+            "F4QC",
+            "DC4_STH",
+            "VC6",
+            "BPM4"
+          ]
+        },
+        {
+          "name": "DC5",
+          "element_names": [
+            "OS5",
+            "DC5_DPW_093",
+            "DPHa_5",
+            "DC5_DPW_094",
+            "DC5_STH",
+            "DPHQ_5",
+            "DC5_STH_2",
+            "DC5_DPW_099",
+            "DPHb_5",
+            "DC5_DPW_100",
+            "UBQ1",
+            "VC7",
+            "FBPM",
+            "UBQ2",
+            "UBQ3"
+          ]
+        },
+        {
+          "name": "FC1",
+          "element_names": [
+            "FC1_DPW_111",
+            "FC1_DPH_111",
+            "FC1_DPW_112",
+            "FC1_DPW_115",
+            "FC1_DPH_115",
+            "FC1_DPW_115_2",
+            "FC1_OTR_116",
+            "FC1_DPW_117",
+            "FC1_DPH_117",
+            "FC1_DPW_117_2",
+            "FC1_DPW_121",
+            "FC1_DPH_121",
+            "FC1_DPW_121_2"
+          ]
+        },
+        {
+          "name": "FEL",
+          "element_names": [
+            "FEL_OTR_123",
+            "FEL_UND_127",
+            "FEL_OTR_129",
+            "FEL_UND_132",
+            "FEL_OTR_135"
+          ]
+        },
+        {
+          "name": "FC2",
+          "element_names": [
+            "FC2_DPW_137",
+            "FC2_DPH_138",
+            "FC2_DPW_138",
+            "FC2_DPW_141",
+            "FC2_DPH_141",
+            "FC2_DPW_142",
+            "FC2_OTR_143",
+            "FC2_DPW_143",
+            "FC2_DPH_144",
+            "FC2_DPW_144",
+            "FC2_DPW_147",
+            "FC2_DPH_147",
+            "FC2_DPW_148"
+          ]
+        }
+      ]
+    },
+    "global_settings": {
+      "coordinate_system": "felsim",
+      "length_unit": "m",
+      "angle_unit": "deg",
+      "field_unit": "T",
+      "current_unit": "A",
+      "energy_unit": "MeV",
+      "quadrupole_gradient_coefficient_t_per_a_per_m": 2.694
+    }
+  }
+}
