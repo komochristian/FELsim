@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lattice-schema-v1",
+  "title": "FELsim Beamline Lattice Specification",
+  "description": "Schema for FELsim JSON lattice files (format_version 1).",
+  "type": "object",
+  "required": ["beamline"],
+  "additionalProperties": false,
+  "properties": {
+    "beamline": {
+      "type": "object",
+      "required": ["metadata", "beam_parameters", "elements"],
+      "additionalProperties": true,
+      "properties": {
+
+        "metadata": {
+          "type": "object",
+          "required": ["format_version", "name", "version", "reference_energy_mev", "particle_type"],
+          "additionalProperties": true,
+          "properties": {
+            "format_version": {
+              "type": "integer",
+              "const": 1,
+              "description": "Schema version (must be 1 for this schema)."
+            },
+            "name": { "type": "string" },
+            "version": { "type": "string" },
+            "description": { "type": "string" },
+            "author": { "type": "string" },
+            "date": { "type": "string" },
+            "reference_energy_mev": { "type": "number", "exclusiveMinimum": 0 },
+            "particle_type": { "type": "string" }
+          }
+        },
+
+        "beam_parameters": {
+          "type": "object",
+          "required": ["particle", "rf_frequency_hz"],
+          "additionalProperties": true,
+          "properties": {
+            "particle": {
+              "type": "object",
+              "required": ["type", "kinetic_energy_mev", "mass_mev", "charge_e"],
+              "additionalProperties": true,
+              "properties": {
+                "type": { "type": "string" },
+                "kinetic_energy_mev": { "type": "number", "exclusiveMinimum": 0 },
+                "mass_mev": { "type": "number", "exclusiveMinimum": 0 },
+                "charge_e": { "type": "integer" }
+              }
+            },
+            "rf_frequency_hz": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        },
+
+        "elements": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/element" }
+        },
+
+        "lattice_structure": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "sectors": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name"],
+                "additionalProperties": true,
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "element_names": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+
+        "global_settings": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "coordinate_system": {
+              "type": "string",
+              "enum": ["felsim", "cosy", "rftrack", "elegant"]
+            },
+            "length_unit": { "type": "string" },
+            "angle_unit": { "type": "string" },
+            "field_unit": { "type": "string" },
+            "current_unit": { "type": "string" },
+            "energy_unit": { "type": "string" },
+            "quadrupole_gradient_coefficient_t_per_a_per_m": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
+
+        "simulator_specific": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  },
+
+  "$defs": {
+    "element": {
+      "type": "object",
+      "required": ["name", "type", "length_m", "parameters"],
+      "additionalProperties": true,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "type": {
+          "type": "string",
+          "enum": [
+            "DRIFT",
+            "QUADRUPOLE", "QPF", "QPD",
+            "DIPOLE", "DPH",
+            "DIPOLE_WEDGE", "DPW",
+            "SOLENOID", "SOL",
+            "RF_CAVITY", "RFC",
+            "SEXTUPOLE", "SXT",
+            "UNDULATOR", "UND",
+            "BPM", "OTR",
+            "CORRECTOR_V", "STV",
+            "CORRECTOR_H", "STH",
+            "SPECTROMETER", "SPC",
+            "XRS", "BSW"
+          ]
+        },
+        "polarity": {
+          "type": "string",
+          "enum": ["focusing", "defocusing"]
+        },
+        "s_start_m": { "type": ["number", "null"] },
+        "s_end_m": { "type": ["number", "null"] },
+        "length_m": { "type": "number", "minimum": 0 },
+        "parameters": { "type": "object" },
+        "aperture_m": { "type": "number", "exclusiveMinimum": 0 },
+        "fringe_fields": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enge_coefficients": {
+              "type": ["array", "null"],
+              "items": { "type": "number" }
+            }
+          }
+        },
+        "optimization": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "variable": { "type": "string" },
+            "bounds": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "type": { "const": "QUADRUPOLE" } },
+            "required": ["type"]
+          },
+          "then": {
+            "required": ["polarity"]
+          }
+        }
+      ]
+    }
+  }
+}
