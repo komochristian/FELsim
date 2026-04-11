@@ -229,12 +229,12 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
         r'Envelope $E$ (mm)': 'envelope'
     }
     try:
-        beamline = importlib.import_module(moduleName)
+        beamline_class = importlib.import_module(moduleName)
         beamlist = []
         beamlineData = graphParams.beamline_data
         for segment in beamlineData:
-            if hasattr(beamline, segment.segmentName):
-                segmentClass = getattr(beamline, segment.segmentName)
+            if hasattr(beamline_class, segment.segmentName):
+                segmentClass = getattr(beamline_class, segment.segmentName)
                 beamlist.append(segmentClass(**segment.parameters))
 
         cleanedBeamlist = beamlist[:graphParams.beam_index]
@@ -251,7 +251,7 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
         schem.plotBeamPositionTransform(beam_dist, cleanedBeamlist, plot=False, interval=100, rendering=False)
         beam_dist = schem.matrixVariables
 
-        beamObj = Beamline(beamlist)
+        beamObj = beamline(beamlist)
         indexOfSSegment = beamObj.findSegmentAtPos(graphParams.target_s_pos)
 
         newSegment = copy.deepcopy(beamObj.beamline[indexOfSSegment])

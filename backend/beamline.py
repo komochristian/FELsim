@@ -857,6 +857,13 @@ class beamline:
         xNew = np.linspace(xData[0], xData[-1], math.ceil(totalLen / interval) + 1)
         yNew = rbf(xNew)
         return xNew, yNew
+    
+    def findSegmentAtPos(self, pos):
+        for i in range(len(self.beamline)):
+            seg = self.beamline[i]
+            if (pos >= seg.startPos and pos <= seg.endPos):
+                return i
+        return -1
 
     def _testModeOrder2end(self, x, origin, B0, a1, a2):
         return B0 / (1 + np.exp((a1 * (x - origin)) + (a2 * (x - origin) ** 2)))
