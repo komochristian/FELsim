@@ -171,7 +171,7 @@ def loadAxes(plotParams: PlottingParameters) -> AxesPNGData:
     
         latObj = lattice(1)
         beamlist = latObj.changeBeamType(plotParams.beamType, plotParams.kineticE, beamlist)
-    
+        
         pngObject = getPngObjFromBeamList(beamlist, plotParams)
         return pngObject
     except Exception as e:
@@ -188,7 +188,7 @@ def getBeamSegmentInfo():
     """
     module = importlib.import_module(moduleName)
     classes = inspect.getmembers(module, inspect.isclass)
-    classes_in_module = [cls for name, cls in classes if cls.__module__ == moduleName and cls.__name__ not in ["Beamline", "lattice"]]
+    classes_in_module = [cls for name, cls in classes if cls.__module__ == moduleName and cls.__name__ not in ["beamline", "lattice"]]
     beamSegInfo = {}
 
     for cls in classes_in_module:
