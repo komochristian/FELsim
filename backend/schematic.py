@@ -411,11 +411,10 @@ class draw_beamline:
                                                   show_schematic, curved_trajectory)
 
         if apiCall:
-            lineAxElements = {'axis': ax5,
-                              'twiss': twiss_aggregated_df,
-                              'x_axis': x_axis,
-                              'beamsegment': beamSegments
-                              }
+            lineAxElements = {
+                'twiss': twiss_aggregated_df,
+                'x_axis': x_axis
+            }
             return apiAxData, lineAxElements
 
         return twiss_aggregated_df

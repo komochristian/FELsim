@@ -43,7 +43,7 @@ class lattice:
         self.gamma = (1 + (self.E / self.E0))
         self.beta = np.sqrt(1 - (1 / (self.gamma ** 2)))
         self.unitsF = 10 ** 6  # Units factor used for conversions from (keV) to (ns)
-        self.color = color # Color of beamline element when graphed
+        self.color = self.__class__.color # Color of beamline element when graphed
         self.fringeType = fringeType  # Each segment has no magnetic fringe by default
         self.startPos = None
         self.endPos = None
@@ -215,7 +215,7 @@ class driftLattice(lattice):
             The length of the drift segment in meters.
         '''
         super().__init__(length, name=name)
-        self.color = color
+        self.color = self.__class__.color
 
     def _compute_numeric_matrix(self, length=None, **kwargs):
         '''
@@ -297,7 +297,7 @@ class qpfLattice(lattice):
         '''
         super().__init__(length, fringeType, name=name)
         self.current = current
-        self.color = color
+        self.color = self.__class__.color
         self.G = 2.694  # Quadrupole focusing strength (T/A/m)
 
     def _compute_numeric_matrix(self, length=None, current=None, **kwargs):
@@ -420,7 +420,7 @@ class qpdLattice(lattice):
         super().__init__(length, fringeType, name=name)
         self.current = current
         self.G = 2.694  # Quadrupole focusing strength (T/A/m)
-        self.color = color
+        self.color = self.__class__.color
 
     def _compute_numeric_matrix(self, length=None, current=None, **kwargs):
         '''
@@ -539,7 +539,7 @@ class dipole(lattice):
         fringeType :
         '''
         super().__init__(length, fringeType, name=name)
-        self.color = color
+        self.color = self.__class__.color
         self.angle = angle
 
     def _compute_numeric_matrix(self, length=None, angle=None, **kwargs):
@@ -663,7 +663,7 @@ class dipole_wedge(lattice):
         fringeType :
         '''
         super().__init__(length, fringeType, name=name)
-        self.color = color
+        self.color = self.__class__.color
         self.angle = angle
         self.dipole_length = dipole_length
         self.dipole_angle = dipole_angle

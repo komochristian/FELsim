@@ -67,12 +67,6 @@ def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
     schem = draw_beamline()
     schem.DEFAULTINTERVALROUND = 10
     axList, lineAxObj = schem.plotBeamPositionTransform(beam_dist, beamlist, plot=False, apiCall=True, scatter=True, interval=plotParams.interval)
-    fig = lineAxObj['axis'].figure
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png",bbox_inches="tight")
-    buf.seek(0)
-    lineAx_img = base64.b64encode(buf.read()).decode("utf-8")
-    buf.close()
 
     images = {}
     for index, axes in axList.items():
@@ -86,7 +80,6 @@ def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
 
         images.update({index: img_base64})
      
-    lineAxObj['axis'] = lineAx_img
     lineAxObj['twiss'] = lineAxObj['twiss'].to_json()
 
     lineAxObj = LineAxObject(**lineAxObj)
@@ -171,10 +164,10 @@ def loadAxes(plotParams: PlottingParameters) -> AxesPNGData:
     
         latObj = lattice(1)
         beamlist = latObj.changeBeamType(plotParams.beamType, plotParams.kineticE, beamlist)
-        
-        pngObject = getPngObjFromBeamList(beamlist, plotParams)
+        pngObject = getPngObjFromBeamList(beamlist, plotParams)        
         return pngObject
     except Exception as e:
+        print(f"ERROR: {type(e).__name__}: {e}")  # add this
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/beamsegmentinfo")
@@ -208,7 +201,8 @@ def getBeamSegmentInfo():
         params_info['color'] = cls.color  # Manually add class info about beam's color
     
         beamSegInfo[cls.__name__] = params_info
-
+    for seg in beamSegInfo.values():
+        seg.pop("name", None)
     return beamSegInfo
 
 @app.post("/plot-parameters")

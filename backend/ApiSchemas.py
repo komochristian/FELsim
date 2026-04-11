@@ -39,10 +39,8 @@ class PlottingParameters(BaseModel):
     #  I THINK WE NEED SAVE FIG AND SHAPE
 
 class LineAxObject(BaseModel):
-    axis: str # temporary placeholder axes
     twiss: str
     x_axis: list[float]
-    beamsegment: list
 
 class AxesPNGData(BaseModel):
     images: Dict[float, Any]
