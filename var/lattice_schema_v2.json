@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lattice-schema-v2",
+  "$comment": "This schema is aligned with the PALS (Particle Accelerator Lattice Standard). When updating element kinds or parameter names, consult https://github.com/pals-project/pals and https://pals-project.readthedocs.io/ to maintain compatibility.",
+  "title": "FELsim Beamline Lattice Specification",
+  "description": "Schema for FELsim JSON/YAML lattice files (format_version 2). Accepts both FELsim-native and PALS-compatible element kind names.",
+  "type": "object",
+  "required": ["beamline"],
+  "additionalProperties": false,
+  "properties": {
+    "beamline": {
+      "type": "object",
+      "required": ["metadata", "beam_parameters", "elements"],
+      "additionalProperties": true,
+      "properties": {
+
+        "metadata": {
+          "type": "object",
+          "required": ["format_version", "name", "version", "reference_energy_mev", "particle_type"],
+          "additionalProperties": true,
+          "properties": {
+            "format_version": {
+              "type": "integer",
+              "const": 2,
+              "description": "Schema version (must be 2 for this schema)."
+            },
+            "name": { "type": "string" },
+            "version": { "type": "string" },
+            "description": { "type": "string" },
+            "author": { "type": "string" },
+            "date": { "type": "string" },
+            "reference_energy_mev": { "type": "number", "exclusiveMinimum": 0 },
+            "particle_type": { "type": "string" }
+          }
+        },
+
+        "beam_parameters": {
+          "type": "object",
+          "required": ["particle", "rf_frequency_hz"],
+          "additionalProperties": true,
+          "properties": {
+            "particle": {
+              "type": "object",
+              "required": ["type", "kinetic_energy_mev", "mass_mev", "charge_e"],
+              "additionalProperties": true,
+              "properties": {
+                "type": { "type": "string" },
+                "kinetic_energy_mev": { "type": "number", "exclusiveMinimum": 0 },
+                "mass_mev": { "type": "number", "exclusiveMinimum": 0 },
+                "charge_e": { "type": "integer" }
+              }
+            },
+            "rf_frequency_hz": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        },
+
+        "elements": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/element" }
+        },
+
+        "lattice_structure": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "sectors": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name"],
+                "additionalProperties": true,
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "element_names": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+
+        "global_settings": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "coordinate_system": {
+              "type": "string",
+              "enum": ["felsim", "cosy", "rftrack", "elegant"]
+            },
+            "length_unit": { "type": "string" },
+            "angle_unit": { "type": "string" },
+            "field_unit": { "type": "string" },
+            "current_unit": { "type": "string" },
+            "energy_unit": { "type": "string" },
+            "quadrupole_gradient_coefficient_t_per_a_per_m": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
+
+        "simulator_specific": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  },
+
+  "$defs": {
+    "element_kind": {
+      "type": "string",
+      "enum": [
+        "DRIFT",
+        "QUADRUPOLE", "QPF", "QPD",
+        "DIPOLE", "DPH",
+        "DIPOLE_WEDGE", "DPW",
+        "SOLENOID", "SOL",
+        "RF_CAVITY", "RFC",
+        "SEXTUPOLE", "SXT",
+        "UNDULATOR", "UND",
+        "BPM", "OTR",
+        "CORRECTOR_V", "STV",
+        "CORRECTOR_H", "STH",
+        "SPECTROMETER", "SPC",
+        "XRS", "BSW",
+        "Drift", "Quadrupole",
+        "SBend", "RBend",
+        "Wiggler",
+        "Solenoid",
+        "RFCavity",
+        "Sextupole",
+        "Kicker",
+        "Instrument",
+        "Marker"
+      ]
+    },
+    "element": {
+      "type": "object",
+      "required": ["name", "length_m", "parameters"],
+      "additionalProperties": true,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "$ref": "#/$defs/element_kind" },
+        "kind": { "$ref": "#/$defs/element_kind" },
+        "polarity": {
+          "type": "string",
+          "enum": ["focusing", "defocusing"]
+        },
+        "plane": {
+          "type": "string",
+          "enum": ["horizontal", "vertical"],
+          "description": "Used with Kicker to resolve to CORRECTOR_H or CORRECTOR_V."
+        },
+        "instrument_type": {
+          "type": "string",
+          "enum": ["BPM", "OTR", "SPECTROMETER"],
+          "description": "Used with Instrument to resolve to specific diagnostic type."
+        },
+        "s_start_m": { "type": ["number", "null"] },
+        "s_end_m": { "type": ["number", "null"] },
+        "length_m": { "type": "number", "minimum": 0 },
+        "parameters": { "type": "object" },
+        "aperture_m": { "type": "number", "exclusiveMinimum": 0 },
+        "fringe_fields": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enge_coefficients": {
+              "type": ["array", "null"],
+              "items": { "type": "number" }
+            }
+          }
+        },
+        "optimization": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "variable": { "type": "string" },
+            "bounds": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "anyOf": [
+        { "required": ["type"] },
+        { "required": ["kind"] }
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": { "type": { "const": "QUADRUPOLE" } },
+            "required": ["type"]
+          },
+          "then": {
+            "required": ["polarity"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "kind": { "const": "Quadrupole" } },
+            "required": ["kind"]
+          },
+          "then": {
+            "required": ["polarity"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "kind": { "const": "QUADRUPOLE" } },
+            "required": ["kind"]
+          },
+          "then": {
+            "required": ["polarity"]
+          }
+        }
+      ]
+    }
+  }
+}

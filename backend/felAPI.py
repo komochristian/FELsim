@@ -87,7 +87,6 @@ def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
 
         images.update({index: img_base64})
      
-    # print(lineAxObj['twiss'])
     lineAxObj['twiss'] = lineAxObj['twiss'].to_json()
 
     lineAxObj = LineAxObject(**lineAxObj)
@@ -135,8 +134,9 @@ def excelToBeamline(excelJson: List[ExcelBeamlineElement]) -> List[BeamSegmentsI
         beamlist_json_fixed = []
         for item in jsonBeamlist:
             for key, value in item.items():
-                new_dict = {'name': key}
+                new_dict = {}
                 new_dict.update(value)
+                new_dict['name'] = key  # Temporary fix, will have to refactor to 'segment_type'
                 beamlist_json_fixed.append(new_dict)
         return beamlist_json_fixed
     except ValidationError as e:
@@ -171,10 +171,10 @@ def loadAxes(plotParams: PlottingParameters) -> AxesPNGData:
     
         latObj = lattice(1)
         beamlist = latObj.changeBeamType(plotParams.beamType, plotParams.kineticE, beamlist)
-    
-        pngObject = getPngObjFromBeamList(beamlist, plotParams)
+        pngObject = getPngObjFromBeamList(beamlist, plotParams)        
         return pngObject
     except Exception as e:
+        print(f"ERROR: {type(e).__name__}: {e}")  # add this
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/beamsegmentinfo")
@@ -188,7 +188,7 @@ def getBeamSegmentInfo():
     """
     module = importlib.import_module(moduleName)
     classes = inspect.getmembers(module, inspect.isclass)
-    classes_in_module = [cls for name, cls in classes if cls.__module__ == moduleName and cls.__name__ not in ["Beamline", "lattice"]]
+    classes_in_module = [cls for name, cls in classes if cls.__module__ == moduleName and cls.__name__ not in ["beamline", "lattice"]]
     beamSegInfo = {}
 
     for cls in classes_in_module:
@@ -208,7 +208,8 @@ def getBeamSegmentInfo():
         params_info['color'] = cls.color  # Manually add class info about beam's color
     
         beamSegInfo[cls.__name__] = params_info
-
+    for seg in beamSegInfo.values():
+        seg.pop("name", None)
     return beamSegInfo
 
 @app.post("/plot-parameters")
@@ -235,12 +236,12 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
         r'Envelope $E$ (mm)': 'envelope'
     }
     try:
-        beamline = importlib.import_module(moduleName)
+        beamline_class = importlib.import_module(moduleName)
         beamlist = []
         beamlineData = graphParams.beamline_data
         for segment in beamlineData:
-            if hasattr(beamline, segment.segmentName):
-                segmentClass = getattr(beamline, segment.segmentName)
+            if hasattr(beamline_class, segment.segmentName):
+                segmentClass = getattr(beamline_class, segment.segmentName)
                 beamlist.append(segmentClass(**segment.parameters))
 
         cleanedBeamlist = beamlist[:graphParams.beam_index]
@@ -257,7 +258,7 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
         schem.plotBeamPositionTransform(beam_dist, cleanedBeamlist, plot=False, interval=100, rendering=False)
         beam_dist = schem.matrixVariables
 
-        beamObj = Beamline(beamlist)
+        beamObj = beamline(beamlist)
         indexOfSSegment = beamObj.findSegmentAtPos(graphParams.target_s_pos)
 
         newSegment = copy.deepcopy(beamObj.beamline[indexOfSSegment])

@@ -1,8 +1,8 @@
 from pydantic import BaseModel, Field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 class BeamSegmentsInfo(BaseModel):
-    name: str
+    name: str = None
     length: float
 
     class Config:
@@ -76,7 +76,7 @@ class ExcelBeamlineElement(BaseModel):
     dipole_wedge_deg: Optional[float] = Field(None, alias='Dipole wedge (deg)', description="Dipole wedge angle in degrees")
     gap_wedge_m: Optional[float] = Field(None, alias='Gap wedge (m)', description="Gap wedge length in n")
     Pole_gap_m: Optional[float] = Field(None, alias='Pole gap (m)', description="Pole gap in meters")
-    fringe_field_coefficient: Optional[str] = Field(None, alias='Fringe Field Enge coefficients', description="Fringe field coefficient")
+    fringe_field_coefficient: Optional[Union[str, float, int]] = Field(None, alias='Fringe Field Enge coefficients', description="Fringe field coefficient")
     Element_name: Optional[str] = Field(None, alias='Element name', description="Name of the element")
     Channel_num: Optional[int] = Field(None, alias='Channel #', description="Channel number")
     label: Optional[str] = Field(None, alias='Label', description="Element label")

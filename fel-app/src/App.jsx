@@ -50,9 +50,9 @@ function App()
     const [loading, setLoading] = useState(false);
     const [mev, setMeV] = useState(45);
     const [twissValues, setTwissValues] = useState({
-        x: { alpha: '0', beta: '1', phi: '0', epsilon: '1' },
-        y: { alpha: '0', beta: '1', phi: '0', epsilon: '1' },
-        z: { alpha: '0', beta: '1', phi: '0', epsilon: '10' },
+        x: { alpha: 0.0, beta: 1.0, phi: 0.0, epsilon: 1.0 },
+        y: { alpha: 0.0, beta: 1.0, phi: 0.0, epsilon: 1.0 },
+        z: { alpha: 0.0, beta: 1.0, phi: 0.0, epsilon: 10.0 },
     });
     const [base_distribution, setBaseDistribution] = useState(
         {
@@ -120,7 +120,7 @@ function App()
     useEffect(() => {
         console.log("Updated beamlistSelected:", beamlistSelected);
     }, [beamlistSelected]);
-
+    console.log(beamSegmentInfo);
     if (!beamSegmentInfo) return <div>Loading...</div>;
     const items = Object.keys(beamSegmentInfo);
 
@@ -208,6 +208,7 @@ function App()
         });
         if (!res.ok) {
             const errorData = await res.json();
+            console.error("Error:", JSON.stringify(errorData, null, 2))
             showErrorWindow(`Bad excel file input format, from server: ${errorData.detail || errorData}`);
             return 
         }

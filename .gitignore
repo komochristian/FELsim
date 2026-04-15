@@ -11,3 +11,4 @@ backend/test/BFieldEquations.py
 
 node_modules/
 
+/backend/cosy

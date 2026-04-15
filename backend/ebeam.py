@@ -134,8 +134,8 @@ class beam:
                 "φ (deg)"
             ]
         else:
-            label_twiss = [r"$\epsilon$ ($\pi$.mm.mrad)", r"$\alpha$", r"$\beta$ (m)", r"$\gamma$ (rad/m)", r"$D$ (mm)",
-                       r"$D^{\prime}$ (mrad)", r"$\phi$ (deg)"]
+            label_twiss = [r"$\epsilon$ ($\pi$.mm.mrad)", r"$\alpha$", r"$\beta$ (m)", r"$\gamma$ (rad/m)", r"$D$ (m)",
+                       r"$D^{\prime}$", r"$\phi$ (deg)"]
 
         label_axes = ["x", "y", "z"]
 
@@ -519,11 +519,11 @@ class beam:
         Returns
         -------
         float
-            The dispersion (D) Twiss parameter in (mm).
+            The dispersion (D) Twiss parameter in meters.
         '''
         ebeam = beam()
         dist_avg, dist_cov, twiss = ebeam.cal_twiss(particles, ddof=self.DDOF)
-        return twiss.loc[variable].loc[r"$D$ (mm)"]
+        return twiss.loc[variable].loc[r"$D$ (m)"]
 
 
         
@@ -636,7 +636,7 @@ class beam:
             y_labels = [r'Phase $x^{\prime}$ (mrad)', r'Phase $y^{\prime}$ (mrad)', r'Relative Energy $\Delta W / W_0$ $(10^{-3})$',
                         r'Position $y$ (mm)']
             label_twiss_z = ["$\epsilon$ ($\pi$.$10^{-6}$)", r"$\alpha$", r"$\beta$", r"$\gamma$", r"$D$ (m)",
-                        r"$D^{\prime}$ (mrad)", r"$\phi$ (deg)"]
+                        r"$D^{\prime}$", r"$\phi$ (deg)"]
         
         #  Plot x-x', y-y', z-z' phase spaces
         for i, axis in enumerate(twiss.index):
@@ -688,7 +688,7 @@ class beam:
         xyPart = [np.array(dist_6d[:, 0]), np.array(dist_6d[:, 2])]
 
         #  Handle different aperture shapes
-        if shape.get("shape") == "circle":
+        if shape is not None and shape.get("shape") == "circle":
             radius = shape.get("radius")
             origin = shape.get("origin")
             for ii in range(len(xyPart[0])):
@@ -705,7 +705,7 @@ class beam:
             self.heatmap(ax4, withinArea[0], withinArea[1], scatter=scatter, zorder=2, shapeExtent = totalExtent)
             self.heatmap(ax4, outsideArea[0], outsideArea[1], scatter=scatter, lost=True, zorder=1, shapeExtent = totalExtent)
             percentageInside = len(withinArea[0]) / len(xyPart[0]) * 100
-        elif shape.get("shape") == "rectangle":
+        elif shape is not None and shape.get("shape") == "rectangle":
             length = shape.get("length")
             width = shape.get("width")
             origin = shape.get("origin")

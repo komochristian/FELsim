@@ -113,7 +113,7 @@ class beamOptimizer():
 
         return difference
     
-    def calc(self, method, segmentVar, startPoint, objectives, plotProgress = False, plotBeam = False, printResults = False):
+    def calc(self, method, segmentVar, startPoint, objectives, plotProgress = False, plotBeam = False, printResults = False, **kwargs):
         '''
         optimizes beamline segment attribute values so y values are close to objective values as possible.
         Post optimization plotting supported
@@ -190,7 +190,7 @@ class beamOptimizer():
             if "bounds" in startPoint.get(var): self.bounds[index] = startPoint.get(var).get("bounds")
 
         # Time speed to minimize difference of objective function
-        startTime = time.perf_counter()  
+        startTime = time.perf_counter()
         result = spo.minimize(self._optiSpeed, self.variablesValues, method=method, bounds=self.bounds)
         endTime = time.perf_counter()
 
