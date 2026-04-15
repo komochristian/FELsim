@@ -144,7 +144,6 @@ function App()
     //  Handles the color of a single segment, use if no need to color an
     //  entire beamline
     const handleSegmentColor = (segment) => { 
-        console.log(segment)
         for (let priv of PRIVATEVARS) {
             if (!(priv in segment)) {
                 const segName = segment.name || Object.keys(segment)[0];

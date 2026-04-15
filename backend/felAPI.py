@@ -110,7 +110,6 @@ def excelToBeamline(excelJson: List[ExcelBeamlineElement]) -> List[BeamSegmentsI
         beamlist = excelHandler.create_beamline()
 
         jsonBeamlist = []
-        print(beamlist)
 
         for segment in beamlist:
             clas = segment.__class__
@@ -128,8 +127,9 @@ def excelToBeamline(excelJson: List[ExcelBeamlineElement]) -> List[BeamSegmentsI
         beamlist_json_fixed = []
         for item in jsonBeamlist:
             for key, value in item.items():
-                new_dict = {'name': key}
+                new_dict = {}
                 new_dict.update(value)
+                new_dict['name'] = key  # Temporary fix, will have to refactor to 'segment_type'
                 beamlist_json_fixed.append(new_dict)
         # print(beamlist_json_fixed)
         return beamlist_json_fixed
