@@ -405,7 +405,7 @@ class draw_beamline:
             self._setEqualAxisScaling(maxVals, minVals)
 
         if rendering:
-            apiAxData, ax5 = self.currentcreateUI(plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter,
+            apiAxData, ax5 = self._currentcreateUI(plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter,
                                                   twiss_aggregated_df,
                                                   x_axis, spacing, beamSegments, showIndice, plot, apiCall,
                                                   show_schematic, curved_trajectory)
@@ -419,7 +419,7 @@ class draw_beamline:
 
         return twiss_aggregated_df
 
-    def createLinePlot(self, ax5, twiss_aggregated_df, x_axis, spacing, showIndice,
+    def _createLinePlot(self, ax5, twiss_aggregated_df, x_axis, spacing, showIndice,
                        beamSegments, show_schematic='legacy', curved_trajectory=False):
         """
         Create line plot showing envelope and dispersion evolution along beamline.
@@ -989,7 +989,7 @@ class draw_beamline:
 
         return s_traj, y_perp, angle_out
 
-    def currentcreateUI(self, plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
+    def _currentcreateUI(self, plot6dValues, saveFig, maxVals, minVals, shape, defineLim, scatter, twiss_aggregated_df,
                         x_axis, spacing, beamSegments, showIndice, plot, apiCall, show_schematic='legacy',
                         curved_trajectory=False):
         ebeam = beam()
@@ -1016,7 +1016,7 @@ class draw_beamline:
                       shape, scatter=scatter)
 
         ax5 = plt.subplot(gs[2, :])
-        lineList, ax6, m = self.createLinePlot(ax5, twiss_aggregated_df, x_axis, spacing, showIndice,
+        lineList, ax6, m = self._createLinePlot(ax5, twiss_aggregated_df, x_axis, spacing, showIndice,
                                                beamSegments, show_schematic, curved_trajectory)
 
         if apiCall:
@@ -1038,7 +1038,7 @@ class draw_beamline:
 
                 axesDict.update({index: ax1})
             deadFig, ax5 = plt.subplots(figsize=(10, 1))
-            lineList, ax6, m = self.createLinePlot(ax5, twiss_aggregated_df, x_axis, spacing, showIndice,
+            lineList, ax6, m = self._createLinePlot(ax5, twiss_aggregated_df, x_axis, spacing, showIndice,
                                                    beamSegments, show_schematic, curved_trajectory)
             return axesDict, ax5
 
