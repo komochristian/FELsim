@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Any, Dict, List, Optional, Union
 
 class BeamSegmentsInfo(BaseModel):
-    name: Optional[str] = None
+    name: str = None
     length: float
 
     class Config:
