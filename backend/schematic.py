@@ -1015,8 +1015,8 @@ class draw_beamline:
         closest_initial_z, matrix = self._getClosestZ(plot6dValues, saveZ)
 
             # Update the phase space plots to match that closest z coordinate
-            ebeam.plotXYZ(matrix[2], matrix[0], matrix[1], matrix[3], ax1, ax2, ax3, ax4, maxVals, minVals, defineLim,
-                            shape, scatter=scatter, unicode=unicode)
+        ebeam.plotXYZ(matrix[2], matrix[0], matrix[1], matrix[3], ax1, ax2, ax3, ax4, maxVals, minVals, defineLim,
+                    shape, scatter=scatter, unicode=unicode)
 
         ax5 = plt.subplot(gs[2, :])
         lineList, ax6, m = self._createLinePlot(ax5, twiss_aggregated_df, x_axis, spacing, showIndice,
