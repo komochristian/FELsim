@@ -53,6 +53,8 @@ const ScrollableBeam = ({ beamline, onClick }) => {
                         width={width}
                         height={20}
                         fill={color}
+                        stroke={name == 'driftLattice' ? "black" : "none"}
+                        strokeWidth={name == 'driftLattice' ? 1 : 0}
                         onMouseEnter={(e) => handleMouseEnter(startPos, name, e)}
                         onMouseLeave={handleMouseLeave}
                         // onClick={(e) => handleClick(e)}
