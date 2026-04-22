@@ -230,8 +230,8 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
         r'$\alpha$': 'alpha',
         r'$\beta$ (m)': 'beta',
         r'$\gamma$ (rad/m)': 'gamma',
-        r'$D$ (mm)': 'dispersion',
-        r'$D^{\prime}$ (mrad)': 'dispersion_prime',
+        r'$D$ (m)': 'dispersion',
+        r'$D^{\prime}$': 'dispersion_prime',
         r'$\phi$ (deg)': 'angle',
         r'Envelope $E$ (mm)': 'envelope'
     }

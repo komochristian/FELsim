@@ -16,7 +16,9 @@ const ParameterGraph = ({data, parameter_name, twiss_target}) => {
     
         inputArray.forEach(entry => {
             const { parameter_value, data } = entry;
+            if (!data) return;
             const plotData = data.filter(d => d.twiss_parameter === twiss_target)[0];
+            if (!plotData) return;
 
             series.x.push({ x: parameter_value, y: plotData.x });
             series.y.push({ x: parameter_value, y: plotData.y });
