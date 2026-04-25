@@ -61,8 +61,9 @@ def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
     - pngObject: Object containing base64 encoded particle plot images and twiss data
     """
     beam_dist = None
-    # print(plotParams.beam_setup)
     if plotParams.beam_setup == 'twiss': beam_dist = ebeam.gen_6d_from_twiss(plotParams.twiss.model_dump(), plotParams.num_particles)
+    elif plotParams.beam_setup == 'base_dist': 
+        beam_dist = ebeam.gen_6d_multivariate_from_dist(0, plotParams.base_dist, plotParams.num_particles)
     else: beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], plotParams.num_particles)
     schem = draw_beamline()
     schem.DEFAULTINTERVALROUND = 10

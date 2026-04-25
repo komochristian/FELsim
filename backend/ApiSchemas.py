@@ -19,6 +19,27 @@ class TwissParameters(BaseModel):
     y: AxisTwiss
     z: AxisTwiss
 
+class RowX(BaseModel):
+    xx: float = 1.0
+    xy: float = 0.0
+    xz: float = 0.0
+
+class RowY(BaseModel):
+    yx: float = 0.0
+    yy: float = 1.0
+    yz: float = 0.0
+
+class RowZ(BaseModel):
+    zx: float = 0.0
+    zy: float = 0.0
+    zz: float = 1.0
+
+# 2. Group them into the base_distribution object
+class BaseDistribution(BaseModel):
+    row_x: RowX
+    row_y: RowY
+    row_z: RowZ
+
 class BeamlineInfo(BaseModel):
     #__root__: Dict[str, Dict[str, Any]]
     segmentName: str
@@ -36,6 +57,7 @@ class PlottingParameters(BaseModel):
     scatter: bool = True
     beam_setup: str = 'twiss'
     twiss: TwissParameters = None
+    base_dist: BaseDistribution
     #  I THINK WE NEED SAVE FIG AND SHAPE
 
 class LineAxObject(BaseModel):

@@ -55,13 +55,12 @@ function App()
         y: { alpha: 0.0, beta: 1.0, phi: 0.0, epsilon: 1.0 },
         z: { alpha: 0.0, beta: 1.0, phi: 0.0, epsilon: 10.0 },
     });
-    const [base_distribution, setBaseDistribution] = useState(
-        {
-            sigma_x: {x: 0, y: 0, z: 0},
-            sigma_y: {x: 0, y: 0, z: 0},
-        }
-    );
-    const [beamSetup, setBeamSetup] = useState("base_dist");
+    const [base_distribution, setBaseDistribution] = useState({
+        row_x: { xx: 1, xy: 0, xz: 0 },
+        row_y: { yx: 0, yy: 1, yz: 0 },
+        row_z: { zx: 0, zy: 0, zz: 1 }
+    });
+    const [beamSetup, setBeamSetup] = useState("import");
     const [showGraphSettings, setShowGraphSettings] = useState(false);
     const [graphTarget, setTarget] = useState(null);
 
@@ -259,6 +258,7 @@ function App()
                 kineticE: mev,
                 beam_setup: beamSetup,
                 twiss: twissValues,
+                base_dist: base_distribution,
             }
         
             const jsonBody = JSON.stringify(plottingParams, null, 2); 

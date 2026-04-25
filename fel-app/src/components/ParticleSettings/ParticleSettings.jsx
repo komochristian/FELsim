@@ -147,22 +147,28 @@ const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtype
 
                 {tabValue === "base_dist" && (
                 <Container className="mt-3">
-                    {Object.entries(base_distribution).map(([sigma, axes]) => (
-                        <div key={sigma}>
+                    {Object.entries(base_distribution).map(([rowKey, columns]) => (
+                        <div key={rowKey}>
                             <Row>
-                            {Object.entries(axes).map(([axis, value]) => (
-                                <Col md={4} key={axis}>
-                                <Form.Group controlId={`${sigma}-${axis}`}>
-                                    <Form.Label>
-                                    {sigma}{axis}
-                                    </Form.Label>
-                                    <Form.Control
-                                    type="number"
-                                    {...register(`base_distribution.${sigma}.${axis}`)}
-                                    />
-                                </Form.Group>
-                                </Col>
-                            ))}
+                                {Object.entries(columns).map(([field, value]) => {
+                                    // Logic: Disable if it's a 'mirrored' field (yx, zx, zy)
+                                    // This forces the user to use xy, xz, and yz instead.
+                                    const isMirrored = ["yx", "zx", "zy"].includes(field);
+                                    
+                                    return (
+                                        <Col md={4} key={field}>
+                                            <Form.Group controlId={field}>
+                                                <Form.Label>{field}</Form.Label>
+                                                <Form.Control
+                                                    type="number"
+                                                    step="0.01"
+                                                    disabled={isMirrored} // Keep the UI symmetric but locked
+                                                    {...register(`base_distribution.${rowKey}.${field}`)}
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                    );
+                                })}
                             </Row>
                         </div>
                     ))}

@@ -768,3 +768,57 @@ class beam:
         ])
         particles = np.random.multivariate_normal(mean, cov6d, size=num_particles)
         return particles
+    
+    def gen_6d_multivariate(self, mean, cov_matrix, num_particles=100):
+        '''
+        Generates particles using a covariance matrix to account for correlations.
+        
+        Parameters
+        ----------
+        mean : np.ndarray
+            A 1D array of length 6 (centers for x, px, y, py, z, pz).
+        cov_matrix : np.ndarray
+            A 6x6 positive semi-definite matrix.
+        '''
+        # np.random.multivariate_normal handles the correlations automatically
+        particles = np.random.multivariate_normal(mean, cov_matrix, size=num_particles)
+        return particles
+    
+    def gen_6d_multivariate_from_dist(self,mean, base_dist, num_particles=100):
+        '''
+        Generates 6D particles using the 3x3 spatial covariance matrix 
+        provided by the user.
+        '''
+        # 1. Initialize a 6x6 Covariance Matrix with zeros
+        # Columns/Rows: 0:x, 1:px, 2:y, 3:py, 4:z, 5:pz
+        cov_6d = np.zeros((6, 6))
+
+        # 2. Populate the Spatial Correlations (the 3x3 professor mentioned)
+        # Row X
+        cov_6d[0, 0] = base_dist.row_x.xx
+        cov_6d[0, 2] = base_dist.row_x.xy
+        cov_6d[0, 4] = base_dist.row_x.xz
+        
+        # Row Y
+        cov_6d[2, 0] = base_dist.row_y.yx # sigma_yx
+        cov_6d[2, 2] = base_dist.row_y.yy # sigma_yy
+        cov_6d[2, 4] = base_dist.row_y.yz # sigma_yz
+        
+        # Row Z (Symmetric mapping)
+        cov_6d[4, 0] = base_dist.row_z.zx # sigma_zx
+        cov_6d[4, 2] = base_dist.row_z.zy # sigma_zy
+        cov_6d[4, 4] = base_dist.row_z.zz # sigma_zz
+
+        # 3. Add default momentum variance (p_x, p_y, p_z) 
+        # We set these to a very small number if they aren't provided.
+        for i in [1, 3, 5]:
+            cov_6d[i, i] = 1e-9
+
+        mean = np.array([mean, mean, mean, mean, mean, mean])
+        try:
+            particles = np.random.multivariate_normal(mean, cov_6d, size=num_particles)
+        except np.linalg.LinAlgError:
+            # If the user enters invalid correlations, this prevents a server crash
+            return "Error: Covariance matrix must be positive semi-definite."
+
+        return particles
