@@ -244,13 +244,16 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
         schem = draw_beamline()
         ebeam = beam()
 
-        #  TODO: make the user able to configure the particle distribution
         beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000)
+
+        if graphParams.beam_setup == 'twiss': beam_dist = ebeam.gen_6d_from_twiss(graphParams.twiss.model_dump(), graphParams.num_particles)
+        elif graphParams.beam_setup == 'base_dist': 
+            beam_dist = ebeam.gen_6d_multivariate_from_dist(0, graphParams.base_dist, graphParams.num_particles)
 
         # print("Plotting initial beamline up to segment", cleanedBeamlist)
 
         #  100 chosen as a large number to speed up initial calculation
-        schem.plotBeamPositionTransform(beam_dist, cleanedBeamlist, plot=False, interval=100, rendering=False)
+        schem.plotBeamPositionTransform(beam_dist, cleanedBeamlist, plot=False, interval=100000, rendering=False)
         beam_dist = schem.matrixVariables
 
         beamObj = beamline(beamlist)

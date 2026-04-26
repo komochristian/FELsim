@@ -55,9 +55,9 @@ class PlottingParameters(BaseModel):
     saveData: bool = False
     matchScaling: bool = True
     scatter: bool = True
-    beam_setup: str = 'twiss'
+    beam_setup: str = None
     twiss: TwissParameters = None
-    base_dist: BaseDistribution
+    base_dist: BaseDistribution = None
     #  I THINK WE NEED SAVE FIG AND SHAPE
 
 class LineAxObject(BaseModel):
@@ -76,6 +76,10 @@ class GraphParameters(BaseModel):
     min: int | float = 0
     max: int | float = 10
     custom_step: int | float = 1
+    num_particles: int
+    beam_setup: str = None
+    twiss: TwissParameters = None
+    base_dist: BaseDistribution = None
 
 class GraphPlotPointResponse(BaseModel):
     x: float | None

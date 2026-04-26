@@ -394,7 +394,15 @@ function App()
             }} 
         >
             <div className="modal-content">
-                <ModalContent beamline={beamlistSelected} showErrorWindow={showErrorWindow} />
+                <ModalContent 
+                    beamline={beamlistSelected} 
+                    showErrorWindow={showErrorWindow}
+                    setSelectedMenu={setSelectedMenu}
+                    beamSetup={beamSetup}
+                    twissValues={twissValues}
+                    base_distribution={base_distribution}
+                    numOfParticles={numOfParticles}
+                />
             </div>
         </Modal>
         <Modal 
