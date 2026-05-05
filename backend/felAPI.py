@@ -61,9 +61,10 @@ def getPngObjFromBeamList(beamlist, plotParams: PlottingParameters):
     - pngObject: Object containing base64 encoded particle plot images and twiss data
     """
     beam_dist = None
-    if plotParams.beam_setup == 'twiss': beam_dist = ebeam.gen_6d_from_twiss(plotParams.twiss.model_dump(), plotParams.num_particles)
-    elif plotParams.beam_setup == 'base_dist': 
-        beam_dist = ebeam.gen_6d_multivariate_from_dist(0, plotParams.base_dist, plotParams.num_particles)
+    spread_numerical_settings = plotParams.spread_data.data
+    if plotParams.spread_data.beam_setup == 'twiss': beam_dist = ebeam.gen_6d_from_twiss(spread_numerical_settings.model_dump(), plotParams.num_particles)
+    elif plotParams.spread_data.beam_setup == 'base_dist': 
+        beam_dist = ebeam.gen_6d_multivariate_from_dist(0, spread_numerical_settings, plotParams.num_particles)
     else: beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], plotParams.num_particles)
     schem = draw_beamline()
     schem.DEFAULTINTERVALROUND = 10
@@ -245,10 +246,10 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
         ebeam = beam()
 
         beam_dist = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000)
-
-        if graphParams.beam_setup == 'twiss': beam_dist = ebeam.gen_6d_from_twiss(graphParams.twiss.model_dump(), graphParams.num_particles)
-        elif graphParams.beam_setup == 'base_dist': 
-            beam_dist = ebeam.gen_6d_multivariate_from_dist(0, graphParams.base_dist, graphParams.num_particles)
+        spread_numerical_settings = graphParams.spread_data.data
+        if graphParams.spread_data.beam_setup == 'twiss': beam_dist = ebeam.gen_6d_from_twiss(spread_numerical_settings.model_dump(), graphParams.num_particles)
+        elif graphParams.spread_data.beam_setup == 'base_dist': 
+            beam_dist = ebeam.gen_6d_multivariate_from_dist(0, spread_numerical_settings, graphParams.num_particles)
 
         # print("Plotting initial beamline up to segment", cleanedBeamlist)
 

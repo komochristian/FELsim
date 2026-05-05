@@ -16,7 +16,7 @@ const ascii_to_greek = (char) => {
 };
 
 const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtypeToPass,
-    numOfParticles , mev, base_distribution, beamSetup}) => {
+    numOfParticles , mev, base_dist, beamSetup}) => {
     const [tabValue, setTabValue] =  useState(beamSetup);
     const {
         register,
@@ -32,7 +32,7 @@ const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtype
           kineticEnergy: mev,
           box_distribution: "gaussian",
           twiss: twissValues,
-          base_distribution: base_distribution
+          base_dist: base_dist
         }
       });
     
@@ -147,7 +147,7 @@ const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtype
 
                 {tabValue === "base_dist" && (
                 <Container className="mt-3">
-                    {Object.entries(base_distribution).map(([rowKey, columns]) => (
+                    {Object.entries(base_dist).map(([rowKey, columns]) => (
                         <div key={rowKey}>
                             <Row>
                                 {Object.entries(columns).map(([field, value]) => {
@@ -163,7 +163,7 @@ const ParticleSettings = ({ setSelectedMenu, submitHelper, twissValues, beamtype
                                                     type="number"
                                                     step="0.01"
                                                     disabled={isMirrored} // Keep the UI symmetric but locked
-                                                    {...register(`base_distribution.${rowKey}.${field}`)}
+                                                    {...register(`base_dist.${rowKey}.${field}`)}
                                                 />
                                             </Form.Group>
                                         </Col>

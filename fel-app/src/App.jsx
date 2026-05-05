@@ -55,12 +55,13 @@ function App()
         y: { alpha: 0.0, beta: 1.0, phi: 0.0, epsilon: 1.0 },
         z: { alpha: 0.0, beta: 1.0, phi: 0.0, epsilon: 10.0 },
     });
-    const [base_distribution, setBaseDistribution] = useState({
+    const [base_dist, setBaseDistribution] = useState({
         row_x: { xx: 1, xy: 0, xz: 0 },
         row_y: { yx: 0, yy: 1, yz: 0 },
         row_z: { zx: 0, zy: 0, zz: 1 }
     });
     const [beamSetup, setBeamSetup] = useState("import");
+    const [spreadData, setSpreadData] = useState({beam_setup: "import", data: null})
     const [showGraphSettings, setShowGraphSettings] = useState(false);
     const [graphTarget, setTarget] = useState(null);
 
@@ -86,9 +87,9 @@ function App()
         return false;         
     };
 
-    useEffect(() => {
-        console.log(beamlistSelected);
-    }, [beamlistSelected]);
+    // useEffect(() => {
+    //     console.log(beamlistSelected);
+    // }, [beamlistSelected]);
 
     useEffect(() => {
         if (!showError) return ;
@@ -256,13 +257,11 @@ function App()
                 beamType: beamtypeToPass,
                 interval: sInterval,
                 kineticE: mev,
-                beam_setup: beamSetup,
-                twiss: twissValues,
-                base_dist: base_distribution,
+                spread_data: spreadData,
             }
         
             const jsonBody = JSON.stringify(plottingParams, null, 2); 
-            //console.log("json sent;", jsonBody);
+            console.log("json sent;", jsonBody);
 
             const res = await fetch(API_ROUTE + '/axes', {
                 method: 'POST',
@@ -339,17 +338,12 @@ function App()
         setBeamtypeToPass(data.customIon ? data.customIon : data.beamType);
         setMeV(data.kineticEnergy);
         setParticleNum(data.numParticles);
-        setBaseDistribution(data.base_distribution);
+        setBaseDistribution(data.base_dist);
         setTwissValues(data.twiss);
-        if (data.beam_setup === "twiss") {
-            setBeamSetup("twiss");
-        }
-        else if (data.beam_setup === "base_dist") {
-            setBeamSetup("base_dist");
-        }
-        else if (data.beam_setup === "import") {
-            setBeamSetup("import");
-        }
+        setBeamSetup(data.beam_setup);
+        const new_spread = {beam_setup: data.beam_setup, data: null};
+        new_spread['data'] = data[data.beam_setup];
+        setSpreadData(new_spread)
     };
 
     const SaveFig = () => {
@@ -398,10 +392,8 @@ function App()
                     beamline={beamlistSelected} 
                     showErrorWindow={showErrorWindow}
                     setSelectedMenu={setSelectedMenu}
-                    beamSetup={beamSetup}
-                    twissValues={twissValues}
-                    base_distribution={base_distribution}
                     numOfParticles={numOfParticles}
+                    spread_data={spreadData}
                 />
             </div>
         </Modal>
@@ -439,7 +431,7 @@ function App()
                 mev={mev}
                 submitHelper={ParticleSettingsSubmitHelper}
                 twissValues={twissValues}
-                base_distribution={base_distribution}
+                base_dist={base_dist}
                 beamSetup={beamSetup}
             />
         </Modal>

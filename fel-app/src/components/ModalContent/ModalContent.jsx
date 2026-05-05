@@ -14,7 +14,7 @@ import 'katex/dist/katex.min.css';
 import ScrollableBeam from '../ScrollableBeam/ScrollableBeam';
 
 const ModalContent = ({ beamline, showErrorWindow, setSelectedMenu, 
-    beamSetup, twissValues, base_distribution, numOfParticles }) => {
+    numOfParticles, spread_data }) => {
     const schema = yup
     .object()
     .shape({
@@ -71,9 +71,7 @@ const ModalContent = ({ beamline, showErrorWindow, setSelectedMenu,
             min: data['min'],
             max: data['max'],
             custom_step: data['custom_step'],
-            beamSetup: beamSetup,
-            twissValues: twissValues,
-            base_distribution: base_distribution,
+            spread_data: spread_data,
             num_particles: numOfParticles
         }
         setSimulatedData(cleanedData);
