@@ -47,7 +47,7 @@ class BeamlineInfo(BaseModel):
 
 class SpreadData(BaseModel):
     beam_setup: Literal['twiss', 'base_dist', 'import']
-    data: BaseDistribution | TwissParameters | None
+    data: BaseDistribution | TwissParameters | None = None
 
 class PlottingParameters(BaseModel):
     beamlineData: list[BeamlineInfo]

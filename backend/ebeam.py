@@ -38,6 +38,15 @@ class beam:
         self.default_cmap = plasma_with_white
         self.lost_cmap = 'binary'  # Color map for lost particles
         self.BINS = 20  # Histogram bin count
+        self.LABEL_MAPPING = {
+            "emittance": r"$\epsilon$ ($\pi$.mm.mrad)",
+            "alpha": r"$\alpha$",
+            "beta": r"$\beta$ (m)",
+            "gamma": r"$\gamma$ (rad/m)",
+            "dispersion": r"$D$ (m)",
+            "dispersion_prime": r"$D^{\prime}$",
+            "phi": r"$\phi$ (deg)"
+        }
 
     def ellipse_sym(self, xc, yc, twiss_axis, n=1, num_pts=40):
         '''
@@ -70,10 +79,10 @@ class beam:
                                   $\gamma (x-x_c)^2 + 2\alpha (x-x_c)(y-y_c) + \beta (y-y_c)^2 - \epsilon_{n} = 0$,
                                   where $\epsilon_{n} = n \times \epsilon$.
         '''
-        emittance = n * twiss_axis[r"$\epsilon$ ($\pi$.mm.mrad)"]
-        alpha = twiss_axis[r"$\alpha$"]
-        beta = twiss_axis[r"$\beta$ (m)"]
-        gamma = twiss_axis[r"$\gamma$ (rad/m)"]
+        emittance = n * twiss_axis[self.LABEL_MAPPING['emittance']]
+        alpha = twiss_axis[self.LABEL_MAPPING['alpha']]
+        beta = twiss_axis[self.LABEL_MAPPING['beta']]
+        gamma = twiss_axis[self.LABEL_MAPPING['gamma']]
 
         # Ellipse bounds
         x_max = xc + np.sqrt(emittance / (gamma - alpha ** 2 / beta))
@@ -115,8 +124,17 @@ class beam:
         dist_avg = np.mean(dist_6d, axis=0)
         dist_cov = np.cov(dist_6d, rowvar=False, ddof=ddof)
 
-        label_twiss = [r"$\epsilon$ ($\pi$.mm.mrad)", r"$\alpha$", r"$\beta$ (m)", r"$\gamma$ (rad/m)", r"$D$ (m)",
-                       r"$D^{\prime}$", r"$\phi$ (deg)"]
+        english_keys = [
+            "emittance",
+            "alpha",
+            "beta",
+            "gamma",
+            "dispersion",
+            "dispersion_prime",
+            "phi"
+        ]
+
+        label_twiss = [self.LABEL_MAPPING[key] for key in english_keys]
 
         label_axes = ["x", "y", "z"]
 
@@ -230,10 +248,10 @@ class beam:
         bool
             True if the point $(x, y)$ is within or on the ellipse, False otherwise.
         '''
-        emittance = n * twiss_axis[r"$\epsilon$ ($\pi$.mm.mrad)"]
-        alpha = twiss_axis[r"$\alpha$"]
-        beta = twiss_axis[r"$\beta$ (m)"]
-        gamma = twiss_axis[r"$\gamma$ (rad/m)"]
+        emittance = n * twiss_axis[self.LABEL_MAPPING['emittance']]
+        alpha = twiss_axis[self.LABEL_MAPPING['alpha']]
+        beta = twiss_axis[self.LABEL_MAPPING['beta']]
+        gamma = twiss_axis[self.LABEL_MAPPING['gamma']]
 
         # Calculate the ellipse equation
         Z = gamma * (x - xc) ** 2 + 2 * alpha * (x - xc) * (y - yc) + beta * (y - yc) ** 2 - emittance
@@ -379,7 +397,7 @@ class beam:
         '''
         ebeam = beam()
         dist_avg, dist_cov, twiss = ebeam.cal_twiss(particles, ddof=self.DDOF)
-        return twiss.loc[variable].loc[r"$\alpha$"]
+        return twiss.loc[variable].loc[self.LABEL_MAPPING['alpha']]
     
     def epsilon(self, particles, variable):
         '''
@@ -399,7 +417,7 @@ class beam:
         '''
         ebeam = beam()
         dist_avg, dist_cov, twiss = ebeam.cal_twiss(particles, ddof=self.DDOF)
-        return twiss.loc[variable].loc[r"$\epsilon$ ($\pi$.mm.mrad)"]
+        return twiss.loc[variable].loc[self.LABEL_MAPPING['emittance']]
     
     def beta(self, particles, variable):
         '''
@@ -419,7 +437,7 @@ class beam:
         '''
         ebeam = beam()
         dist_avg, dist_cov, twiss = ebeam.cal_twiss(particles, ddof=self.DDOF)
-        return twiss.loc[variable].loc[r"$\beta$ (m)"]
+        return twiss.loc[variable].loc[self.LABEL_MAPPING['beta']]
     
     def gamma(self, particles, variable):
         '''
@@ -439,7 +457,7 @@ class beam:
         '''
         ebeam = beam()
         dist_avg, dist_cov, twiss = ebeam.cal_twiss(particles, ddof=self.DDOF)
-        return twiss.loc[variable].loc[r"$\gamma$ (rad/m)"]
+        return twiss.loc[variable].loc[self.LABEL_MAPPING['gamma']]
     
     def phi(self, particles, variable):
         '''
@@ -459,7 +477,7 @@ class beam:
         '''
         ebeam = beam()
         dist_avg, dist_cov, twiss = ebeam.cal_twiss(particles, ddof=self.DDOF)
-        return twiss.loc[variable].loc[r"$\phi$ (deg)"]
+        return twiss.loc[variable].loc[self.LABEL_MAPPING['phi']]
     
     def envelope(self, particles, variable):
         '''
@@ -481,8 +499,8 @@ class beam:
         '''
         ebeam = beam()
         dist_avg, dist_cov, twiss = ebeam.cal_twiss(particles, ddof=self.DDOF)
-        emittance = (10 ** -6) * twiss.loc[variable].loc[r"$\epsilon$ ($\pi$.mm.mrad)"]
-        beta = twiss.loc[variable].loc[r"$\beta$ (m)"]
+        emittance = (10 ** -6) * twiss.loc[variable].loc[self.LABEL_MAPPING['emittance']]
+        beta = twiss.loc[variable].loc[self.LABEL_MAPPING['beta']]
         envelope = (10 ** 3) * np.sqrt(emittance * beta)
         return envelope
     
@@ -504,7 +522,7 @@ class beam:
         '''
         ebeam = beam()
         dist_avg, dist_cov, twiss = ebeam.cal_twiss(particles, ddof=self.DDOF)
-        return twiss.loc[variable].loc[r"$D$ (m)"]
+        return twiss.loc[variable].loc[self.LABEL_MAPPING['dispersion']]
 
 
         
@@ -590,8 +608,13 @@ class beam:
         x_labels = [r'Position $x$ (mm)', r'Position $y$ (mm)', r'Relative Bunch ToF $\Delta t$ $/$ $T_{rf}$ $(10^{-3})$', r'Position $x$ (mm)']
         y_labels = [r'Phase $x^{\prime}$ (mrad)', r'Phase $y^{\prime}$ (mrad)', r'Relative Energy $\Delta W / W_0$ $(10^{-3})$',
                     r'Position $y$ (mm)']
-        label_twiss_z = ["$\epsilon$ ($\pi$.$10^{-6}$)", r"$\alpha$", r"$\beta$", r"$\gamma$", r"$D$ (m)",
-                       r"$D^{\prime}$", r"$\phi$ (deg)"]
+        label_twiss_z = ["$\epsilon$ ($\pi$.$10^{-6}$)", 
+                         self.LABEL_MAPPING['alpha'], 
+                         self.LABEL_MAPPING['beta'], 
+                         r"$\gamma$", 
+                         self.LABEL_MAPPING['dispersion'],
+                         self.LABEL_MAPPING['dispersion_prime'], 
+                         self.LABEL_MAPPING['phi']]
         
         #  Plot x-x', y-y', z-z' phase spaces
         for i, axis in enumerate(twiss.index):
