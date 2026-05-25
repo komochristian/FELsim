@@ -13,6 +13,9 @@ class Tuning_env(gym.Env):
         super().__init__()
 
         self._target_twiss = target_twiss
+        self.target_alpha = self._target_twiss["alpha"]
+        self.target_beta = self._target_twiss["beta"]
+        self.target_gamma = self._target_twiss["gamma"]
         self._monitor_locations = monitor_indices
         self._beamline = beamline
         self.CURRENT_MAX = 10 # Amps
@@ -37,10 +40,13 @@ class Tuning_env(gym.Env):
 
         self.observation_space = gym.spaces.Dict(
             {
-                "current_vals": gym.spaces.Box(low=0, high=10, shape=len(self.quad_indices), dtype=np.float32),
+                "current_vals": gym.spaces.Box(low=0, high=10, shape=len(self.quad_indices,), dtype=np.float32),
                 "alpha": gym.spaces.Box(low=-1e6, high=1e6, shape=(len(monitor_indices), 3), dtype=np.float32),
                 "beta": gym.spaces.Box(low=-1e6, high=1e6, shape=(len(monitor_indices), 3), dtype=np.float32),
                 "gamma": gym.spaces.Box(low=-1e6, high=1e6, shape=(len(monitor_indices), 3), dtype=np.float32),
+                "target_alpha": gym.spaces.Box(low=-1e6, high=1e6, shape=(1,), dtype=np.float32),
+                "target_beta": gym.spaces.Box(low=-1e6, high=1e6, shape=(1,), dtype=np.float32),
+                "target_gamma": gym.spaces.Box(low=-1e6, high=1e6, shape=(1,), dtype=np.float32),
             }
         )
         self.action_space = gym.spaces.Discrete(len(quad_indices))
@@ -89,6 +95,9 @@ class Tuning_env(gym.Env):
             "alpha": np.array(alpha_list, dtype=np.float32),
             "beta": np.array(beta_list, dtype=np.float32),
             "gamma": np.array(gamma_list, dtype=np.float32),
+            "target_alpha": np.array(self.target_alpha, dtype=np.float32),
+            "target_beta": np.array(self.target_beta, dtype=np.float32),
+            "target_gamma": np.array(self.target_gamma, dtype=np.float32),
         }
         
         return obs_dict
@@ -134,6 +143,40 @@ class Tuning_env(gym.Env):
         info = self._get_info()
 
         return observation, info
+    
+    def _calculate_reward(self, obs):
+        """
+        Calculates a dense reward based on the percentage error from targets,
+        giving a large bonus if all parameters are within a 10% margin.
+        """
+        # 1. Extract the measured values at the final monitor index [-1] 
+        # and average across the 3 planes (X, Y, Z) to compare against your scalar target
+        current_a = np.mean(obs["alpha"][-1])
+        current_b = np.mean(obs["beta"][-1])
+        current_g = np.mean(obs["gamma"][-1])
+        
+        # Extract targets as scalars
+        target_a = obs["target_alpha"][0]
+        target_b = obs["target_beta"][0]
+        target_g = obs["target_gamma"][0]
+        
+        # 2. Calculate absolute percentage error for each parameter
+        # Adding a tiny 1e-8 to prevent division-by-zero errors if a target is 0
+        err_a = abs(current_a - target_a) / (abs(target_a) + 1e-8)
+        err_b = abs(current_b - target_b) / (abs(target_b) + 1e-8)
+        err_g = abs(current_g - target_g) / (abs(target_g) + 1e-8)
+        
+        # 3. Base Reward: Penalize the model based on total percentage error
+        # (Perfect score = 0, worse performance = increasingly negative)
+        total_error = err_a + err_b + err_g
+        reward = -total_error 
+        
+        # 4. The 10% Margin Bonus condition
+        # 0.10 represents 10% deviation
+        if err_a <= 0.10 and err_b <= 0.10 and err_g <= 0.10:
+            reward += 10.0  # Give a significant positive bonus for achieving the goal!
+            
+        return float(reward)
 
     def step(self, action):
         currents = np.clip(action, 0, 10)
@@ -142,9 +185,17 @@ class Tuning_env(gym.Env):
             self._beamline[idx].current = current
 
         obs, _ = self._get_obs()
+        info = self._get_info()
+
+        reward = self._calculate_reward(obs)
 
         terminated = True
         truncated = False
+        info['is_success'] = reward > 0
+        
+
+        return  obs, reward, terminated, truncated, info
+    
 
         
 
