@@ -42,7 +42,9 @@ class Tuning_env(gym.Env):
             "target_beta":  gym.spaces.Box(low=-1e6, high=1e6, shape=(1,), dtype=np.float32),
             "target_gamma": gym.spaces.Box(low=-1e6, high=1e6, shape=(1,), dtype=np.float32),
         })
-        self.action_space = gym.spaces.Discrete(len(quad_indices))
+        
+        # CHANGED: Action space is now an array of continuous current values (0 to 10 Amps)
+        self.action_space = gym.spaces.Box(low=0.0, high=self.CURRENT_MAX, shape=(len(quad_indices),), dtype=np.float32)
 
     def _get_obs(self):
         alpha_list, beta_list, gamma_list = [], [], []
@@ -112,13 +114,13 @@ class Tuning_env(gym.Env):
         return float(reward)
 
     def step(self, action):
-        # Map Discrete action int to the corresponding beamline quad index
-        target_quad_idx = self.quad_indices[action]
-        
-        # Set a dummy test adjustment step value (e.g., incrementing current by +0.1A)
-        # Alternatively change this to map directly to absolute current scales
-        new_current = np.clip(self._beamline[target_quad_idx].current + 0.1, 0, self.CURRENT_MAX)
-        self._beamline[target_quad_idx].current = new_current
+        # CHANGED: Action arrives as a continuous array of target currents.
+        # Ensure values stay strictly between operational physical limits (0 - 10A).
+        clamped_currents = np.clip(action, 0.0, self.CURRENT_MAX)
+
+        # CHANGED: Apply each item from the action array to its corresponding quadrupole
+        for q_idx, new_current in zip(self.quad_indices, clamped_currents):
+            self._beamline[q_idx].current = float(new_current)
 
         obs = self._get_obs()
         reward = self._calculate_reward(obs)
