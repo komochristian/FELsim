@@ -9,7 +9,7 @@ from ebeam import beam
 from beamline import *
 
 class Tuning_env(gym.Env):
-    # CHANGED: target_twiss parameter replaced with target_sigma dict containing {"sigma_x": float, "sigma_y": float}
+    # target_twiss parameter replaced with target_sigma dict containing {"sigma_x": float, "sigma_y": float}
     def __init__(self, target_sigma, beamline, monitor_indices, quad_indices):
         super().__init__()
 
@@ -23,17 +23,11 @@ class Tuning_env(gym.Env):
         self._NUM_PARTICLES = 1000
         self.ebeam = beam()
 
-        # Combine Type Validation and Noise Allocation into a single pass
         for idx, seg in enumerate(self._beamline):            
             if idx in self.quad_indices and not isinstance(seg, (qpdLattice, qpfLattice)):
                 raise TypeError(f"Quad segment at index {idx} is not a valid lattice.") 
-            
-            if idx in self._monitor_locations:
-                # CHANGED: Set up monitor noise parameters for the physical sigma channels
-                seg.sigma_x_noise = np.random.normal(0, 0.02)
-                seg.sigma_y_noise = np.random.normal(0, 0.02)
 
-        # CHANGED: Observation space altered to output only physical, noisy sigma data
+        # Spaces
         self.observation_space = gym.spaces.Dict({
             "current_vals": gym.spaces.Box(low=0, high=10, shape=(len(self.quad_indices),), dtype=np.float32),
             "sigma_x": gym.spaces.Box(low=0, high=1e4, shape=(len(monitor_indices), 1), dtype=np.float32),
@@ -42,7 +36,8 @@ class Tuning_env(gym.Env):
             "target_sigma_y": gym.spaces.Box(low=0, high=1e4, shape=(1,), dtype=np.float32),
         })
         
-        self.action_space = gym.spaces.Box(low=0.0, high=self.CURRENT_MAX, shape=(len(quad_indices),), dtype=np.float32)
+        # FIXED BUG 2: Normalize action space to [-1, 1] as recommended by Gymnasium
+        self.action_space = gym.spaces.Box(low=-1.0, high=1.0, shape=(len(quad_indices),), dtype=np.float32)
 
     def _get_obs(self):
         sigma_x_list, sigma_y_list = [], []
@@ -54,10 +49,8 @@ class Tuning_env(gym.Env):
             local_particles = np.array(seg.useMatrice(local_particles))
             
             if idx in self._monitor_locations:
-                # CHANGED: Extract actual standard deviations directly from the particle coordinate matrices
-                # local_particles layout columns: [x, x_prime, y, y_prime, z, z_prime]
-                true_sigma_x = np.std(local_particles[:, 0], ddof=1)
-                true_sigma_y = np.std(local_particles[:, 2], ddof=1)
+                true_sigma_x = self.ebeam.std(local_particles, 'x')
+                true_sigma_y = self.ebeam.std(local_particles, 'y')
                 
                 # Apply simulated degradation attributes directly to diagnostic reads
                 sigma_x_list.append([true_sigma_x + seg.sigma_x_noise])
@@ -75,7 +68,13 @@ class Tuning_env(gym.Env):
         return {"particles": self.particles}
 
     def reset(self, seed=None, options=None):
+        # FIXED BUG 1: Properly pass the seed up to Gym's built-in generator
         super().reset(seed=seed)
+        
+        # Seed NumPy's global random state if an explicit environment seed is requested.
+        # This guarantees gen_6d_gaussian generates identical particle spreads during verification passes.
+        if seed is not None:
+            np.random.seed(seed)
         
         self.particles = self.ebeam.gen_6d_gaussian(0, [1,1,1,1,0.1,100], self._NUM_PARTICLES)
 
@@ -110,7 +109,10 @@ class Tuning_env(gym.Env):
         return float(reward)
 
     def step(self, action):
-        clamped_currents = np.clip(action, 0.0, self.CURRENT_MAX)
+        # FIXED BUG 2: Unscale incoming action array from [-1, 1] to actual physical currents [0, 10.0 Amps]
+        # Formula: physical_value = ((action + 1) / 2) * (max - min) + min
+        scaled_currents = ((action + 1.0) / 2.0) * self.CURRENT_MAX
+        clamped_currents = np.clip(scaled_currents, 0.0, self.CURRENT_MAX)
 
         for q_idx, new_current in zip(self.quad_indices, clamped_currents):
             self._beamline[q_idx].current = float(new_current)
