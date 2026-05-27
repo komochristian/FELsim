@@ -1,6 +1,12 @@
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 import gymnasium as gym
 import numpy as np
 from stable_baselines3 import PPO
+from beamline import *
 
 # Import your custom environment and physics modules
 from gym import Tuning_env
@@ -15,9 +21,14 @@ dummy_target_sigma = {
     "sigma_y": 1.2   # Targeted vertical standard deviation size
 }
 
-dummy_beamline = [] # Insert your populated list of lattice segments
-dummy_monitor_indices = [2, 5, 8]
-dummy_quad_indices = [1, 3, 6]
+dummy_beamline = [
+        driftLattice(length = 1),
+        qpdLattice(current = 1),
+        driftLattice(length = 1),
+        qpfLattice(current = 1)
+    ] # Insert your populated list of lattice segments
+dummy_monitor_indices = [0, 1, 2]
+dummy_quad_indices = [1]
 
 # Instantiate the environment using our new target_sigma dictionary
 env = Tuning_env(

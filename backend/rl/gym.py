@@ -23,9 +23,51 @@ class Tuning_env(gym.Env):
         self._NUM_PARTICLES = 1000
         self.ebeam = beam()
 
-        for idx, seg in enumerate(self._beamline):            
-            if idx in self.quad_indices and not isinstance(seg, (qpdLattice, qpfLattice)):
-                raise TypeError(f"Quad segment at index {idx} is not a valid lattice.") 
+        if not beamline:
+            raise ValueError("The beamline array cannot be empty.")
+        if not monitor_indices:
+            raise ValueError("monitor_indices cannot be empty. The agent needs at least one monitor to observe.")
+        if not quad_indices:
+            raise ValueError("quad_indices cannot be empty. The agent needs at least one quadrupole to control.")
+        if "sigma_x" not in target_sigma or "sigma_y" not in target_sigma:
+            raise KeyError("target_sigma dictionary must explicitly contain 'sigma_x' and 'sigma_y' keys.")
+        if target_sigma["sigma_x"] <= 0 or target_sigma["sigma_y"] <= 0:
+            raise ValueError(f"Target sigmas must be strictly greater than zero. Received: {target_sigma}")  
+
+        if not all(isinstance(i, int) for i in monitor_indices + quad_indices):
+            raise TypeError("All indices in monitor_indices and quad_indices must be integers.")
+
+        if len(quad_indices) != len(set(quad_indices)):
+            raise ValueError("Duplicate indices found in quad_indices. Each quadrupole must only be listed once.")
+            
+        if len(monitor_indices) != len(set(monitor_indices)):
+            raise ValueError("Duplicate indices found in monitor_indices. Each monitor must only be listed once.") 
+        
+        beamline_length = len(beamline)
+        for idx in monitor_indices:
+            if idx < 0 or idx >= beamline_length:
+                raise IndexError(f"Monitor index {idx} is out of bounds for a beamline of length {beamline_length}.")
+        for idx in quad_indices:
+            if idx < 0 or idx >= beamline_length:
+                raise IndexError(f"Quadrupole index {idx} is out of bounds for a beamline of length {beamline_length}.")
+
+        for idx in quad_indices:
+            if not isinstance(beamline[idx], (qpdLattice, qpfLattice)):
+                raise TypeError(f"Lattice component at index {idx} was flagged as a quad, but is type {type(beamline[idx]).__name__}.")
+            
+        if monitor_indices != sorted(monitor_indices):
+            raise ValueError("monitor_indices must be sorted in ascending order to ensure reward calculations target the final screen.")
+            
+        if quad_indices != sorted(quad_indices):
+            raise ValueError("quad_indices must be sorted in ascending order down the beamline.")
+
+        # Ensure the agent isn't tuning a magnet it cannot observe
+        if max(quad_indices) > max(monitor_indices):
+            raise ValueError(
+                f"Blind magnet detected! The final quadrupole is at index {max(quad_indices)}, "
+                f"but the final monitor is at index {max(monitor_indices)}. "
+                "The agent must have a monitor placed after the final quadrupole to observe its effects."
+            )
 
         # Spaces
         self.observation_space = gym.spaces.Dict({
@@ -129,13 +171,16 @@ class Tuning_env(gym.Env):
 if __name__ == "__main__":
     from gymnasium.utils.env_checker import check_env
 
-    dummy_target = {"sigma_x": 1.5, "sigma_y": 1.5}
+    dummy_target = {"sigma_x": 1.5, 
+                    "sigma_y": 1.5
+                    }
     beamline_list = [
         driftLattice(length = 1),
         qpdLattice(current = 1),
-        driftLattice(length = 1)
+        driftLattice(length = 1),
+        qpfLattice(current = 1)
     ]
-    monitor_indice = [0, 2]
+    monitor_indice = [0, 1, 2]
     quad_indices = [1]
 
     tuning_env = Tuning_env(
