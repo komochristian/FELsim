@@ -377,7 +377,7 @@ class beam:
             The standard deviation of the variable.
         '''
         particleData = self.findVarValues(particles, variable)
-        return np.std(particleData)
+        return np.std(particleData, ddof=self.DDOF)
 
     def alpha(self, particles, variable):
         '''
