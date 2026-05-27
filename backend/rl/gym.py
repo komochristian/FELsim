@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 import gymnasium as gym
 import numpy as np
 from ebeam import beam
@@ -117,3 +122,31 @@ class Tuning_env(gym.Env):
         info['is_success'] = reward > 0
         
         return obs, reward, True, False, info
+    
+
+if __name__ == "__main__":
+    from gymnasium.utils.env_checker import check_env
+
+    dummy_target = {"sigma_x": 1.5, "sigma_y": 1.5}
+    beamline_list = [
+        driftLattice(length = 1),
+        qpdLattice(current = 1),
+        driftLattice(length = 1)
+    ]
+    monitor_indice = [0, 2]
+    quad_indices = [1]
+
+    tuning_env = Tuning_env(
+        dummy_target,
+        beamline_list,
+        monitor_indice,
+        quad_indices
+    )
+
+
+    # This will catch many common issues
+    try:
+        check_env(tuning_env)
+        print("Environment passes all checks!")
+    except Exception as e:
+        print(f"Environment has issues: {e}")
