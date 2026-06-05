@@ -9,7 +9,7 @@ from stable_baselines3 import PPO
 from beamline import *
 
 # Import your custom environment and physics modules
-from gym import Tuning_env
+from tuning_env import Tuning_env
 # from beamline import *
 
 # ==========================================
@@ -21,14 +21,16 @@ dummy_target_sigma = {
     "sigma_y": 1.2   # Targeted vertical standard deviation size
 }
 
+# TODO: TRAIN model so that it can control a focusing and defocusing quad
 dummy_beamline = [
         driftLattice(length = 1),
         qpdLattice(current = 1),
         driftLattice(length = 1),
-        qpfLattice(current = 1)
+        qpfLattice(current = 1),
+        driftLattice(length = 1)
     ] # Insert your populated list of lattice segments
-dummy_monitor_indices = [0, 1, 2]
-dummy_quad_indices = [1]
+dummy_monitor_indices = [0, 1, 4]
+dummy_quad_indices = [1, 3]
 
 # Instantiate the environment using our new target_sigma dictionary
 env = Tuning_env(
@@ -46,8 +48,7 @@ print("Starting Training...")
 # "MultiInputPolicy" is still required because observation_space is a gym.spaces.Dict
 model = PPO("MultiInputPolicy", env, verbose=1)
 
-# Train the agent (10,000 episodes for our 1-shot setup)
-model.learn(total_timesteps=10000)
+model.learn(total_timesteps=200000)
 
 # Save the trained brain to a file
 model.save("beamline_sigma_tuning_model")
