@@ -1,3 +1,9 @@
+
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 from beamOptimizer import beamOptimizer
 from ebeam import beam
 from schematic import draw_beamline
@@ -20,11 +26,18 @@ sec9 = driftLattice(0.50)
 sec10 = dipole(length=0.0889, angle=1.5)
 line = [sec1,sec2,sec3,sec4,sec5,sec6,sec7,sec8,sec9,sec10]
 
-beamtype = Beamline()
+beamtype = beamline()
 pBeam = sec1.changeBeamType("electron", 40, line)
-
+dummy_beamline = [
+        driftLattice(length = 1),
+        qpdLattice(current = 1),
+        driftLattice(length = 1),
+        qpfLattice(current = 0.9),
+        driftLattice(length = 0.5)
+    ]
 beam_dist = ebeam.gen_6d_gaussian(0,[1,0.1,1,0.1,2.856,1],1000)
-# schem.plotBeamPositionTransform(beam_dist, pBeam, 0.01, spacing = 10)
+beam_dist = ebeam.gen_6d_gaussian(0, [1,1,1,1,0.1,100], 1000)
+schem.plotBeamPositionTransform(beam_dist, dummy_beamline, 0.01, spacing = 10, scatter = True)
 
 vals = {
         1: ["I", "current", lambda num:num],

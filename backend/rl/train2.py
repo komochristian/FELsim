@@ -48,7 +48,7 @@ print("Starting Training...")
 # "MultiInputPolicy" is still required because observation_space is a gym.spaces.Dict
 model = PPO("MultiInputPolicy", env, verbose=1)
 
-model.learn(total_timesteps=200000)
+model.learn(total_timesteps=1000000)
 
 # Save the trained brain to a file
 model.save("beamline_sigma_tuning_model")

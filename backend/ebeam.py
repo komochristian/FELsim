@@ -31,7 +31,7 @@ class beam:
         self.scatter_alpha = 0.7
 
          # Define custom colormap for plots with white for lowest values
-        plasma = plt.cm.get_cmap('plasma', 256) #'magma'. 'inferno', 'plasma', 'viridis' for uniform (append _r for reverse).
+        plasma = plt.colormaps.get_cmap('plasma').resampled(256) #'magma'. 'inferno', 'plasma', 'viridis' for uniform (append _r for reverse).
         new_colors = plasma(np.linspace(0, 1, 256))
         new_colors[0] = [1, 1, 1, 0]
         plasma_with_white = LinearSegmentedColormap.from_list('plasma_with_white', new_colors)

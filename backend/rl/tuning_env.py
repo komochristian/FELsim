@@ -21,6 +21,9 @@ class Tuning_env(gym.Env):
         self._beamline = beamline
         self.CURRENT_MAX = 10.0
         self._NUM_PARTICLES = 1000
+        self.PARTICLE_STD_ABS_STDEV_NOISE_MM = 0.02
+        self.PARTICLE_STD_SCALE_STDEV_NOISE_PERCENTAGE = 0.04
+        self.DEFAULT_QUAD_CURRENT_AMPS = 0.0889
         self.ebeam = beam()
 
         if not beamline:
@@ -95,8 +98,8 @@ class Tuning_env(gym.Env):
                 true_sigma_y = self.ebeam.std(local_particles, 'y')
                 
                 # Apply simulated degradation attributes directly to diagnostic reads
-                sigma_x_list.append([true_sigma_x + seg.sigma_x_noise])
-                sigma_y_list.append([true_sigma_y + seg.sigma_y_noise])
+                sigma_x_list.append([true_sigma_x*seg.sigma_x_scale_noise_percentage + seg.sigma_x_abs_noise_mm])
+                sigma_y_list.append([true_sigma_y*seg.sigma_y_scale_noise_percentage + seg.sigma_y_abs_noise_mm])
         
         return {
             "current_vals": np.array(current_list, dtype=np.float32),
@@ -119,15 +122,20 @@ class Tuning_env(gym.Env):
             np.random.seed(seed)
         
         self.particles = self.ebeam.gen_6d_gaussian(0, [1,1,1,1,0.1,100], self._NUM_PARTICLES)
+        sigma_x_abs_noise_mm = np.random.normal(scale=self.PARTICLE_STD_ABS_STDEV_NOISE_MM, loc=0.0)
+        sigma_y_abs_noise_mm = np.random.normal(scale=self.PARTICLE_STD_ABS_STDEV_NOISE_MM, loc=0.0)
+        sigma_x_scale_noise_percentage = np.random.normal(scale=self.PARTICLE_STD_SCALE_STDEV_NOISE_PERCENTAGE, loc=1.0)
+        sigma_y_scale_noise_percentage = np.random.normal(scale=self.PARTICLE_STD_SCALE_STDEV_NOISE_PERCENTAGE, loc=1.0)
 
         for idx, seg in enumerate(self._beamline):            
             if idx in self.quad_indices:
-                seg.current = 0.0889
+                seg.current = self.DEFAULT_QUAD_CURRENT_AMPS
             if idx in self._monitor_locations:
-                # Re-roll degradation noise settings at start of run
-                seg.sigma_x_noise = np.random.normal(0, 0.02)
-                seg.sigma_y_noise = np.random.normal(0, 0.02)
-
+                # Noise included in object so we can make noise unique to each monitor in future with calibration mode
+                seg.sigma_x_abs_noise_mm = sigma_x_abs_noise_mm
+                seg.sigma_y_abs_noise_mm = sigma_y_abs_noise_mm
+                seg.sigma_x_scale_noise_percentage = sigma_x_scale_noise_percentage
+                seg.sigma_y_scale_noise_percentage = sigma_y_scale_noise_percentage 
         return self._get_obs(), self._get_info()
     
     def _calculate_reward(self, obs):
@@ -141,8 +149,12 @@ class Tuning_env(gym.Env):
         #  Add 1e-8 to avoid division by zero
         err_x = abs(curr_sx - targ_sx) / (abs(targ_sx) + 1e-8)
         err_y = abs(curr_sy - targ_sy) / (abs(targ_sy) + 1e-8)
+
+        # print("err_x:", err_x, "err_y:", err_y)
         
         reward = -(err_x + err_y)
+        # print(targ_sx, targ_sy, curr_sx, curr_sy, err_x, err_y, reward)
+        # print(err_x, err_y, reward)
         
         # 10% Margin Bonus condition for beam spot size constraints
         if err_x <= 0.10 and err_y <= 0.10:
