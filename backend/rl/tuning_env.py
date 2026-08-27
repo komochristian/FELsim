@@ -156,9 +156,8 @@ class Tuning_env(gym.Env):
         # print(targ_sx, targ_sy, curr_sx, curr_sy, err_x, err_y, reward)
         # print(err_x, err_y, reward)
         
-        # 10% Margin Bonus condition for beam spot size constraints
-        if err_x <= 0.10 and err_y <= 0.10:
-            reward += 10.0  
+        reward += 1/((err_x + 1e-8)**2)
+        reward += 1/((err_y + 1e-8)**2)
             
         return float(reward)
 

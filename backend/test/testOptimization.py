@@ -32,7 +32,7 @@ dummy_beamline = [
         driftLattice(length = 1),
         qpdLattice(current = 1),
         driftLattice(length = 1),
-        qpfLattice(current = 0.9),
+        qpfLattice(current = 1.1),
         driftLattice(length = 0.5)
     ]
 beam_dist = ebeam.gen_6d_gaussian(0,[1,0.1,1,0.1,2.856,1],1000)
