@@ -147,17 +147,19 @@ class Tuning_env(gym.Env):
         targ_sy = obs["target_sigma_y"][0]
         
         #  Add 1e-8 to avoid division by zero
-        err_x = abs(curr_sx - targ_sx) / (abs(targ_sx) + 1e-8)
-        err_y = abs(curr_sy - targ_sy) / (abs(targ_sy) + 1e-8)
+        relative_err_x = abs(curr_sx - targ_sx) / (abs(targ_sx) + 1e-8)
+        relative_err_y = abs(curr_sy - targ_sy) / (abs(targ_sy) + 1e-8)
 
         # print("err_x:", err_x, "err_y:", err_y)
         
-        reward = -(err_x + err_y)
-        # print(targ_sx, targ_sy, curr_sx, curr_sy, err_x, err_y, reward)
-        # print(err_x, err_y, reward)
+        reward = -(relative_err_x + relative_err_y)
+        if relative_err_x > 2 or relative_err_y > 2:
+            reward -= 5.0
+        # print(targ_sx, targ_sy, curr_sx, curr_sy, relative_err_x, relative_err_y, reward)
+        # print(relative_err_x, relative_err_y, reward)
         
-        reward += 1/((err_x + 1e-8)**2)
-        reward += 1/((err_y + 1e-8)**2)
+        reward += 1/((relative_err_x + 1e-8)**0.5)
+        reward += 1/((relative_err_y + 1e-8)**0.5)
             
         return float(reward)
 

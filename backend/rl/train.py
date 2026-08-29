@@ -19,24 +19,21 @@ def main():
     # ==========================================
     # 1. SETUP THE ENVIRONMENT WITH SIGMA TARGETS
     # ==========================================
-    # CHANGED: We now specify target beam spot sizes (sigmas) instead of Twiss parameters
     dummy_target_sigma = {
         "sigma_x": 2.15,  # Targeted horizontal standard deviation size
         "sigma_y": 2.15   # Targeted vertical standard deviation size
     }
 
-    # TODO: TRAIN model so that it can control a focusing and defocusing quad
     dummy_beamline = [
             driftLattice(length = 1),
             qpdLattice(current = 1),
             driftLattice(length = 1),
             qpfLattice(current = 1),
             driftLattice(length = 0.5)
-        ] # Insert your populated list of lattice segments
+        ] 
     dummy_monitor_indices = [4]
     dummy_quad_indices = [3]
 
-    # Instantiate the environment using our new target_sigma dictionary
     num_cpu = os.cpu_count()
     env_kwargs = dict(
             target_sigma=dummy_target_sigma,
