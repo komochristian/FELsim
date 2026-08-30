@@ -154,12 +154,13 @@ class Tuning_env(gym.Env):
         
         reward = -(relative_err_x + relative_err_y)
         if relative_err_x > 2 or relative_err_y > 2:
-            reward -= 5.0
-        # print(targ_sx, targ_sy, curr_sx, curr_sy, relative_err_x, relative_err_y, reward)
-        # print(relative_err_x, relative_err_y, reward)
+            reward -= 10.0
+
+        if relative_err_x > 1.5 or relative_err_y > 1.5:
+            reward -= 4.0
         
-        reward += 1/((relative_err_x + 1e-8)**0.5)
-        reward += 1/((relative_err_y + 1e-8)**0.5)
+        reward += 1/((relative_err_x + 1e-8)**0.75)
+        reward += 1/((relative_err_y + 1e-8)**0.75)
             
         return float(reward)
 
