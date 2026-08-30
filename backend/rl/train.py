@@ -31,8 +31,8 @@ def main():
             qpfLattice(current = 1),
             driftLattice(length = 0.5)
         ] 
-    dummy_monitor_indices = [4]
-    dummy_quad_indices = [3]
+    dummy_monitor_indices = [0, 2, 4]
+    dummy_quad_indices = [1, 3]
 
     num_cpu = os.cpu_count()
     env_kwargs = dict(
@@ -56,7 +56,7 @@ def main():
     # "MultiInputPolicy" is still required because observation_space is a gym.spaces.Dict
     model = PPO("MultiInputPolicy", vec_env, verbose=1)
 
-    model.learn(total_timesteps=2000000)
+    model.learn(total_timesteps=3000000)
 
     # Save the trained brain to a file
     model.save("beamline_sigma_tuning_model")

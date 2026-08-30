@@ -127,7 +127,8 @@ class Tuning_env(gym.Env):
         sigma_x_scale_noise_percentage = np.random.normal(scale=self.PARTICLE_STD_SCALE_STDEV_NOISE_PERCENTAGE, loc=1.0)
         sigma_y_scale_noise_percentage = np.random.normal(scale=self.PARTICLE_STD_SCALE_STDEV_NOISE_PERCENTAGE, loc=1.0)
 
-        for idx, seg in enumerate(self._beamline):            
+        for idx, seg in enumerate(self._beamline):
+            # Reset all quadrupoles model can control to default current value.            
             if idx in self.quad_indices:
                 seg.current = self.DEFAULT_QUAD_CURRENT_AMPS
             if idx in self._monitor_locations:
