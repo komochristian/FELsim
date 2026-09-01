@@ -26,6 +26,8 @@ class Tuning_env(gym.Env):
         self.PARTICLE_STD_ABS_STDEV_NOISE_MM = 0.02
         self.PARTICLE_STD_SCALE_STDEV_NOISE_PERCENTAGE = 0.04
         self.ebeam = beam()
+        self._current_step = 0
+        self._max_step = 20
 
         if not beamline:
             raise ValueError("The beamline array cannot be empty.")
@@ -121,6 +123,8 @@ class Tuning_env(gym.Env):
         # This guarantees gen_6d_gaussian generates identical particle spreads during verification passes.
         if seed is not None:
             np.random.seed(seed)
+
+        self._current_step = 0
         
         self.particles = self.ebeam.gen_6d_gaussian(0, [1,1,1,1,0.1,100], self._NUM_PARTICLES)
         sigma_x_abs_noise_mm = np.random.normal(scale=self.PARTICLE_STD_ABS_STDEV_NOISE_MM, loc=0.0)
@@ -164,9 +168,10 @@ class Tuning_env(gym.Env):
         reward += 1/((relative_err_x + 1e-8)**0.75)
         reward += 1/((relative_err_y + 1e-8)**0.75)
             
-        return float(reward)
+        return float(reward), relative_err_x, relative_err_y
 
     def step(self, action):
+        self._current_step += 1
         # FIXED BUG 2: Unscale incoming action array from [-1, 1] to actual physical currents [0, 10.0 Amps]
         # Formula: physical_value = ((action + 1) / 2) * (max - min) + min
         scaled_currents = ((action + 1.0) / 2.0) * self.CURRENT_MAX
@@ -176,13 +181,17 @@ class Tuning_env(gym.Env):
             self._beamline[q_idx].current = float(new_current)
 
         obs = self._get_obs()
-        reward = self._calculate_reward(obs)
+        reward, relative_err_x, relative_err_y = self._calculate_reward(obs)
+
+        terminated = relative_err_x < 0.1 and relative_err_y < 0.1
+        if terminated: reward += 10.0 
+
+        truncated = self._current_step >= self._max_step
         
         info = self._get_info()
         info['is_success'] = reward > 0
         
-        return obs, reward, True, False, info
-    
+        return obs, reward, terminated, truncated, info
 
 if __name__ == "__main__":
     from gymnasium.utils.env_checker import check_env
