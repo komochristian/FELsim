@@ -7,6 +7,7 @@ import gymnasium as gym
 import numpy as np
 from ebeam import beam
 from beamline import *
+import copy
 
 class Tuning_env(gym.Env):
     # target_twiss parameter replaced with target_sigma dict containing {"sigma_x": float, "sigma_y": float}
@@ -19,11 +20,11 @@ class Tuning_env(gym.Env):
         self._monitor_locations = monitor_indices
         self.quad_indices = quad_indices
         self._beamline = beamline
+        self._original_beamline = copy.deepcopy(beamline)
         self.CURRENT_MAX = 10.0
         self._NUM_PARTICLES = 1000
         self.PARTICLE_STD_ABS_STDEV_NOISE_MM = 0.02
         self.PARTICLE_STD_SCALE_STDEV_NOISE_PERCENTAGE = 0.04
-        self.DEFAULT_QUAD_CURRENT_AMPS = 0.0889
         self.ebeam = beam()
 
         if not beamline:
@@ -127,10 +128,10 @@ class Tuning_env(gym.Env):
         sigma_x_scale_noise_percentage = np.random.normal(scale=self.PARTICLE_STD_SCALE_STDEV_NOISE_PERCENTAGE, loc=1.0)
         sigma_y_scale_noise_percentage = np.random.normal(scale=self.PARTICLE_STD_SCALE_STDEV_NOISE_PERCENTAGE, loc=1.0)
 
-        for idx, seg in enumerate(self._beamline):
-            # Reset all quadrupoles model can control to default current value.            
-            if idx in self.quad_indices:
-                seg.current = self.DEFAULT_QUAD_CURRENT_AMPS
+        # Reset the beamline to its original state
+        self._beamline = copy.deepcopy(self._original_beamline)
+
+        for idx, seg in enumerate(self._beamline):            
             if idx in self._monitor_locations:
                 # Noise included in object so we can make noise unique to each monitor in future with calibration mode
                 seg.sigma_x_abs_noise_mm = sigma_x_abs_noise_mm
