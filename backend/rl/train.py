@@ -20,8 +20,8 @@ def main():
     # 1. SETUP THE ENVIRONMENT WITH SIGMA TARGETS
     # ==========================================
     dummy_target_sigma = {
-        "sigma_x": 2.15,  # Targeted horizontal standard deviation size
-        "sigma_y": 2.15   # Targeted vertical standard deviation size
+        "sigma_x": 5.4,  # Targeted horizontal standard deviation size
+        "sigma_y": 1.3   # Targeted vertical standard deviation size
     }
 
     dummy_beamline = [
