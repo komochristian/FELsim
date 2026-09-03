@@ -77,7 +77,7 @@ class Tuning_env(gym.Env):
 
         # Spaces
         self.observation_space = gym.spaces.Dict({
-            "current_vals": gym.spaces.Box(low=0, high=10, shape=(len(self.quad_indices),), dtype=np.float32),
+            "current_vals": gym.spaces.Box(low=-1.0, high=1.0, shape=(len(self.quad_indices),), dtype=np.float32),
             "sigma_x": gym.spaces.Box(low=0, high=1e4, shape=(len(monitor_indices), 1), dtype=np.float32),
             "sigma_y": gym.spaces.Box(low=0, high=1e4, shape=(len(monitor_indices), 1), dtype=np.float32),
             "target_sigma_x": gym.spaces.Box(low=0, high=1e4, shape=(1,), dtype=np.float32),
@@ -89,7 +89,8 @@ class Tuning_env(gym.Env):
 
     def _get_obs(self):
         sigma_x_list, sigma_y_list = [], []
-        current_list = [self._beamline[q_idx].current for q_idx in self.quad_indices]
+        current_list = np.array([self._beamline[q_idx].current for q_idx in self.quad_indices], dtype=np.float32)
+        current_list = (current_list/10.0)*2.0 - 1.0  # Normalize currents to [-1, 1] for observation space
         
         local_particles = self.particles.copy()
         
@@ -105,7 +106,7 @@ class Tuning_env(gym.Env):
                 sigma_y_list.append([true_sigma_y*seg.sigma_y_scale_noise_percentage + seg.sigma_y_abs_noise_mm])
         
         return {
-            "current_vals": np.array(current_list, dtype=np.float32),
+            "current_vals": current_list,
             "sigma_x": np.array(sigma_x_list, dtype=np.float32),
             "sigma_y": np.array(sigma_y_list, dtype=np.float32),
             "target_sigma_x": self.target_sigma_x,
@@ -168,8 +169,7 @@ class Tuning_env(gym.Env):
         if relative_err_x > 1.0 or relative_err_y > 1.0:
             reward -= 3.0
         
-        reward += 1/((relative_err_x + 1e-8)**0.75)
-        reward += 1/((relative_err_y + 1e-8)**0.75)
+        reward += 1/((relative_err_x**2 + relative_err_y**2 + 1e-8)**0.75)
             
         return float(reward), relative_err_x, relative_err_y
 
