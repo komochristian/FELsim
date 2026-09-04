@@ -1,0 +1,46 @@
+{
+  "beamline": {
+    "metadata": {
+      "format_version": 2,
+      "name": "SLAC_3m_S_band_TW_linac",
+      "version": "1.0",
+      "description": "SLAC 3-meter S-band constant-gradient TW linac (UH FEL, 12 MW operating point)",
+      "reference_energy_mev": 1.0,
+      "particle_type": "electron"
+    },
+    "beam_parameters": {
+      "particle": {
+        "type": "electron",
+        "kinetic_energy_mev": 1.0,
+        "mass_mev": 0.51099895,
+        "charge_e": -1
+      },
+      "rf_frequency_hz": 2856000000.0
+    },
+    "elements": [
+      {
+        "name": "SLAC_LINAC_TW",
+        "type": "RFCavity",
+        "kind": "RFCavity",
+        "s_start_m": 0.0,
+        "s_end_m": 3.048,
+        "length_m": 3.048,
+        "parameters": {
+          "structure_type": "TW",
+          "frequency_hz": 2856000000.0,
+          "phase_deg": 0.0,
+          "gradient_mv_per_m": 13.3,
+          "phase_advance_deg": 120.0
+        },
+        "aperture_m": 0.01166,
+        "metadata": {
+          "description": "SLAC 3-m constant-gradient TW structure, 2pi/3 mode, 86 cells, 12 MW operation (13.3 MV/m, 40.5 MV total)",
+          "source_docs": [
+            "docs/sbend_linac/slac-pub-3285.pdf",
+            "docs/sbend_linac/slac-two-mile-report10.pdf"
+          ]
+        }
+      }
+    ]
+  }
+}

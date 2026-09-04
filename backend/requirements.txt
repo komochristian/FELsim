@@ -9,3 +9,4 @@ scipy==1.16.1
 sympy==1.13.1
 tqdm==4.66.5
 uvicorn==0.35.0
+xsuite>=0.50
