@@ -1,29 +1,37 @@
 """
 Abstract base class for beamline simulators.
 
+Provides unified interface for different simulation codes (FELsim, COSY, etc.)
+while handling coordinate system transformations and element representations.
+
 Author: Eremey Valetov
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Union, Any
+from typing import Callable, Dict, List, Optional, Union, Any
 from enum import Enum
+import time
 import numpy as np
 
 
 class CoordinateSystem(Enum):
+    """Supported coordinate systems for particle distributions."""
     FELSIM = "felsim"  # [x(mm), x'(mrad), y(mm), y'(mrad), ΔToF/T_RF×10³, ΔK/K₀×10³]
     COSY = "cosy"  # [x(m), a, y(m), b, l(m), δK]
     ELEGANT = "elegant"  # [x(m), x'(rad), y(m), y'(rad), t(s), δ]
     RFTRACK = "rftrack"  # [x(mm), x'(mrad), y(mm), y'(mrad), ct(mm/c), P(MeV/c)]
+    XSUITE = "xsuite"  # [x(m), px=p_x/p0, y(m), py=p_y/p0, zeta(m), δ=(p-p0)/p0]
 
 
 class SimulationMode(Enum):
+    """Types of simulation that can be performed."""
     TRANSFER_MATRIX = "transfer_matrix"
     PARTICLE_TRACKING = "particle_tracking"
     ENVELOPE = "envelope"
 
 
 class BeamlineElement:
+    """Generic beamline element representation convertible to code-specific formats."""
 
     def __init__(self, element_type: str, length: float, **parameters):
         """
@@ -43,7 +51,10 @@ class BeamlineElement:
         self.parameters = parameters
 
     def __repr__(self):
-        params_str = ", ".join(f"{k}={v!r}" for k, v in self.parameters.items())
+        try:
+            params_str = ", ".join(f"{k}={v!r}" for k, v in self.parameters.items())
+        except (TypeError, AttributeError):
+            params_str = f"<{len(self.parameters)} parameters>"
         return f"{self.element_type}(L={self.length}, {params_str})"
 
 
@@ -54,7 +65,7 @@ class SimulationResult:
                  simulator_name: str,
                  success: bool,
                  transfer_map: Optional[np.ndarray] = None,
-                 json_results: Optional[dict] = None,
+                 json_results: dict = None,
                  twiss_parameters_transfer_map: Optional[Dict] = None,
                  twiss_parameters_statistical: Optional[Dict] = None,
                  final_particles: Optional[np.ndarray] = None,
@@ -154,6 +165,8 @@ class SimulatorBase(ABC):
         self.beam_energy = 45.0  # MeV
         self.simulation_mode = SimulationMode.TRANSFER_MATRIX
 
+    # Core abstract methods - must be implemented by subclasses
+
     @abstractmethod
     def simulate(self,
                  particles: Optional[np.ndarray] = None,
@@ -174,7 +187,6 @@ class SimulatorBase(ABC):
         """
         pass
 
-    @abstractmethod
     def optimize(self,
                  objectives: Dict,
                  variables: Dict,
@@ -182,26 +194,169 @@ class SimulatorBase(ABC):
                  method: Optional[str] = None,
                  **kwargs) -> SimulationResult:
         """
-        Run optimization.
+        Optimize beamline parameters.
+
+        Default implementation builds an objective function from simulate()
+        and calls scipy.optimize.minimize. Subclasses may override for
+        code-specific optimization (e.g. COSY's internal FIT command,
+        FELsim's beamOptimizer).
 
         Parameters
         ----------
         objectives : dict
-            {element_idx: [objective_dicts]}
+            {element_idx: [{"measure": [axis, param], "goal": val, "weight": val}]}
+            where axis is 'x' or 'y' and param is a Twiss parameter name
+            (e.g. 'beta', 'alpha', 'emittance', 'dispersion').
         variables : dict
-            {element_idx: {param: var_name}}
+            {element_idx: [var_name, param_name, transform_func]}
+            where var_name is the optimization variable name, param_name is
+            the element attribute to set, and transform_func maps the
+            optimizer's raw value to the physical parameter.
         initial_point : dict
             {var_name: {'start': value, 'bounds': (min, max)}}
         method : str, optional
-            Optimizer (code-specific)
+            'Nelder-Mead' (default), 'Powell', or any scipy.optimize method.
         **kwargs
-            Additional optimizer parameters
+            particles : ndarray, initial distribution (required for
+                particle-tracking simulators)
 
         Returns
         -------
         SimulationResult
         """
-        pass
+        method = method or 'Nelder-Mead'
+        particles = kwargs.get('particles')
+
+        # Build ordered list of unique variable names
+        seen = {}
+        for idx in variables:
+            var_name = variables[idx][0]
+            if var_name not in seen:
+                seen[var_name] = True
+        variable_names = list(seen.keys())
+
+        # Extract start values and bounds in variable order
+        x0 = []
+        bounds = []
+        for name in variable_names:
+            spec = initial_point.get(name, {})
+            x0.append(spec.get('start', 1.0))
+            bounds.append(spec.get('bounds', (None, None)))
+
+        # Build the objective function
+        objective = self._build_objective(
+            objectives, variables, variable_names, particles
+        )
+
+        t0 = time.perf_counter()
+
+        from scipy import optimize as spo
+        result = spo.minimize(
+            objective, x0, method=method,
+            bounds=bounds if any(b != (None, None) for b in bounds) else None
+        )
+
+        elapsed = time.perf_counter() - t0
+
+        if result.x is not None:
+            opt_vars = {}
+            for idx, (var_name, param_name, transform) in variables.items():
+                var_idx = variable_names.index(var_name)
+                value = transform(result.x[var_idx])
+                opt_vars[var_name] = value
+                if 0 <= idx < len(self.beamline):
+                    self.beamline[idx].parameters[param_name] = value
+
+            final = self.simulate(particles=particles)
+
+            return SimulationResult(
+                simulator_name=self.name,
+                success=getattr(result, 'success', True),
+                twiss_parameters_transfer_map=final.twiss_parameters_transfer_map,
+                twiss_parameters_statistical=final.twiss_parameters_statistical,
+                final_particles=final.final_particles,
+                transfer_map=final.transfer_map,
+                optimization_variables=opt_vars,
+                metadata={
+                    'method': method,
+                    'objective_value': result.fun,
+                    'num_iterations': getattr(result, 'nit', None),
+                    'num_evaluations': getattr(result, 'nfev', None),
+                    'elapsed_seconds': elapsed,
+                    **final.metadata
+                }
+            )
+        else:
+            # Multi-objective: no single optimum, return Pareto front
+            return SimulationResult(
+                simulator_name=self.name,
+                success=getattr(result, 'success', True),
+                metadata={
+                    'method': method,
+                    'pareto_front': getattr(result, 'pareto_front', None),
+                    'num_evaluations': getattr(result, 'nfev', None),
+                    'elapsed_seconds': elapsed,
+                }
+            )
+
+    def _build_objective(self,
+                         objectives: Dict,
+                         variables: Dict,
+                         variable_names: List[str],
+                         particles: Optional[np.ndarray] = None
+                         ) -> Callable:
+        """
+        Build a scalar objective function from simulate() and objective specs.
+
+        The returned callable has signature ``f(x) -> float`` for
+        scipy.optimize.minimize.
+
+        Parameters
+        ----------
+        objectives : dict
+            {element_idx: [{"measure": [axis, param], "goal": val, "weight": val}]}
+        variables : dict
+            {element_idx: [var_name, param_name, transform_func]}
+        variable_names : list[str]
+            Ordered unique variable names.
+        particles : ndarray, optional
+            Initial particle distribution.
+        """
+        # NB: closure captures `self` and mutates beamline element parameters
+        # on every evaluation; not thread-safe (same design as beamOptimizer._optiSpeed).
+        def objective(x):
+            # Apply variable values to beamline elements
+            for idx, (var_name, param_name, transform) in variables.items():
+                var_idx = variable_names.index(var_name)
+                value = transform(x[var_idx])
+                if 0 <= idx < len(self.beamline):
+                    self.beamline[idx].parameters[param_name] = value
+
+            result = self.simulate(particles=particles)
+
+            # Compute MSE over all objectives
+            mse_terms = []
+            n_goals = 0
+
+            for elem_idx, obj_list in objectives.items():
+                try:
+                    elem_idx = int(elem_idx)
+                except (ValueError, TypeError):
+                    continue
+                twiss = result.get_twiss(element_idx=elem_idx, source='statistical')
+                if not twiss:
+                    return 1e6  # no Twiss data, penalise
+                for obj in obj_list:
+                    axis, param = obj['measure']
+                    goal = obj['goal']
+                    weight = obj.get('weight', 1.0)
+                    measured = twiss.get(axis, {}).get(param, 0.0)
+                    mse_terms.append(weight * (measured - goal) ** 2)
+                    n_goals += 1
+
+            return np.sum(mse_terms) / max(n_goals, 1)
+
+        return objective
 
     @abstractmethod
     def _convert_element_to_native(self, element: BeamlineElement) -> Any:
@@ -228,6 +383,8 @@ class SimulatorBase(ABC):
         if np.any(np.isinf(particles)):
             raise ValueError("Particle array contains infinite values")
 
+    # Common interface methods
+
     def set_beamline(self, elements: List[Union[BeamlineElement, Any]]):
         """Set beamline from generic or code-specific elements."""
         self.beamline = []
@@ -247,7 +404,7 @@ class SimulatorBase(ABC):
                 **{k: v for k, v in vars(native_element).items()
                    if not k.startswith('_')}
             )
-        except Exception as e:
+        except (AttributeError, TypeError) as e:
             raise NotImplementedError(
                 f"Must implement _convert_element_from_native for {self.name}"
             ) from e
@@ -300,7 +457,7 @@ class SimulatorBase(ABC):
             Particles in FELsim coordinates
         """
         if distribution_type == "gaussian":
-            energy = parameters.pop('energy', None)
+            energy = parameters.get('energy', None)
 
             # Use COSYParticleSimulator if available for sophisticated generation
             if hasattr(self, '_particle_sim') and self._particle_sim is not None:
