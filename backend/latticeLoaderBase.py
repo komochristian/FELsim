@@ -16,8 +16,39 @@ Author: Eremey Valetov
 
 import math
 
-from tracked_dict import TrackedDict
-from beamline import driftLattice, qpfLattice, qpdLattice, dipole, dipole_wedge
+try:
+    from tracked_dict import TrackedDict
+except ImportError:
+    class TrackedDict(dict):
+        """Minimal fallback when tracked_dict is not installed."""
+        def __init__(self, data=None, **kwargs):
+            super().__init__(data or {}, **kwargs)
+        def __getitem__(self, key):
+            val = super().__getitem__(key)
+            return self._wrap(val, key)
+        def _wrap(self, val, key=None):
+            if isinstance(val, dict) and not isinstance(val, TrackedDict):
+                val = TrackedDict(val)
+                if key is not None:
+                    super().__setitem__(key, val)
+            elif isinstance(val, list):
+                val = [self._wrap(v) for v in val]
+                if key is not None:
+                    super().__setitem__(key, val)
+            return val
+        def get(self, key, default=None):
+            try:
+                return self[key]
+            except KeyError:
+                return default
+        def mark_accessed(self, *keys): pass
+        def mark_all_accessed(self): pass
+        def report_unused(self): return []
+        def unaccessed(self): return []
+from beamline import (
+    driftLattice, qpfLattice, qpdLattice, dipole, dipole_wedge, rfCavityLattice,
+    alphaMagnetLattice,
+)
 from loggingConfig import get_logger_with_fallback
 
 SUPPORTED_FORMAT_VERSIONS = [1, 2, 3]
@@ -33,6 +64,8 @@ _TYPE_ALIASES = {
     "DPH": "DPH",
     "DIPOLE_WEDGE": "DPW",
     "DPW": "DPW",
+    "ALPHA_MAGNET": "AMG",
+    "AMG": "AMG",
     "SOLENOID": "SOL",
     "SOL": "SOL",
     "RF_CAVITY": "RFC",
@@ -271,6 +304,11 @@ class LatticeLoaderBase:
         elem.mark_accessed("MagneticMultipoleP")
         return current
 
+    def _resolve_alpha_gradient(self, params):
+        """Resolve the alpha magnet gradient calibration in T/m per A."""
+        g = params.get("gradient_t_per_m_per_a")
+        return alphaMagnetLattice.G_PER_AMP if g is None else g
+
     def _resolve_dipole_angle(self, elem, params, length):
         """Resolve dipole angle from bending_angle_deg or BendP.g_ref."""
         angle = params.get("bending_angle_deg", 0)
@@ -297,9 +335,11 @@ class LatticeLoaderBase:
         gap_wedge = 0.0
         pole_gap = 0.0
         enge_fct = ""
+        gradient_per_amp = None
 
         if internal_type == "DPH":
-            angle = self._resolve_dipole_angle(elem, params, length)
+            dipole_length = params.get("dipole_length_m", length) or length
+            angle = self._resolve_dipole_angle(elem, params, dipole_length)
             pole_gap = params.get("pole_gap_m", 0)
             params.mark_accessed("dipole_length_m")
 
@@ -330,11 +370,22 @@ class LatticeLoaderBase:
             params.mark_accessed("dipole_length_m")
             enge_fct = self._get_enge(elem)
 
+        elif internal_type == "AMG":
+            gradient_per_amp = self._resolve_alpha_gradient(params)
+
+        elif internal_type == "RFC":
+            self.logger.warning(
+                f"Element {elem.get('name')!r}: RFC passed through "
+                f"_element_to_dict / parse_beamline — the COSY/BeamlineBuilder "
+                f"path does not carry RF cavity parameters. Use create_beamline "
+                f"for RFC support (RF-Track / FELsim adapters)."
+            )
+
         name = elem.get("name")
         elem.mark_accessed("name", "aperture_m", "optimization", "fringe_fields", "metadata")
         params.mark_all_accessed()
 
-        return {
+        d = {
             "type": internal_type,
             "name": name,
             "length": length,
@@ -347,6 +398,9 @@ class LatticeLoaderBase:
             "z_start": z_start,
             "z_end": z_end,
         }
+        if gradient_per_amp is not None:
+            d["gradient_per_amp"] = gradient_per_amp
+        return d
 
     def _element_to_object(self, elem):
         """Convert a tracked element to a beamline.py class instance."""
@@ -399,7 +453,40 @@ class LatticeLoaderBase:
             return dipole_wedge(
                 length=length, angle=wedge_angle,
                 dipole_length=dipole_length, dipole_angle=dipole_angle,
-                pole_gap=pole_gap, enge_fct=enge_fct, name=name,
+                pole_gap=pole_gap if pole_gap > 0 else 0.014478,
+                enge_fct=enge_fct, name=name,
+            )
+
+        elif internal_type == "AMG":
+            current = params.get("current_a", 0)
+            gradient_per_amp = self._resolve_alpha_gradient(params)
+            params.mark_all_accessed()
+            # The map is closed form, so the element derives its own path
+            # length from the rigidity; length_m in the file is descriptive.
+            return alphaMagnetLattice(current=current,
+                                      gradient_per_amp=gradient_per_amp,
+                                      name=name)
+
+        elif internal_type == "RFC":
+            frequency_hz = params.get("frequency_hz")
+            phase_deg = params.get("phase_deg", 0.0)
+            voltage_mv = params.get("voltage_mv")
+            gradient_mv_per_m = params.get("gradient_mv_per_m")
+            structure_type = params.get("structure_type", "TW")
+            phase_advance_deg = params.get("phase_advance_deg", 120.0)
+            n_cells = params.get("n_cells")
+            params.mark_all_accessed()
+            if frequency_hz is None:
+                raise ValueError(
+                    f"RFC element {name!r}: missing required parameter 'frequency_hz'"
+                )
+            return rfCavityLattice(
+                length=length, frequency_hz=frequency_hz,
+                phase_deg=phase_deg, voltage_mv=voltage_mv,
+                gradient_mv_per_m=gradient_mv_per_m,
+                structure_type=structure_type,
+                phase_advance_deg=phase_advance_deg,
+                n_cells=n_cells, name=name,
             )
 
         else:
@@ -423,9 +510,9 @@ class LatticeLoaderBase:
         return list(coeffs) if coeffs else []
 
     def _report_unaccessed(self):
-        """Log any unconsumed data paths."""
+        """Warn about unconsumed data paths (unknown/unused keys)."""
         unaccessed = self._tracked.unaccessed()
         if unaccessed:
-            self.logger.info(f"Lattice: {len(unaccessed)} unhandled field(s):")
+            self.logger.warning(f"Lattice: {len(unaccessed)} unhandled field(s):")
             for path in unaccessed:
-                self.logger.info(f"  {path}")
+                self.logger.warning(f"  {path}")

@@ -1,0 +1,121 @@
+INCLUDE 'COSY' ;
+{ ---------------------------------------------------------------------------
+  ALPHAMAG -- the UH alpha magnet as a STOCK COSY INFINITY element.
+
+  Written so the alpha magnet can be placed in an ordinary COSY INFINITY
+  beamline: everything below is stock COSY (DA, MSC, LOCSET, UPDATE), so it
+  runs on any COSY 10.2 install.
+
+  TO USE IT: copy the two VARIABLE lines and the ALPHAMAG / ALPHAMAGI
+  procedures into your own PROCEDURE RUN, then call ALPHAMAGI <current> where
+  the magnet sits. Everything below the "Demo" banner is an example.
+
+  WHY THIS IS SHORT. In the ideal linear midplane field B_y = g*x the alpha
+  magnet has no length scale of its own: the orbit is universal in units of
+  1/sqrt(k), k = g/(B*rho). Every dimensionless map coefficient is therefore a
+  pure number, and the whole element is those numbers plus one scale factor.
+  Measured over 0.4307-1.1 MeV and 11-13.5 A the transverse block is constant
+  to 5E-8 and the longitudinal to 1E-8, so a single set of constants covers
+  the entire operating band.
+
+  THE MAP, in COSY canonical (x, a, y, b, l, dK):
+
+      x  =  -x0 - (s/2)*a0
+      a  =        -a0                      horizontal: exactly -I x drift(s/2)
+      y  =  CC*y0 + UU*s*b0
+      b  =  (VV/s)*y0 + CC*b0
+      l  =   l0 + R56*dK
+      dK =   dK0
+
+  s = SU/sqrt(k) is the orbit path length. The horizontal block is exact
+  algebra: the alpha magnet images -1 to -1 with no net focusing, and is
+  achromatic to first order (R16 = R26 = 0 to 1E-7). CC, UU, VV are genuine
+  transcendental constants of the alpha magnet, the vertical-plane analogues
+  of the familiar 0.19165 and 0.07505 path-length and depth coefficients.
+
+  R56 IS NOT A FREE CONSTANT either. In momentum coordinates
+  R56 = s*(1/gamma^2 - 1/2): the -s/2 is the path-length dispersion
+  (ds/ddelta_p = s/2, from s ~ sqrt(beta*gamma)) and the +s/gamma^2 is the
+  ordinary velocity slip. COSY's fifth and sixth coordinates use dK rather
+  than dp, which costs a factor COEFF = (gamma+1)/gamma on each, hence the
+  1/(gamma+1)^2 below.
+
+  SCOPE. Ideal linear field, hard edge, no fringe. That is the model Niels
+  asked for on 2026-07-27 and it is what every arm of the cross-code
+  comparison currently uses. Fringe and real-field inhomogeneities enter by
+  regenerating the four constants from a field map -- the element's shape does
+  not change, only the numbers.
+
+  GEOMETRY. Entry and exit points COINCIDE on the pole edge (the orbit is a
+  closed loop -- that is the shape the magnet is named after), so LOCSET
+  advances the path length by s with zero net displacement and turns the axis
+  by 180 - 2*theta_alpha degrees.
+--------------------------------------------------------------------------- }
+PROCEDURE RUN ;
+   VARIABLE AMG_SALPHA 1 ;   { OUT: path length of the last ALPHAMAG call [m] }
+   VARIABLE AMG_GPERA  1 ;   { A -> T/m calibration, PENDING Niels's check }
+   VARIABLE I 1 ; VARIABLE J 1 ; VARIABLE KE 1 ; VARIABLE IA 1 ;
+
+   PROCEDURE ALPHAMAG G ;
+   { Alpha magnet of midplane gradient G [T/m], magnitude; the sign is fixed by
+     the geometry, not by the caller. Call after RP/OV/UM as for any element. }
+      VARIABLE I 1 ; VARIABLE MB NM1 8 ;
+      VARIABLE SU 1 ; VARIABLE CC 1 ; VARIABLE UU 1 ; VARIABLE VV 1 ;
+      VARIABLE TA 1 ; VARIABLE KA 1 ; VARIABLE SA 1 ; VARIABLE GA 1 ;
+      VARIABLE R56 1 ;
+
+      { --- universal constants, ideal linear field ----------------------- }
+      SU := 4.642099440404 ;      { s*sqrt(k)                               }
+      CC := -0.737113977807 ;     { R33 = R44                               }
+      UU := 1.641111845033 ;      { R34/s                                   }
+      VV := -0.278264388319 ;     { R43*s                                   }
+      TA := 40.70991 ;            { entry angle from the inward normal [deg] }
+
+      IF LUM#1 ; WRITE 6 ' *** ERROR in ALPHAMAG, call UM before the element' ;
+         QUIT 0 ; ENDIF ;
+
+      GA := 1 + CONS(E0)/(AMUMEV*CONS(M0)) ;  { reference gamma             }
+      KA := ABS(G/CONS(CHIM)) ;               { k = g/(B*rho)  [1/m^2]      }
+      { ABS because COSY's CHIM carries the sign of the charge: it is
+        negative for the electron (Z0 = -1) and SQRT would return NaN. }
+      SA := SU/SQRT(KA) ;
+      R56 := SA*(1-GA*GA/2)/((GA+1)*(GA+1)) ; { s*(1/gam^2-1/2) in dK coords }
+      AMG_SALPHA := SA ;
+
+      MB(1) := -DA(1) - 0.5*SA*DA(2) ;
+      MB(2) := -DA(2) ;
+      MB(3) := CC*DA(3) + UU*SA*DA(4) ;
+      MB(4) := (VV/SA)*DA(3) + CC*DA(4) ;
+      MB(5) := DA(5) + R56*DA(6) ;
+      MB(6) := DA(6) ;
+
+      LOOP I 1 TWOND ; MSC(I) := MB(I) ; ENDLOOP ;
+      LOCSET 0 0 (180-2*TA)*DEGRAD SA 0 0 ;
+      UPDATE 1 1 ;
+      ENDPROCEDURE ;
+
+   PROCEDURE ALPHAMAGI IA ;
+   { The same element addressed by coil current [A] through AMG_GPERA. }
+      ALPHAMAG AMG_GPERA*ABS(IA) ; ENDPROCEDURE ;
+
+{ ---------------------------------------------------------------------------
+  Demo: one alpha magnet at the nominal operating point.
+--------------------------------------------------------------------------- }
+   KE := 0.75 ; IA := 12.0 ;
+   AMG_GPERA := 0.103754 ;
+
+   OV 1 3 0 ;
+   RP KE 5.4857990907E-4 -1 ;
+   UM ;
+   ALPHAMAGI IA ;
+
+   WRITE 6 'AE_KE '&SF(KE,'(F12.6)') ;
+   WRITE 6 'AE_IA '&SF(IA,'(F12.6)') ;
+   WRITE 6 'AE_SALPHA '&SF(AMG_SALPHA,'(E24.16)') ;
+   WRITE 6 'AE_SPOS '&SF(SPOS,'(E24.16)') ;
+   LOOP I 1 6 ; LOOP J 1 6 ;
+      WRITE 6 'AE_ME '&SI(I)&' '&SI(J)&' '&SF(ME(I,J),'(E24.16)') ;
+   ENDLOOP ; ENDLOOP ;
+   WRITE 6 'AE_DONE' ;
+   ENDPROCEDURE ;
+RUN ; END ;

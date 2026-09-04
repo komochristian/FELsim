@@ -1,9 +1,3 @@
-"""
-COSY INFINITY simulator interface.
-
-Author: Eremey Valetov
-"""
-
 import subprocess
 import os
 import shutil
@@ -17,8 +11,8 @@ from loggingConfig import get_logger_with_fallback
 class COSYSimulator(BeamlineBuilder):
     def __init__(self, excel_path, json_config_path=None, config_dict=None, debug=None, use_enge_coeffs=True,
                  use_mge_for_dipoles=False, transfer_matrix_order=None, fringe_field_order=0,
-                 quad_aperture=0.027, dipole_aperture=0.0127,
-                 cosy_dist_dir=None):
+                 quad_aperture=0.027, dipole_aperture=0.0127):
+        """Initialize COSY simulator with beamline specification and configuration."""
         super().__init__(excel_path, json_config_path)
 
         self.config = self._load_config(json_config_path, config_dict)
@@ -59,7 +53,7 @@ class COSYSimulator(BeamlineBuilder):
         #
         # Transverse objectives (α, β, γ, dispersion, envelope) suffice when the
         # transport line has no RF and chirp is zero — longitudinal phase space
-        # decouples from transverse matching in that regime.
+        # decouples from transverse matching (see S9 study).
         # Longitudinal objectives (R56, T566) are needed for non-zero chirp or
         # bunch compression studies where the optimizer must target specific
         # longitudinal transfer matrix elements.
@@ -84,10 +78,11 @@ class COSYSimulator(BeamlineBuilder):
 
         # Particle tracking
         self.aperture_cuts_enabled = False
-        self.dipole_half_width = 0.050  # m, horizontal half-aperture for dipoles
+        self.dipole_half_width = 0.050  # m, horizontal half-aperture for dipoles (placeholder)
         self._aperture_warning_logged = False
         self.particle_tracking_mode = False
         self.particle_input_unit = 200
+        self.particle_input_file = f'fort.{self.particle_input_unit}'
         self.particle_checkpoint_base_unit = 10000
         self.particle_checkpoint_elements = None
         self.particle_checkpoint_count = 0
@@ -131,7 +126,6 @@ class COSYSimulator(BeamlineBuilder):
         self.current_dir = os.getcwd()
         self.project_fields_dir = os.path.join(os.path.dirname(self.script_dir), 'fields')
         self.default_cosy_dir = os.path.expanduser('/usr/local/bin')
-        # Path to COSY INFINITY distribution; override to match local installation
         self.cosy_dist_dir = cosy_dist_dir or os.path.expanduser('~/COSY/10.2/UNIX')
         self.search_dirs = [self.script_dir, self.current_dir, self.project_fields_dir,
                             self.default_cosy_dir, self.cosy_dist_dir]
@@ -154,7 +148,46 @@ class COSYSimulator(BeamlineBuilder):
         # Field values written directly to avoid VEC/MGE_FIELD intermediate arrays
         self.mge_setup_template = "    NP := {np} ;\n    NS := {ns} ;\n    DELTAS := {deltas} ;\n"
 
+        # Alpha magnet element, appended to {Initialization} (i.e. after the
+        # RUN declarations and before PROCEDURE LATTICE) when the beamline
+        # carries an AMG. Stock COSY INFINITY only — no COSYFFAG dependency.
+        # Same closed-form map as backend/test/transport/alpha_element.fox.
+        self.alpha_magnet_procedure = """    PROCEDURE ALPHAMAG AMGG ;
+    { Alpha magnet of midplane gradient AMGG [T/m], ideal linear field
+      B_y = g*x with a hard edge. The orbit is universal in units of
+      1/sqrt(k), k = g/(B*rho), so the first-order map is four constants and
+      the path length AMGSA. Entrance and exit coincide on the pole edge, so
+      LOCSET advances the path length with zero net displacement and turns the
+      axis by 180 - 2*theta_alpha. }
+        VARIABLE AMGI 1 ; VARIABLE AMGMB NM1 8 ;
+        VARIABLE AMGSU 1 ; VARIABLE AMGCC 1 ; VARIABLE AMGUU 1 ;
+        VARIABLE AMGVV 1 ; VARIABLE AMGTA 1 ; VARIABLE AMGKA 1 ;
+        VARIABLE AMGSA 1 ; VARIABLE AMGGA 1 ; VARIABLE AMGR56 1 ;
+        AMGSU := 4.642099440404 ;   { s*sqrt(k)                               }
+        AMGCC := -0.737113977807 ;  { R33 = R44                               }
+        AMGUU := 1.641111845033 ;   { R34/s                                   }
+        AMGVV := -0.278264388319 ;  { R43*s                                   }
+        AMGTA := 40.70991 ;         { entry angle from the inward normal [deg] }
+        IF LUM#1 ; WRITE 6 ' *** ERROR, call UM before ALPHAMAG' ;
+           QUIT 0 ; ENDIF ;
+        AMGGA := 1 + CONS(E0)/(AMUMEV*CONS(M0)) ;
+        AMGKA := ABS(AMGG/CONS(CHIM)) ;  { CHIM carries the sign of the charge }
+        AMGSA := AMGSU/SQRT(AMGKA) ;
+        AMGR56 := AMGSA*(1-AMGGA*AMGGA/2)/((AMGGA+1)*(AMGGA+1)) ;
+        AMGMB(1) := -DA(1) - 0.5*AMGSA*DA(2) ;
+        AMGMB(2) := -DA(2) ;
+        AMGMB(3) := AMGCC*DA(3) + AMGUU*AMGSA*DA(4) ;
+        AMGMB(4) := (AMGVV/AMGSA)*DA(3) + AMGCC*DA(4) ;
+        IF TWOND>4 ; AMGMB(5) := DA(5) + AMGR56*DA(6) ;
+           AMGMB(6) := DA(6) ; ENDIF ;
+        LOOP AMGI 1 TWOND ; MSC(AMGI) := AMGMB(AMGI) ; ENDLOOP ;
+        LOCSET 0 0 (180-2*AMGTA)*DEGRAD AMGSA 0 0 ;
+        UPDATE 1 1 ;
+        ENDPROCEDURE ;
+"""
+
     def _build_boilerplate(self):
+        """Generate COSY input boilerplate with current configuration."""
         return f"""
 INCLUDE 'COSY' ;
 PROCEDURE RUN ;
@@ -173,14 +206,6 @@ PROCEDURE RUN ;
     LATTICE ;
 {{Optimization}}
     CO {self.transfer_matrix_order} ; PM 99 ;
-
-    OPENF 51 'result.txt' 'UNKNOWN';
-        WRITE 51 '{{';
-        WRITE 51 '"spos": '&S(SPOS)&',';
-        WRITE 51 '"optimization_enabled": {1 if self.optimization_enabled else 0}' ;
-{{Variables}}
-        WRITE 51 '}}';
-    CLOSEF 51 ;
 
     GT MAP F0 MU0 A0 B0 G0 R0 ;
 
@@ -214,6 +239,7 @@ END ;
         return value if isinstance(value, str) else str(value)
 
     def _multiply_expression(self, coefficient, variable):
+        """Multiply coefficient by variable, handling symbolic expressions."""
         if isinstance(variable, str):
             if coefficient == 1.0:
                 return variable
@@ -238,6 +264,7 @@ END ;
         return all_vars
 
     def _extract_symbolic_variables(self, expression):
+        """Extract variable names from symbolic expression."""
         if not isinstance(expression, str):
             return set()
 
@@ -252,6 +279,7 @@ END ;
         return set(variables)
 
     def _generate_variable_declarations(self):
+        """Generate COSY VARIABLE declarations for tracked variables."""
         all_vars = self._get_all_cosy_variables()
 
         if not all_vars:
@@ -267,7 +295,7 @@ END ;
     VARIABLE OBJ 1 100 ;
 """
             if self.debug:
-                self.logger.debug("Added optimization variables: MAP_ARR, MAP_IDX, IDX, NOM, OBJ")
+                self.logger.debug("Added optimization variables: MAP_ARR, MAP_IDX, IDX, NOM, MAP_TMP, OBJ")
 
         if self.debug:
             self.logger.debug(f"Generated declarations for {len(all_vars)} variable(s)")
@@ -310,6 +338,7 @@ END ;
             self.logger.debug(f"Variable check passed: {len(matches)} unique variables")
 
     def _find_file(self, filename):
+        """Search for file in configured directories."""
         for directory in self.search_dirs:
             filepath = os.path.join(directory, filename)
             if os.path.exists(filepath):
@@ -466,6 +495,10 @@ END ;
         else:
             lines.append(f"{indent}B0(2) := ME(3,3)*ME(3,3)*{by0} - 2*ME(3,3)*ME(3,4)*{ay0} + ME(3,4)*ME(3,4)*{gy0} ;")
             lines.append(f"{indent}A0(2) := -(ME(3,3)*ME(4,3)*{by0} - (ME(3,3)*ME(4,4)+ME(3,4)*ME(4,3))*{ay0} + ME(3,4)*ME(4,4)*{gy0}) ;")
+
+        # Courant-Snyder γ = (1 + α²) / β
+        lines.append(f"{indent}G0(1) := (1 + A0(1)*A0(1)) / B0(1) ;")
+        lines.append(f"{indent}G0(2) := (1 + A0(2)*A0(2)) / B0(2) ;")
 
         return "\n".join(lines) + "\n"
 
@@ -779,7 +812,8 @@ END ;
         Parameters
         ----------
         dipole_half_width : float, optional
-            Horizontal half-aperture for dipoles [m]. Default 0.050 m (conservative placeholder).
+            Horizontal half-aperture for dipoles [m]. Default 0.050 m.
+            TODO: determine actual UH MkV dipole pole face width.
         """
         self.aperture_cuts_enabled = True
         if dipole_half_width is not None:
@@ -787,7 +821,8 @@ END ;
         if not self._aperture_warning_logged:
             self.logger.warning(
                 f"Aperture cuts enabled. Dipole horizontal half-width = "
-                f"{self.dipole_half_width} m."
+                f"{self.dipole_half_width} m is a conservative placeholder — "
+                f"replace with measured UH MkV pole face width when available."
             )
             self._aperture_warning_logged = True
         return {'aperture_cuts_enabled': True, 'dipole_half_width': self.dipole_half_width}
@@ -810,6 +845,7 @@ END ;
         }
 
     def get_particle_tracking_config(self):
+        """Return current particle tracking configuration."""
         config = {
             'particle_tracking_mode': self.particle_tracking_mode,
             'input_unit': self.particle_input_unit,
@@ -874,6 +910,7 @@ END ;
         return elements_str
 
     def _parse_enge_coefficients(self, enge_data):
+        """Parse Enge coefficients from string/list/single value."""
         if isinstance(enge_data, list):
             return enge_data
         elif isinstance(enge_data, str) and enge_data.strip():
@@ -922,7 +959,7 @@ END ;
                 else:
                     self.logger.error(f"Fieldmap file has insufficient data")
                     return None, None, None
-        except Exception as e:
+        except (OSError, ValueError) as e:
             self.logger.error(f"Error reading fieldmap: {e}")
             return None, None, None
 
@@ -1073,6 +1110,7 @@ END ;
         }
 
     def _check_for_mge_dipoles(self, grouped_elements):
+        """Check if any dipoles will use MGE mode."""
         if not (self.use_mge_for_dipoles and self.use_enge_coeffs):
             return False
 
@@ -1130,6 +1168,7 @@ END ;
         return changes
 
     def _recalculate_energy_dependent_parameters(self):
+        """Recalculate derived quantities after energy change."""
         self.E = self.KE + self.E0
         self.P = PhysicalConstants.momentum(self.KE, self.E0)
         self.gamma, self.beta = PhysicalConstants.relativistic_parameters(self.KE, self.E0)
@@ -1272,6 +1311,7 @@ END ;
         return elements_str
 
     def generate_input(self, output_dir='results'):
+        """Generate COSY input file from beamline specification."""
         os.makedirs(output_dir, exist_ok=True)
 
         # Apply variable mapping
@@ -1323,6 +1363,19 @@ END ;
 
                 b_pole_str = self._format_cosy_value(b_pole)
                 elements_str += f"    MQ {elem['length']} {b_pole_str} {radius} ;\n"
+                elements_str = self._add_aperture_cut(elements_str, elem)
+                elements_str = self._add_particle_checkpoint(elements_str, element_idx)
+                elements_str = self._add_map_tracking_code(elements_str)
+
+            elif elem['type'] == "AMG":
+                g_per_amp = elem.get('gradient_per_amp',
+                                     PhysicalConstants.G_alpha_default)
+                gradient = self._multiply_expression(g_per_amp, elem['current'])
+
+                if isinstance(gradient, str):
+                    self.symbolic_variables.update(self._extract_symbolic_variables(gradient))
+
+                elements_str += f"    ALPHAMAG {self._format_cosy_value(gradient)} ;\n"
                 elements_str = self._add_aperture_cut(elements_str, elem)
                 elements_str = self._add_particle_checkpoint(elements_str, element_idx)
                 elements_str = self._add_map_tracking_code(elements_str)
@@ -1445,6 +1498,9 @@ END ;
         else:
             full_init = var_declarations
             pre_lattice = ""
+
+        if any(elem['type'] == "AMG" for elem in grouped_elements):
+            full_init += self.alpha_magnet_procedure
 
         full_input = self._build_boilerplate().replace("{Initialization}", full_init)
         full_input = full_input.replace("{PreLattice}", pre_lattice)

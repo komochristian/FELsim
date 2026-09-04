@@ -5,12 +5,13 @@ Author: Eremey Valetov
 """
 
 import numpy as np
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Any, Union
 from simulatorBase import (
     SimulatorBase, SimulationResult, BeamlineElement,
     CoordinateSystem, SimulationMode
 )
 from beamEvolution import BeamEvolution, ElementInfo
+from physicalConstants import PhysicalConstants
 from evolutionPlotter import EvolutionPlotter
 from loggingConfig import get_logger_with_fallback
 
@@ -37,7 +38,7 @@ class COSYAdapter(SimulatorBase):
                  use_mge_for_dipoles: bool = False,
                  quad_aperture: float = 0.027,
                  dipole_aperture: float = 0.0127,
-                 debug: Optional[bool] = None):
+                 debug: bool = None):
 
         if not _COSY_AVAILABLE:
             raise ImportError("COSY components not available")
@@ -52,16 +53,16 @@ class COSYAdapter(SimulatorBase):
         self.lattice_path = path
         self.excel_path = excel_path  # backward compat
 
-        # COSY's native simulator requires an excel_path for BeamlineBuilder.
-        # For JSON/YAML lattices, use the explicit excel_path as a scaffold,
-        # or fall back to 'dummy.xlsx'.
+        # COSY's native simulator uses BeamlineBuilder which can take an
+        # excel_path. For JSON/YAML lattices or set_beamline() usage, pass
+        # None (BeamlineBuilder skips file validation when path is None).
         _is_excel = path and path.lower().endswith(('.xlsx', '.xls'))
         if _is_excel:
             sim_excel_path = path
         elif excel_path and excel_path.lower().endswith(('.xlsx', '.xls')):
             sim_excel_path = excel_path
         else:
-            sim_excel_path = 'dummy.xlsx'
+            sim_excel_path = None
 
         if mode == 'transfer_matrix':
             self.simulation_mode = SimulationMode.TRANSFER_MATRIX
@@ -103,13 +104,16 @@ class COSYAdapter(SimulatorBase):
             'DIPOLE': 'DPH',
             'DPH': 'DPH',
             'DIPOLE_WEDGE': 'DPW',
-            'DPW': 'DPW'
+            'DPW': 'DPW',
+            'ALPHA_MAGNET': 'AMG',
+            'AMG': 'AMG'
         }
 
         if path:
             self._load_beamline(path, _is_excel)
 
     def _load_beamline(self, lattice_path, is_excel):
+        """Load beamline from a lattice file (Excel, JSON, or YAML)."""
         try:
             if is_excel:
                 parsed = self._native_sim.parse_beamline()
@@ -121,10 +125,11 @@ class COSYAdapter(SimulatorBase):
             self.logger.debug(f"Parsed {len(parsed)} beamline elements from {lattice_path}")
         except FileNotFoundError:
             self.logger.debug(f"Lattice file not found: {lattice_path}")
-        except Exception as e:
+        except (ImportError, ValueError, AttributeError, KeyError) as e:
             self.logger.warning(f"Could not parse beamline from {lattice_path}: {e}")
 
     def _ensure_beamline_parsed(self):
+        """Parse beamline if not already done."""
         if self._beamline_parsed:
             return
 
@@ -146,6 +151,7 @@ class COSYAdapter(SimulatorBase):
                           checkpoint_elements: Union[str, List[int]] = 'all',
                           filter_invalid: bool = True
                           ) -> BeamEvolution:
+        """Collect beam evolution data at element boundaries."""
         self._ensure_beamline_parsed()
         native_sim = self.get_native_simulator()
 
@@ -155,9 +161,7 @@ class COSYAdapter(SimulatorBase):
             beam_energy=self._native_sim.KE
         )
 
-        evolution.s_positions.append(0.0)
-        evolution.particles[0.0] = particles.copy()
-        evolution.twiss[0.0] = self._calculate_twiss(particles)
+        evolution.add_sample(0.0, particles.copy(), self._calculate_twiss(particles))
 
         n_elements = len(native_sim.beamline)
         if checkpoint_elements == 'all':
@@ -216,37 +220,56 @@ class COSYAdapter(SimulatorBase):
                 )
 
             if n_at > 0:
-                evolution.s_positions.append(s_pos)
-                evolution.particles[s_pos] = particles_at_elem
-                evolution.twiss[s_pos] = self._calculate_twiss(particles_at_elem)
-
-        evolution.s_positions = sorted(evolution.s_positions)
+                evolution.add_sample(s_pos, particles_at_elem, self._calculate_twiss(particles_at_elem))
 
         return evolution
 
     def _calculate_twiss(self, particles_felsim: np.ndarray) -> dict:
-        if self._particle_sim is None:
-            from ebeam import beam
-            ebeam = beam()
-            _, _, twiss_df = ebeam.cal_twiss(particles_felsim, ddof=1)
-            return {
-                'x': {
-                    'beta': twiss_df.loc['x', r'$\beta$ (m)'],
-                    'alpha': twiss_df.loc['x', r'$\alpha$'],
-                    'gamma': twiss_df.loc['x', r'$\gamma$ (rad/m)'],
-                    'emittance': twiss_df.loc['x', r'$\epsilon$ ($\pi$.mm.mrad)']
-                },
-                'y': {
-                    'beta': twiss_df.loc['y', r'$\beta$ (m)'],
-                    'alpha': twiss_df.loc['y', r'$\alpha$'],
-                    'gamma': twiss_df.loc['y', r'$\gamma$ (rad/m)'],
-                    'emittance': twiss_df.loc['y', r'$\epsilon$ ($\pi$.mm.mrad)']
-                }
-            }
+        """Calculate Twiss parameters from FELsim-coordinate particles."""
+        if self._particle_sim is not None:
+            twiss = self._particle_sim.calculate_twiss_from_particles(particles_felsim)
+            # Add dispersion from particle correlations if not already present
+            for plane, pos_idx in [('x', 0), ('y', 2)]:
+                if plane in twiss and 'dispersion' not in twiss[plane]:
+                    sigma_delta_sq = np.var(particles_felsim[:, 5], ddof=1)
+                    if sigma_delta_sq > 0:
+                        twiss[plane]['dispersion'] = np.cov(
+                            particles_felsim[:, pos_idx], particles_felsim[:, 5], ddof=1
+                        )[0, 1] / sigma_delta_sq
+                    else:
+                        twiss[plane]['dispersion'] = 0.0
+            return twiss
 
-        return self._particle_sim.calculate_twiss_from_particles(particles_felsim)
+        from ebeam import beam
+        ebeam = beam()
+        _, _, twiss_df = ebeam.cal_twiss(particles_felsim, ddof=1)
+
+        sigma_delta_sq = np.var(particles_felsim[:, 5], ddof=1)
+        if sigma_delta_sq > 0:
+            D_x = np.cov(particles_felsim[:, 0], particles_felsim[:, 5], ddof=1)[0, 1] / sigma_delta_sq
+            D_y = np.cov(particles_felsim[:, 2], particles_felsim[:, 5], ddof=1)[0, 1] / sigma_delta_sq
+        else:
+            D_x = D_y = 0.0
+
+        return {
+            'x': {
+                'beta': twiss_df.loc['x', r'$\beta$ (m)'],
+                'alpha': twiss_df.loc['x', r'$\alpha$'],
+                'gamma': twiss_df.loc['x', r'$\gamma$ (rad/m)'],
+                'emittance': twiss_df.loc['x', r'$\epsilon$ ($\pi$.mm.mrad)'],
+                'dispersion': D_x
+            },
+            'y': {
+                'beta': twiss_df.loc['y', r'$\beta$ (m)'],
+                'alpha': twiss_df.loc['y', r'$\alpha$'],
+                'gamma': twiss_df.loc['y', r'$\gamma$ (rad/m)'],
+                'emittance': twiss_df.loc['y', r'$\epsilon$ ($\pi$.mm.mrad)'],
+                'dispersion': D_y
+            }
+        }
 
     def _get_element_color(self, elem_type: str) -> str:
+        """Map element type to display color."""
         colors = {
             'DRIFT': 'white',
             'QPF': 'cornflowerblue',
@@ -261,46 +284,58 @@ class COSYAdapter(SimulatorBase):
                        particles: np.ndarray,
                        checkpoint_elements: Union[str, List[int]] = 'all',
                        **kwargs) -> BeamEvolution:
+        """Simulate and plot beam transport."""
         evolution = self.collect_evolution(particles, checkpoint_elements)
         plotter = EvolutionPlotter()
         plotter.plot(evolution, **kwargs)
         return evolution
 
     def parse_beamline(self):
+        """Parse beamline from Excel file."""
         return self._native_sim.parse_beamline()
 
     def find_elements(self, element_type=None, **criteria):
+        """Find beamline elements matching criteria."""
         self._ensure_beamline_parsed()
         return self._native_sim.find_elements(element_type, **criteria)
 
     def print_beamline(self):
+        """Print beamline elements as formatted table."""
         self._ensure_beamline_parsed()
         return self._native_sim.print_beamline()
 
     def get_beamline(self):
+        """Get parsed beamline elements."""
         self._ensure_beamline_parsed()
         return self._native_sim.beamline
 
     def apply_variable_mapping(self, xVar, validation=True):
+        """Apply variable mappings to beamline elements."""
         self._ensure_beamline_parsed()
         return self._native_sim.apply_variable_mapping(xVar, validation)
 
     def modify_element(self, index, **kwargs):
+        """Modify beamline element parameters."""
         self._ensure_beamline_parsed()
         return self._native_sim.modify_element(index, **kwargs)
 
     def simulate(self,
                  particles: Optional[np.ndarray] = None,
                  mode: Optional[SimulationMode] = None) -> SimulationResult:
+        """Run COSY simulation."""
         self._ensure_beamline_parsed()
 
         mode = mode or self.simulation_mode
 
         if mode == SimulationMode.TRANSFER_MATRIX:
-            if self._native_sim.particle_tracking_mode:
+            old_state = self._native_sim.particle_tracking_mode
+            if old_state:
                 self._native_sim.disable_particle_tracking()
 
             result_dict = self._native_sim.run_simulation()
+
+            if old_state:
+                self._native_sim.enable_particle_tracking()
 
             if not result_dict.get('status') == 'success':
                 return SimulationResult(
@@ -335,8 +370,9 @@ class COSYAdapter(SimulatorBase):
             if particles.shape[1] != 6:
                 raise ValueError(f"Expected 6 coordinates, got {particles.shape[1]}")
 
+            particles_cosy = self._particle_sim.transform_to_cosy_coordinates(particles)
             self._particle_sim.write_particle_file(
-                particles,
+                particles_cosy,
                 format='rray',
                 output_dir='results'
             )
@@ -365,7 +401,7 @@ class COSYAdapter(SimulatorBase):
                     self.logger.debug(f"Read final particles from {last_file}")
                 except FileNotFoundError as e:
                     self.logger.warning(f"Could not read final particles: {e}")
-                except Exception as e:
+                except (OSError, ValueError) as e:
                     self.logger.error(f"Error reading final particles: {e}")
 
                 if checkpoint_config.get('checkpoint_elements'):
@@ -374,7 +410,7 @@ class COSYAdapter(SimulatorBase):
                             checkpoint_config['checkpoint_elements'],
                             transform_to_felsim=False
                         )
-                    except Exception as e:
+                    except (OSError, ValueError, KeyError) as e:
                         self.logger.warning(f"Could not read checkpoint particles: {e}")
             else:
                 self.logger.warning("No checkpoint files generated")
@@ -394,7 +430,7 @@ class COSYAdapter(SimulatorBase):
             if all_particles_lost:
                 self.logger.warning("All particles lost — returning NaN Twiss")
             else:
-                self.logger.debug("Attempting filtered transformation")
+                self.logger.debug(f"\n=== Attempting filtered transformation ===")
                 filtered_particles = self._particle_sim.transform_from_cosy_coordinates(
                     final_particles_cosy,
                     validate=False,
@@ -423,7 +459,7 @@ class COSYAdapter(SimulatorBase):
                 simulator_name=self.name,
                 success=True,
                 twiss_parameters_transfer_map=twiss,
-                final_particles=final_particles_cosy,
+                final_particles=filtered_particles if not all_particles_lost else final_particles_cosy,
                 checkpoint_particles=checkpoint_particles,
                 metadata={
                     'num_particles': particles.shape[0],
@@ -500,7 +536,69 @@ class COSYAdapter(SimulatorBase):
             }
         )
 
+    def set_beamline(self, elements: List[Union[BeamlineElement, Any]]):
+        """Set beamline from generic BeamlineElement objects or native dicts.
+
+        Used by MultiCodeSimulator for partial beamline tracking.
+        Converts BeamlineElement objects to the dict format expected by
+        COSYSimulator.beamline, then updates the native simulator.
+
+        When in particle_tracking mode, automatically enables a checkpoint
+        at the last element so that final_particles is available for handoff.
+        """
+        native_beamline = []
+        for elem in elements:
+            if isinstance(elem, BeamlineElement):
+                native_beamline.append(self._beamline_element_to_dict(elem))
+            elif isinstance(elem, dict):
+                native_beamline.append(elem)
+            else:
+                native_beamline.append(self._beamline_element_to_dict(
+                    self._convert_element_from_native(elem)))
+
+        self._native_sim.beamline = native_beamline
+        self._beamline_parsed = True
+
+        # Auto-enable particle checkpoints at all elements for handoff.
+        # We track all because DPW triplet consolidation changes the
+        # element count, making it hard to predict the last index.
+        if self._particle_sim is not None:
+            self._particle_sim.enable_particle_tracking(
+                checkpoint_elements=None)  # None = all elements
+
+    @staticmethod
+    def _beamline_element_to_dict(element: BeamlineElement) -> Dict:
+        """Convert a generic BeamlineElement to COSY beamline dict format."""
+        elem_type = element.element_type.upper()
+        # Map generic types to COSY types
+        type_map = {
+            'QUAD_F': 'QPF', 'QUAD_D': 'QPD',
+            'DIPOLE': 'DPH', 'DIPOLE_WEDGE': 'DPW',
+            'ALPHA_MAGNET': 'AMG',
+        }
+        cosy_type = type_map.get(elem_type, elem_type)
+
+        d = {
+            'type': cosy_type,
+            'length': element.length,
+            'current': element.parameters.get('current', 0),
+            'angle': element.parameters.get('angle', 0),
+            'wedge_angle': element.parameters.get('wedge_angle',
+                           element.parameters.get('angle', 0)),
+            'pole_gap': element.parameters.get('pole_gap', 0.014478),
+            'enge_fct': element.parameters.get('enge_fct', ''),
+        }
+        if cosy_type == 'DPW':
+            d['gap_wedge'] = element.length
+            d['dipole_length'] = element.parameters.get('dipole_length', 0)
+            d['dipole_angle'] = element.parameters.get('dipole_angle', 0)
+        elif cosy_type == 'AMG':
+            d['gradient_per_amp'] = element.parameters.get(
+                'gradient_per_amp', PhysicalConstants.G_alpha_default)
+        return d
+
     def _convert_element_to_native(self, element: BeamlineElement) -> Dict:
+        """Convert BeamlineElement to COSY Excel format."""
         elem_type = self._element_type_map.get(
             element.element_type.upper(),
             element.element_type
@@ -524,12 +622,16 @@ class COSYAdapter(SimulatorBase):
             elem_dict['Gap wedge (m)'] = element.length
             elem_dict['Pole gap (m)'] = element.parameters.get('pole_gap', 0.014478)
 
+        elif elem_type == 'AMG':
+            elem_dict['Current (A)'] = element.parameters.get('current', 0.0)
+
         return elem_dict
 
     def transform_coordinates(self,
                               particles: np.ndarray,
                               from_system: CoordinateSystem,
                               to_system: CoordinateSystem) -> np.ndarray:
+        """Transform particle coordinates between systems."""
         if from_system == to_system:
             return particles.copy()
 
@@ -548,6 +650,7 @@ class COSYAdapter(SimulatorBase):
             )
 
     def get_native_simulator(self) -> COSYSimulator:
+        """Get underlying COSYSimulator for direct access."""
         return self._native_sim
 
     def generate_particles(self,
@@ -579,6 +682,7 @@ class COSYAdapter(SimulatorBase):
 
     def enable_particle_checkpoints(self,
                                     checkpoint_elements: Optional[List[int]] = None):
+        """Enable particle distribution checkpoints."""
         if self._particle_sim is None:
             raise ValueError("Particle tracking mode required for checkpoints")
 
@@ -587,12 +691,15 @@ class COSYAdapter(SimulatorBase):
         )
 
     def enable_aperture_cuts(self, dipole_half_width=None):
+        """Enable aperture cuts in COSY tracking mode."""
         return self._native_sim.enable_aperture_cuts(dipole_half_width)
 
     def disable_aperture_cuts(self):
+        """Disable aperture cuts."""
         return self._native_sim.disable_aperture_cuts()
 
     def set_beam_energy(self, energy_mev: float):
+        """Set beam energy and update COSY configuration."""
         super().set_beam_energy(energy_mev)
         self._native_sim.update_simulation_config(KE=energy_mev)
 
@@ -604,6 +711,7 @@ class COSYAdapter(SimulatorBase):
         return changes
 
     def get_transfer_matrix_order(self) -> int:
+        """Get current transfer matrix order."""
         return self._native_sim.transfer_matrix_order
 
     def get_simulation_config(self) -> Dict:
@@ -619,9 +727,11 @@ class COSYAdapter(SimulatorBase):
         return self._native_sim.update_simulation_config(**kwargs)
 
     def supports_mode(self, mode: SimulationMode) -> bool:
+        """Check if simulation mode is supported."""
         return mode in [SimulationMode.TRANSFER_MATRIX, SimulationMode.PARTICLE_TRACKING]
 
     def validate_coordinate_transformation(self, **kwargs):
+        """Validate round-trip coordinate transformation."""
         if self._particle_sim is None:
             raise ValueError("Particle simulator required for validation")
 

@@ -35,6 +35,7 @@ _TYPE_MAP_V1 = {
     "QPD": ("QUADRUPOLE", "defocusing"),
     "DPH": "DIPOLE",
     "DPW": "DIPOLE_WEDGE",
+    "AMG": "ALPHA_MAGNET",
     "BPM": "BPM",
     "OTR": "OTR",
     "STV": "CORRECTOR_V",
@@ -51,6 +52,7 @@ _TYPE_MAP_V2 = {
     "QPD": ("Quadrupole", "defocusing"),
     "DPH": "SBend",
     "DPW": "DIPOLE_WEDGE",  # no PALS equivalent
+    "AMG": "ALPHA_MAGNET",  # no PALS equivalent
     "BPM": "BPM",
     "OTR": "OTR",
     "STV": "CORRECTOR_V",
@@ -284,7 +286,7 @@ def _map_type(excel_type, format_version=1):
 def _build_parameters(etype, row):
     """Build the parameters dict for an element."""
     params = {}
-    if etype in ("QPF", "QPD"):
+    if etype in ("QPF", "QPD", "AMG"):
         current = row.get("Current (A)")
         if pd.notna(current):
             params["current_a"] = float(current)
