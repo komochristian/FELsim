@@ -1,9 +1,12 @@
+import logging
 import pandas as pd
 import numpy as np
 import os
 from typing import Optional, List
-from beamline import (driftLattice, qpfLattice, qpdLattice, 
-                     dipole, dipole_wedge)
+from beamline import (driftLattice, qpfLattice, qpdLattice,
+                     dipole, dipole_wedge, alphaMagnetLattice)
+
+logger = logging.getLogger(__name__)
 
 
 class ExcelElements:
@@ -29,14 +32,12 @@ class ExcelElements:
                      'Element name', 'Channel #', 'Label', 'Sector', 'Element']
         
         # Column name mapping
-        self.columnReplaceHandler = {}
-        for i in range(len(OLDCOLUMNS)):
-            self.columnReplaceHandler.update({OLDCOLUMNS[i]: self.COLUMNS[i]})
+        self.columnReplaceHandler = dict(zip(OLDCOLUMNS, self.COLUMNS))
         
         # Try loading as Excel first, fall back to dictionary format
         try:
             self.load_excel_lattice(file_path)
-        except:
+        except (FileNotFoundError, ValueError, KeyError):
             self.load_dictionary_lattice(file_path)
     
     def load_dictionary_lattice(self, beamlineJson):
@@ -63,6 +64,11 @@ class ExcelElements:
         except Exception as e:
             raise ValueError(f"Failed to load Excel file '{file_path}': {str(e)}") from e
         
+        if len(df.columns) != len(self.COLUMNS):
+            raise ValueError(
+                f"Excel file has {len(df.columns)} columns, expected {len(self.COLUMNS)}. "
+                f"Check that the lattice file matches the expected format."
+            )
         df.columns = self.COLUMNS
         df['Channel'] = pd.to_numeric(df['Channel'], errors='coerce')
         self.df = df
@@ -120,14 +126,20 @@ class ExcelElements:
             elif element == "QPD":
                 beamline.append(qpdLattice(current=current, length=(z_end - z_sta), name=label))
             elif element == "DPH":
-                beamline.append(dipole(length=curvature, angle=angle, name=label))
+                beamline.append(dipole(length=curvature, angle=angle,
+                                       pole_gap=pole_gap if pole_gap > 0 else None, name=label))
             elif element == "DPW":
                 beamline.append(dipole_wedge(length=gap_wedge, angle=angle_wedge,
                                             dipole_length=curvature, dipole_angle=angle,
-                                            pole_gap=pole_gap, enge_fct=enge_fct, name=label))
+                                            pole_gap=pole_gap if pole_gap > 0 else 0.014478,
+                                            enge_fct=enge_fct, name=label))
+            elif element == "AMG":
+                beamline.append(alphaMagnetLattice(current=current, name=label))
+            elif element == "UND":
+                beamline.append(driftLattice(z_end - z_sta, name=label))
             else:
-                # Generic drift for undefined elements
                 if (not z_end - z_sta == 0) and (not np.isnan(z_sta)) and (not np.isnan(z_end)):
+                    logger.warning(f"Unknown element type '{element}' at {label} — treating as drift")
                     beamline.append(driftLattice(z_end - z_sta, name=label))
             
             if not np.isnan(z_end):

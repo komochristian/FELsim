@@ -36,6 +36,7 @@ class PhysicalConstants:
         MeV_to_J (float): MeV to Joules conversion [exact]
         f_RF_default (float): Default RF frequency (Hz)
         G_quad_default (float): Default quadrupole gradient (T/A/m)
+        G_alpha_default (float): Alpha magnet midplane gradient (T/A/m)
 
     Examples:
         >>> props = PhysicalConstants.get_particle_properties()
@@ -86,6 +87,7 @@ class PhysicalConstants:
 
     f_RF_default = 2856e6  # Default RF frequency (Hz)
     G_quad_default = 2.694  # Default quadrupole gradient (T/A/m)
+    G_alpha_default = 0.103754  # Alpha magnet midplane gradient (T/A/m)
 
     @classmethod
     def get_particle_properties(cls) -> Dict[str, ParticleProperties]:

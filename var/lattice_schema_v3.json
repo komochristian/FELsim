@@ -118,6 +118,7 @@
         "QUADRUPOLE", "QPF", "QPD",
         "DIPOLE", "DPH",
         "DIPOLE_WEDGE", "DPW",
+        "ALPHA_MAGNET", "AMG",
         "SOLENOID", "SOL",
         "RF_CAVITY", "RFC",
         "SEXTUPOLE", "SXT",

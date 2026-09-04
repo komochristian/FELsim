@@ -2,7 +2,7 @@
 
 Version 2.0
 
-> See also: the v3 format specification for format_version 3
+> See also: [lattice_specification_v3.md](lattice_specification_v3.md) for format_version 3
 > extensions (MagneticMultipoleP, BendP).
 
 ## Overview
@@ -278,11 +278,36 @@ A dipole with wedge pole faces is represented as: DIPOLE_WEDGE (entrance) → DI
 
 #### RF_CAVITY
 
-| Parameter      | Type  | Required | Description                    |
-|----------------|-------|----------|--------------------------------|
-| `voltage_mv`   | float | yes      | Peak voltage in MV             |
-| `frequency_hz` | float | yes      | RF frequency in Hz             |
-| `phase_deg`    | float | yes      | RF phase in degrees            |
+| Parameter            | Type  | Required | Description                                                |
+|----------------------|-------|----------|------------------------------------------------------------|
+| `frequency_hz`       | float | yes      | RF frequency in Hz                                          |
+| `phase_deg`          | float | no       | RF phase in degrees (default 0.0, adapter-specific crest)   |
+| `voltage_mv`         | float | one of   | Peak total voltage in MV                                    |
+| `gradient_mv_per_m`  | float | one of   | Peak on-axis gradient in MV/m (exactly one of voltage/grad) |
+| `structure_type`     | str   | no       | `"TW"` \| `"SW"` \| `"RFCA"` (default `"TW"`)               |
+| `phase_advance_deg`  | float | no       | Cell-to-cell phase advance in degrees (TW/SW, default 120°) |
+| `n_cells`            | float | no       | Number of cells (TW/SW); auto-derived if omitted            |
+| `cell_length_m`      | float | no       | Explicit cell length (SW only); default synchronous β_wave=1|
+
+In FELsim's native tracking RF_CAVITY behaves as a drift. True acceleration
+and phase-slippage are modeled only by downstream adapters (RF-Track,
+elegant). `structure_type="RFCA"` has no direct RF-Track equivalent and is
+approximated as TW with a warning.
+
+#### ALPHA_MAGNET
+
+| Parameter            | Type  | Required | Description                                      |
+|----------------------|-------|----------|--------------------------------------------------|
+| `current`            | float | yes      | Coil current in A                                |
+| `gradient_per_amp`   | float | no       | Midplane gradient calibration in T/m per A       |
+
+Ideal linear midplane field B_y = g x. The first-order map is closed form
+(no field table): horizontal block is -I composed with a drift of s/2,
+achromatic; R56 = s (1/gamma^2 - 1/2) in momentum coordinates. Default
+calibration is the UH magnet, 0.103754 T/m per A. `length` is the orbit
+path length, recomputed when the beam energy changes. Aliases: AMG.
+
+A stock COSY INFINITY element is in `backend/test/transport/alpha_element.fox`.
 
 #### SEXTUPOLE
 
