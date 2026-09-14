@@ -20,12 +20,12 @@ def main():
     # 1. SETUP THE ENVIRONMENT WITH SIGMA TARGETS
     # ==========================================
     dummy_target_sigma = {
-        "sigma_x": 8.5,  # Targeted horizontal standard deviation size
-        "sigma_y": 5.4,   # Targeted vertical standard deviation size
+        "sigma_x": 3.1,  # Targeted horizontal standard deviation size
+        "sigma_y": 5.7,   # Targeted vertical standard deviation size
     }
     # ------- GOALS -----------------------------
-    # beamline[1]: 0.1
-    # beamline[3]: -0.9
+    # beamline[1]: -0.17
+    # beamline[3]: -0.35
 
     dummy_beamline = [
         driftLattice(length = 0.5),

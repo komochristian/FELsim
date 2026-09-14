@@ -20,13 +20,13 @@ print("\n--- Running the Trained Agent ---")
 # 1. Recreate the environment configuration used during training
 # (Make sure setup matches the training environment exactly)
 dummy_target_sigma = {
-    "sigma_x": 4.5,
-    "sigma_y": 5.6
+    "sigma_x": 3.1,
+    "sigma_y": 5.7
 }
 
 # ------- GOALS -----------------------------
-# beamline[1]: -0.1
-# beamline[3]: -0.5
+# beamline[1]: -0.17
+# beamline[3]: -0.35
 
 dummy_beamline = [
     driftLattice(length=0.5),
