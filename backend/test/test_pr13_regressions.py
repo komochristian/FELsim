@@ -183,7 +183,11 @@ def test_lattice_file_rf_cavity_still_needs_a_field():
 
 def test_alpha_magnet_round_trips_through_gui(client, segment_info):
     # App.jsx sums row lengths for s positions, so every element needs one
-    assert 'length' in segment_info['alphaMagnetLattice']
+    advertised = segment_info['alphaMagnetLattice']
+    assert advertised['length'] == pytest.approx(
+        alphaMagnetLattice(advertised['current']).length)
+    # length is keyword-only, so the label keeps its position from before
+    assert alphaMagnetLattice(10.0, None, 'AM1').name == 'AM1'
     # The quad row fills every column, as some row of a real sheet does
     sheet = [
         {' Nomenclature': 'TST.AMG.001', 'z start (m)': 0.5, 'z mid (m)': 0.55,
@@ -205,6 +209,38 @@ def test_alpha_magnet_round_trips_through_gui(client, segment_info):
         'beamlineData': frontend_payload(rows), 'num_particles': 200,
         'beamType': 'electron', 'interval': 0.5, 'kineticE': 45,
         'spread_data': {'beam_setup': 'import', 'data': None}})
+    assert r.status_code == 200, r.text
+
+
+def test_plot_parameters_refuses_stale_alpha_length(client, segment_info):
+    # The table keeps an alpha magnet's length when its current is edited, so
+    # positions after it no longer match the line the backend simulates.
+    names = ['driftLattice', 'alphaMagnetLattice', 'driftLattice', 'qpfLattice',
+             'driftLattice']
+    rows = frontend_rows(segment_info, names, [0.3, None, 0.3, None, 0.5])
+
+    def scan(rows):
+        return client.post('/plot-parameters', json={
+            'beam_index': 3, 'target_parameter': 'current',
+            'target_s_pos': rows[-1]['startPos'] + 0.1,
+            'beamline_data': frontend_payload(rows),
+            'min': 0.5, 'max': 1.5, 'custom_step': 0.5,
+            'spread_data': {'beam_setup': 'import', 'data': None},
+            'num_particles': 200})
+
+    r = scan(rows)
+    assert r.status_code == 200, r.text
+
+    rows[1]['current'] = 10.0
+    r = scan(rows)
+    assert r.status_code == 400
+    real = alphaMagnetLattice(10.0).length
+    assert 'alphaMagnetLattice' in r.json()['detail']
+    assert f'{real:.9g}' in r.json()['detail']
+
+    rows = frontend_rows(segment_info, names, [0.3, real, 0.3, None, 0.5])
+    rows[1]['current'] = 10.0
+    r = scan(rows)
     assert r.status_code == 200, r.text
 
 

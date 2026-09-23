@@ -1044,12 +1044,12 @@ class alphaMagnetLattice(lattice):
     gradient_per_amp : float, optional
         Midplane gradient calibration in T/m per A. Defaults to the UH alpha
         magnet value.
+    name : str, optional
+        Element label.
     length : float, optional
         Ignored; the path length always follows from the current and the
         rigidity. Accepted so that element tables that carry a length for
         every row, such as the web GUI's, can hand the element back.
-    name : str, optional
-        Element label.
     """
 
     __slots__ = ('current', 'gradient_per_amp')
@@ -1063,7 +1063,7 @@ class alphaMagnetLattice(lattice):
     THETA_ALPHA_DEG = 40.70991  # entry angle from the inward normal
     G_PER_AMP = PhysicalConstants.G_alpha_default
 
-    def __init__(self, current: float, gradient_per_amp: float = None, length=None, name=None):
+    def __init__(self, current: float, gradient_per_amp: float = None, name=None, *, length=None):
         # The path length follows from the rigidity, which the base constructor
         # sets up, so the placeholder below is replaced by _sync_length().
         super().__init__(1.0, name=name)
