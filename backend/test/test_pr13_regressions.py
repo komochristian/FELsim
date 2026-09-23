@@ -171,6 +171,9 @@ def test_dipole_pole_gap_and_enge_fct_are_stored(client, segment_info):
             'spread_data': {'beam_setup': 'import', 'data': None},
             'num_particles': 200})
         assert r.status_code == 200, f'{name}.{param}: {r.text}'
+        betas = [{d['twiss_parameter']: d for d in p['data']}['beta']['y']
+                 for p in r.json()]
+        assert len(set(betas)) == 1, f'{name}.{param}: {betas}'
 
 
 def test_rf_cavity_from_advertised_defaults(client, segment_info):
@@ -266,6 +269,32 @@ def test_plot_parameters_refuses_stale_alpha_length(client, segment_info):
     rows[1]['current'] = 10.0
     r = scan(rows)
     assert r.status_code == 200, r.text
+
+
+def test_scan_over_alpha_current_follows_the_current(client, segment_info):
+    # /plot-parameters sets each scan value with setattr, which leaves the
+    # stored path length alone; the map has to follow the current regardless.
+    particles = np.random.default_rng(3).normal(size=(100, 6))
+    alpha = alphaMagnetLattice(10.0)
+    alpha.current = 12.0
+    np.testing.assert_array_equal(alpha.useMatrice(particles),
+                                  alphaMagnetLattice(12.0).useMatrice(particles))
+
+    names = ['driftLattice', 'alphaMagnetLattice', 'driftLattice']
+    rows = frontend_rows(segment_info, names,
+                         [0.3, alphaMagnetLattice(10.0).length, 0.5])
+    rows[1]['current'] = 10.0
+    r = client.post('/plot-parameters', json={
+        'beam_index': 1, 'target_parameter': 'current',
+        'target_s_pos': rows[-1]['startPos'] + 0.4,
+        'beamline_data': frontend_payload(rows),
+        'min': 10, 'max': 12, 'custom_step': 1,
+        'spread_data': {'beam_setup': 'import', 'data': None},
+        'num_particles': 200})
+    assert r.status_code == 200, r.text
+    betas = [{d['twiss_parameter']: d for d in p['data']}['beta']['x']
+             for p in r.json()]
+    assert len(betas) == 3 and len(set(betas)) == 3
 
 
 def test_sliced_tracking_keeps_alpha_magnet_whole():
