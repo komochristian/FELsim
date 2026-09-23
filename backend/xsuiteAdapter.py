@@ -225,8 +225,8 @@ class XsuiteAdapter(SimulatorBase):
         elif p.get('voltage_mv') is not None and L > 0:
             E0_vpm = float(p['voltage_mv']) * 1e6 / L
         else:
-            logger.warning("Xsuite RF_CAVITY missing gradient/voltage; drift")
-            return [xt.Drift(length=L)], 0.0, 0
+            raise ValueError("Xsuite RF_CAVITY: provide 'gradient_mv_per_m', or "
+                             "'voltage_mv' with a non-zero length")
         l_sync = PhysicalConstants.C * phi_adv / (2.0 * np.pi * freq)
         n_cells = p.get('n_cells')
         n_cells = int(round(L / l_sync)) if not n_cells else int(round(float(n_cells)))

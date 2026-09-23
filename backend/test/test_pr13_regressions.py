@@ -154,7 +154,8 @@ def test_rf_cavity_from_advertised_defaults(client, segment_info):
     defaults = {k: v for k, v in segment_info['rfCavityLattice'].items()
                 if k not in PRIVATEVARS}
     cav = rfCavityLattice(**defaults)
-    assert cav.voltage_mv == 0.0 and cav.gradient_mv_per_m == 0.0
+    assert cav.voltage_mv is None and cav.gradient_mv_per_m is None
+    assert 'no field' in str(cav)
 
     rows = frontend_rows(segment_info,
                          ['driftLattice', 'rfCavityLattice', 'driftLattice'],
@@ -306,6 +307,27 @@ def test_rftrack_raises_on_alpha_magnet():
                           driftLattice(0.1)])
     with pytest.raises(NotImplementedError):
         sim.set_beamline([BeamlineElement('ALPHA_MAGNET', 0.3, current=5.0)])
+
+
+def test_rftrack_refuses_rf_cavity_without_field():
+    pytest.importorskip('RF_Track')
+    from rftrackAdapter import RFTrackAdapter
+    sim = RFTrackAdapter(beam_energy=45.0)
+    with pytest.raises(ValueError, match='gradient_mv_per_m'):
+        sim.set_beamline([driftLattice(0.1), rfCavityLattice(3.0, 2856e6),
+                          driftLattice(0.1)])
+
+
+def test_xsuite_refuses_rf_cavity_without_field():
+    pytest.importorskip('xtrack')
+    pytest.importorskip('xpart')
+    from xsuiteAdapter import XsuiteAdapter
+    sim = XsuiteAdapter(beam_energy=45.0)
+    sim.set_beamline([driftLattice(0.1), rfCavityLattice(3.0, 2856e6),
+                      driftLattice(0.1)])
+    particles = np.random.default_rng(3).normal(scale=1e-3, size=(20, 6))
+    with pytest.raises(ValueError, match='gradient_mv_per_m'):
+        sim.simulate(particles)
 
 
 def test_xsuite_raises_on_alpha_magnet():

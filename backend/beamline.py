@@ -1189,7 +1189,9 @@ class rfCavityLattice(lattice):
         RF phase in degrees (adapter-specific convention).
     voltage_mv : float, optional
         Peak total voltage in MV. If omitted, derived from gradient * length.
-        If neither voltage nor gradient is given, the cavity is unpowered.
+        If neither voltage nor gradient is given, both stay None: FELsim
+        tracks the cavity as a drift either way, and the RF-Track and Xsuite
+        adapters refuse a cavity without a field.
     gradient_mv_per_m : float, optional
         Peak on-axis accelerating gradient in MV/m. If omitted, derived
         from voltage / length.
@@ -1248,9 +1250,9 @@ class rfCavityLattice(lattice):
                 raise ValueError("rfCavityLattice: cannot derive gradient from voltage with zero length")
             self.gradient_mv_per_m = float(voltage_mv) / length
         else:
-            # Unpowered structure, e.g. a cavity just added in the GUI
-            self.voltage_mv = 0.0
-            self.gradient_mv_per_m = 0.0
+            # No field yet, e.g. a cavity just added in the GUI
+            self.voltage_mv = None
+            self.gradient_mv_per_m = None
 
     def useMatrice(self, val, **kwargs):
         if not self.chromatic:
@@ -1298,9 +1300,10 @@ class rfCavityLattice(lattice):
         ])
 
     def __str__(self):
+        field = ("no field" if self.gradient_mv_per_m is None
+                 else f"E0={self.gradient_mv_per_m:.1f} MV/m")
         return (f"RF cavity ({self.structure_type}) {self.length} m, "
-                f"f={self.frequency_hz/1e9:.3f} GHz, "
-                f"E0={self.gradient_mv_per_m:.1f} MV/m, φ={self.phase_deg}°")
+                f"f={self.frequency_hz/1e9:.3f} GHz, {field}, φ={self.phase_deg}°")
 
 
 class beamline:
