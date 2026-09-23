@@ -288,13 +288,17 @@ def test_beamline_builder_without_file():
         BeamlineBuilder('no_such_beamline.xlsx')
 
 
-def test_twiss_finite_with_zero_momentum_spread():
+@pytest.mark.parametrize('offset', [0.0, 0.3])
+def test_twiss_finite_with_zero_momentum_spread(offset):
     from ebeam import beam
     rng = np.random.default_rng(1)
     dist = rng.normal(size=(500, 6))
-    dist[:, 5] = 0.0
+    dist[:, 5] = offset
     _, _, twiss = beam().cal_twiss(dist)
-    assert np.all(np.isfinite(twiss.loc[['x', 'y']].to_numpy()))
+    transverse = twiss.loc[['x', 'y']]
+    assert np.all(np.isfinite(transverse.to_numpy()))
+    # a constant offset leaves only roundoff in the variance
+    assert np.all(transverse.iloc[:, 4:6].to_numpy() == 0.0)
 
 
 def test_rftrack_raises_on_alpha_magnet():

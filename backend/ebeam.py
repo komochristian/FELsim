@@ -133,7 +133,9 @@ class beam:
 
             if i < 2:
                  # Transverse planes with dispersion
-                if sigma_delta > 0:
+                # Without momentum spread (a constant offset leaves only
+                # roundoff in the variance) the dispersion is taken as zero
+                if np.ptp(dist_6d[:, 5]) > 0:
                     D = dist_cov[idx, 5] / sigma_delta
                     D_prime = dist_cov[idx_prime, 5] / sigma_delta
                 else:
