@@ -23,6 +23,7 @@ class lattice:
         '_fringe_params_front', '_fringe_params_end',
     )
     color = 'none'  # Color of beamline element when graphed
+    sliceable = True  # False: sliced tracking applies the whole map in one step
 
     def __init__(self, length, fringeType=None, name=None):
         '''
@@ -1043,12 +1044,17 @@ class alphaMagnetLattice(lattice):
     gradient_per_amp : float, optional
         Midplane gradient calibration in T/m per A. Defaults to the UH alpha
         magnet value.
+    length : float, optional
+        Ignored; the path length always follows from the current and the
+        rigidity. Accepted so that element tables that carry a length for
+        every row, such as the web GUI's, can hand the element back.
     name : str, optional
         Element label.
     """
 
     __slots__ = ('current', 'gradient_per_amp')
     color = "darkorange"
+    sliceable = False
 
     S_COEFF = 4.642099440404    # s*sqrt(k)
     CC = -0.737113977807        # R33 = R44
@@ -1057,7 +1063,7 @@ class alphaMagnetLattice(lattice):
     THETA_ALPHA_DEG = 40.70991  # entry angle from the inward normal
     G_PER_AMP = PhysicalConstants.G_alpha_default
 
-    def __init__(self, current: float, gradient_per_amp: float = None, name=None):
+    def __init__(self, current: float, gradient_per_amp: float = None, length=None, name=None):
         # The path length follows from the rigidity, which the base constructor
         # sets up, so the placeholder below is replaced by _sync_length().
         super().__init__(1.0, name=name)
@@ -1183,6 +1189,7 @@ class rfCavityLattice(lattice):
         RF phase in degrees (adapter-specific convention).
     voltage_mv : float, optional
         Peak total voltage in MV. If omitted, derived from gradient * length.
+        If neither voltage nor gradient is given, the cavity is unpowered.
     gradient_mv_per_m : float, optional
         Peak on-axis accelerating gradient in MV/m. If omitted, derived
         from voltage / length.
@@ -1241,9 +1248,9 @@ class rfCavityLattice(lattice):
                 raise ValueError("rfCavityLattice: cannot derive gradient from voltage with zero length")
             self.gradient_mv_per_m = float(voltage_mv) / length
         else:
-            raise ValueError(
-                "rfCavityLattice: provide voltage_mv or gradient_mv_per_m"
-            )
+            # Unpowered structure, e.g. a cavity just added in the GUI
+            self.voltage_mv = 0.0
+            self.gradient_mv_per_m = 0.0
 
     def useMatrice(self, val, **kwargs):
         if not self.chromatic:

@@ -123,6 +123,7 @@ class XsuiteAdapter(SimulatorBase):
             'driftLattice': 'DRIFT', 'qpfLattice': 'QUAD_F',
             'qpdLattice': 'QUAD_D', 'dipole': 'DIPOLE',
             'dipole_wedge': 'DIPOLE_WEDGE', 'rfCavityLattice': 'RF_CAVITY',
+            'alphaMagnetLattice': 'ALPHA_MAGNET',
         }
         etype = type_map.get(cls_name, cls_name.upper())
         params = {}
@@ -296,6 +297,10 @@ class XsuiteAdapter(SimulatorBase):
             return [bend]
         if etype in ('DIPOLE_WEDGE', 'DPW'):
             return [self._dpw_edge(elem)]
+        if etype in ('ALPHA_MAGNET', 'AMG'):
+            raise NotImplementedError(
+                "Xsuite adapter has no alpha magnet element; track the "
+                "section containing it with the COSY or FELsim backend")
         logger.warning("Xsuite: unknown element %s; treated as drift", etype)
         return [xt.Drift(length=length)]
 
