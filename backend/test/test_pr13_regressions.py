@@ -197,10 +197,19 @@ def test_rf_cavity_from_advertised_defaults(client, segment_info):
 
 
 def test_lattice_file_rf_cavity_still_needs_a_field():
-    import json
     from latticeLoaderBase import LatticeLoaderBase
     from tracked_dict import TrackedDict
-    data = json.loads((BACKEND.parent / 'var' / 'slac_linac.json').read_text())
+    element = {'name': 'TW', 'type': 'RFCavity', 's_start_m': 0.0,
+               's_end_m': 3.048, 'length_m': 3.048,
+               'parameters': {'structure_type': 'TW', 'frequency_hz': 2856e6,
+                              'phase_deg': 0.0, 'gradient_mv_per_m': 13.3}}
+    data = {'beamline': {
+        'metadata': {'format_version': 2, 'name': 'rf', 'version': '1.0',
+                     'reference_energy_mev': 1.0, 'particle_type': 'electron'},
+        'beam_parameters': {'particle': {'type': 'electron', 'kinetic_energy_mev': 1.0,
+                                         'mass_mev': 0.51099895, 'charge_e': -1},
+                            'rf_frequency_hz': 2856e6},
+        'elements': [element]}}
     line = LatticeLoaderBase(TrackedDict(data)).create_beamline()
     assert line[0].gradient_mv_per_m == pytest.approx(13.3)
     del data['beamline']['elements'][0]['parameters']['gradient_mv_per_m']
