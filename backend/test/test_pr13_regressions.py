@@ -297,21 +297,21 @@ def test_sliced_tracking_keeps_alpha_magnet_whole():
 
 def test_cosy_simulator_constructs():
     # Construction only; no COSY INFINITY binary is needed.
-    cosySimulator = pytest.importorskip('cosySimulator')
+    import cosySimulator
     sim = cosySimulator.COSYSimulator(excel_path=None, config_dict={})
     assert sim.cosy_dist_dir in sim.search_dirs
     sim = cosySimulator.COSYSimulator(excel_path=None, config_dict={},
                                       cosy_dist_dir='/opt/cosy')
     assert sim.cosy_dist_dir == '/opt/cosy'
 
-    cosyAdapter = pytest.importorskip('cosyAdapter')
+    import cosyAdapter
     adapter = cosyAdapter.COSYAdapter(mode='transfer_matrix')
     assert adapter.get_native_simulator().excel_path is None
 
 
 def test_cosy_run_creates_output_dir(tmp_path, monkeypatch):
     # The first file copied into the output directory used to need it to exist
-    cosySimulator = pytest.importorskip('cosySimulator')
+    import cosySimulator
     sim = cosySimulator.COSYSimulator(excel_path=None, config_dict={})
     fake = tmp_path / 'cosy'
     fake.write_text('')
