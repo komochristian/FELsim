@@ -34,10 +34,9 @@ class ExcelElements:
         # Column name mapping
         self.columnReplaceHandler = dict(zip(OLDCOLUMNS, self.COLUMNS))
         
-        # Try loading as Excel first, fall back to dictionary format
-        try:
+        if isinstance(file_path, (str, os.PathLike)):
             self.load_excel_lattice(file_path)
-        except (FileNotFoundError, ValueError, KeyError):
+        else:
             self.load_dictionary_lattice(file_path)
     
     def load_dictionary_lattice(self, beamlineJson):
