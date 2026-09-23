@@ -148,6 +148,29 @@ def test_excel_to_beamline_frontend_json(client):
     names = [seg['name'] for seg in r.json()]
     assert names == ['driftLattice', 'qpfLattice', 'driftLattice',
                      'dipole_wedge', 'dipole']
+    wedge, dph = r.json()[3:]
+    assert wedge['enge_fct'] == pytest.approx(
+        [56.49, -50.79, 19.32, -3.621, 0.3315, -0.01193])
+    assert dph['pole_gap'] == pytest.approx(0.0127)
+
+
+def test_dipole_pole_gap_and_enge_fct_are_stored(client, segment_info):
+    assert beamline.dipole(pole_gap=0.0127).pole_gap == 0.0127
+    assert beamline.dipole().pole_gap is None
+    assert beamline.dipole_wedge(0.01, enge_fct=[1.0, 2.0]).enge_fct == [1.0, 2.0]
+
+    # The scan dialog offers both; FELsim's matrices do not use them
+    for name, param in (('dipole', 'pole_gap'), ('dipole_wedge', 'enge_fct')):
+        rows = frontend_rows(segment_info, ['driftLattice', name, 'driftLattice'],
+                             [0.3, None, 0.3])
+        r = client.post('/plot-parameters', json={
+            'beam_index': 1, 'target_parameter': param,
+            'target_s_pos': rows[-1]['startPos'] + 0.1,
+            'beamline_data': frontend_payload(rows),
+            'min': 0.01, 'max': 0.02, 'custom_step': 0.01,
+            'spread_data': {'beam_setup': 'import', 'data': None},
+            'num_particles': 200})
+        assert r.status_code == 200, f'{name}.{param}: {r.text}'
 
 
 def test_rf_cavity_from_advertised_defaults(client, segment_info):
@@ -278,6 +301,28 @@ def test_cosy_simulator_constructs():
     cosyAdapter = pytest.importorskip('cosyAdapter')
     adapter = cosyAdapter.COSYAdapter(mode='transfer_matrix')
     assert adapter.get_native_simulator().excel_path is None
+
+
+def test_cosy_run_creates_output_dir(tmp_path, monkeypatch):
+    # The first file copied into the output directory used to need it to exist
+    cosySimulator = pytest.importorskip('cosySimulator')
+    sim = cosySimulator.COSYSimulator(excel_path=None, config_dict={})
+    fake = tmp_path / 'cosy'
+    fake.write_text('')
+    monkeypatch.setattr(sim, '_find_file',
+                        lambda name: str(fake) if name == 'cosy' else None)
+
+    class Stop(Exception):
+        pass
+
+    def stop(output_dir):
+        raise Stop
+
+    monkeypatch.setattr(sim, 'generate_input', stop)
+    out = tmp_path / 'fresh' / 'run'
+    with pytest.raises(Stop):
+        sim.run_simulation(output_dir=str(out))
+    assert (out / 'cosy').is_file()
 
 
 def test_beamline_builder_without_file():
