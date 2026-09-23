@@ -288,6 +288,12 @@ def test_sliced_tracking_keeps_alpha_magnet_whole():
                                     rendering=False)
     np.testing.assert_allclose(schem.matrixVariables, whole, rtol=0, atol=1e-12)
 
+    from ebeam import beam
+    _, snapshots, x_axis, _, _ = schem.simulateData(particles, line, False, 0.1)
+    np.testing.assert_allclose(np.asarray(snapshots[x_axis[-1]][3], dtype=float),
+                               np.asarray(beam().getXYZ(whole)[3], dtype=float),
+                               rtol=1e-12, atol=1e-12)
+
 
 def test_cosy_simulator_constructs():
     # Construction only; no COSY INFINITY binary is needed.
