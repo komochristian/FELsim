@@ -595,6 +595,12 @@ class RFTrackAdapter(SimulatorBase):
             elem = self._build_rf_cavity(length, params)
             ap_x = ap_y = self.default_aperture
 
+        elif elem_type in ('ALPHA_MAGNET', 'AMG'):
+            raise NotImplementedError(
+                "RF-Track adapter has no alpha magnet element; track the "
+                "section containing it with the COSY or FELsim backend"
+            )
+
         else:
             self.logger.warning(f"Unknown element type '{elem_type}', using drift")
             elem = rft.Drift(length)
@@ -1407,6 +1413,7 @@ class RFTrackAdapter(SimulatorBase):
             'qpdLattice': 'QUAD_D',
             'dipole': 'DIPOLE',
             'dipole_wedge': 'DIPOLE_WEDGE',
+            'alphaMagnetLattice': 'ALPHA_MAGNET',
             'rfCavityLattice': 'RF_CAVITY',
         }
 

@@ -18,9 +18,12 @@ from physicalConstants import PhysicalConstants
 class lattice:
     __slots__ = (
         'name', 'E', 'E0', 'Q', 'M', 'C', 'f', 'M_AMU', 'k_MeV', 'm_p',
-        'PARTICLES', 'gamma', 'beta', 'unitsF', 'color', 'fringeType',
+        'PARTICLES', 'gamma', 'beta', 'unitsF', 'fringeType',
         'startPos', 'endPos', 'chromatic', 'aperture_x', 'aperture_y', 'length',
+        '_fringe_params_front', '_fringe_params_end',
     )
+    color = 'none'  # Color of beamline element when graphed
+    sliceable = True  # False: sliced tracking applies the whole map in one step
 
     def __init__(self, length, fringeType=None, name=None):
         '''
@@ -49,7 +52,6 @@ class lattice:
         self.gamma = (1 + (self.E / self.E0))
         self.beta = np.sqrt(1 - (1 / (self.gamma ** 2)))
         self.unitsF = 10 ** 6  # Units factor used for conversions from (keV) to (ns)
-        self.color = 'none'  # Color of beamline element when graphed
         self.fringeType = fringeType  # Each segment has no magnetic fringe by default
         self.startPos = None
         self.endPos = None
@@ -244,6 +246,7 @@ class lattice:
 
 class driftLattice(lattice):
     __slots__ = ()
+    color = "white"
 
     def useMatrice(self, val, **kwargs):
         if not self.chromatic:
@@ -270,7 +273,6 @@ class driftLattice(lattice):
             The length of the drift segment in meters.
         '''
         super().__init__(length, name=name)
-        self.color = "white"
 
     def _compute_numeric_matrix(self, length=None, **kwargs):
         '''
@@ -337,6 +339,7 @@ class driftLattice(lattice):
 
 class qpfLattice(lattice):
     __slots__ = ('current', 'G')
+    color = "cornflowerblue"
     BORE_RADIUS_MM = 13.5  # 27 mm bore / 2
 
     def __init__(self, current: float, length: float = 0.0889, fringeType='decay', name=None):
@@ -354,7 +357,6 @@ class qpfLattice(lattice):
         '''
         super().__init__(length, fringeType, name=name)
         self.current = current
-        self.color = "cornflowerblue"
         self.G = 2.694  # Quadrupole focusing strength (T/A/m)
         self.aperture_x = self.BORE_RADIUS_MM
         self.aperture_y = self.BORE_RADIUS_MM
@@ -501,6 +503,7 @@ class qpfLattice(lattice):
 
 class qpdLattice(lattice):
     __slots__ = ('current', 'G')
+    color = "lightcoral"
     BORE_RADIUS_MM = 13.5  # 27 mm bore / 2
 
     def __init__(self, current: float, length: float = 0.0889, fringeType='decay', name=None):
@@ -519,7 +522,6 @@ class qpdLattice(lattice):
         super().__init__(length, fringeType, name=name)
         self.current = current
         self.G = 2.694  # Quadrupole focusing strength (T/A/m)
-        self.color = "lightcoral"
         self.aperture_x = self.BORE_RADIUS_MM
         self.aperture_y = self.BORE_RADIUS_MM
 
@@ -664,7 +666,8 @@ class qpdLattice(lattice):
 
 
 class dipole(lattice):
-    __slots__ = ('angle',)
+    __slots__ = ('angle', 'pole_gap')
+    color = "forestgreen"
 
     def __init__(self, length: float = 0.0889, angle: float = 1.5, fringeType='decay',
                  pole_gap=None, name=None):
@@ -682,8 +685,8 @@ class dipole(lattice):
             Pole gap in meters. If provided, sets vertical aperture to ±gap/2.
         '''
         super().__init__(length, fringeType, name=name)
-        self.color = "forestgreen"
         self.angle = angle
+        self.pole_gap = pole_gap
         if pole_gap is not None:
             self.aperture_y = pole_gap * 1000 / 2  # m → mm half-gap
 
@@ -831,7 +834,8 @@ class dipole(lattice):
 
 
 class dipole_wedge(lattice):
-    __slots__ = ('angle', 'dipole_length', 'dipole_angle', 'pole_gap')
+    __slots__ = ('angle', 'dipole_length', 'dipole_angle', 'pole_gap', 'enge_fct')
+    color = "lightgreen"
 
     def __init__(self, length, angle: float = 1, dipole_length: float = 0.0889, dipole_angle: float = 1.5,
                  pole_gap=0.014478, enge_fct=0, fringeType='decay', name=None):
@@ -860,11 +864,11 @@ class dipole_wedge(lattice):
         fringeType :
         '''
         super().__init__(length, fringeType, name=name)
-        self.color = "lightgreen"
         self.angle = angle
         self.dipole_length = dipole_length
         self.dipole_angle = dipole_angle
         self.pole_gap = pole_gap
+        self.enge_fct = enge_fct
         if pole_gap > 0:
             self.aperture_y = pole_gap * 1000 / 2  # m → mm half-gap
 
@@ -1042,9 +1046,15 @@ class alphaMagnetLattice(lattice):
         magnet value.
     name : str, optional
         Element label.
+    length : float, optional
+        Ignored; the path length always follows from the current and the
+        rigidity. Accepted so that element tables that carry a length for
+        every row, such as the web GUI's, can hand the element back.
     """
 
     __slots__ = ('current', 'gradient_per_amp')
+    color = "darkorange"
+    sliceable = False
 
     S_COEFF = 4.642099440404    # s*sqrt(k)
     CC = -0.737113977807        # R33 = R44
@@ -1053,14 +1063,13 @@ class alphaMagnetLattice(lattice):
     THETA_ALPHA_DEG = 40.70991  # entry angle from the inward normal
     G_PER_AMP = PhysicalConstants.G_alpha_default
 
-    def __init__(self, current: float, gradient_per_amp: float = None, name=None):
+    def __init__(self, current: float, gradient_per_amp: float = None, name=None, *, length=None):
         # The path length follows from the rigidity, which the base constructor
         # sets up, so the placeholder below is replaced by _sync_length().
         super().__init__(1.0, name=name)
         self.current = current
         self.gradient_per_amp = (self.G_PER_AMP if gradient_per_amp is None
                                  else gradient_per_amp)
-        self.color = "darkorange"
         self._sync_length()
 
     @property
@@ -1180,6 +1189,9 @@ class rfCavityLattice(lattice):
         RF phase in degrees (adapter-specific convention).
     voltage_mv : float, optional
         Peak total voltage in MV. If omitted, derived from gradient * length.
+        If neither voltage nor gradient is given, both stay None: FELsim
+        tracks the cavity as a drift either way, and the RF-Track and Xsuite
+        adapters refuse a cavity without a field.
     gradient_mv_per_m : float, optional
         Peak on-axis accelerating gradient in MV/m. If omitted, derived
         from voltage / length.
@@ -1201,13 +1213,13 @@ class rfCavityLattice(lattice):
         'frequency_hz', 'phase_deg', 'voltage_mv', 'gradient_mv_per_m',
         'structure_type', 'phase_advance_deg', 'n_cells',
     )
+    color = 'gold'
 
     def __init__(self, length, frequency_hz, phase_deg=0.0,
                  voltage_mv=None, gradient_mv_per_m=None,
                  structure_type='TW', phase_advance_deg=120.0,
                  n_cells=None, name=None):
         super().__init__(length, name=name)
-        self.color = 'gold'
         self.frequency_hz = float(frequency_hz)
         self.phase_deg = float(phase_deg)
         stype = str(structure_type).upper()
@@ -1238,9 +1250,9 @@ class rfCavityLattice(lattice):
                 raise ValueError("rfCavityLattice: cannot derive gradient from voltage with zero length")
             self.gradient_mv_per_m = float(voltage_mv) / length
         else:
-            raise ValueError(
-                "rfCavityLattice: provide voltage_mv or gradient_mv_per_m"
-            )
+            # No field yet, e.g. a cavity just added in the GUI
+            self.voltage_mv = None
+            self.gradient_mv_per_m = None
 
     def useMatrice(self, val, **kwargs):
         if not self.chromatic:
@@ -1288,19 +1300,20 @@ class rfCavityLattice(lattice):
         ])
 
     def __str__(self):
+        field = ("no field" if self.gradient_mv_per_m is None
+                 else f"E0={self.gradient_mv_per_m:.1f} MV/m")
         return (f"RF cavity ({self.structure_type}) {self.length} m, "
-                f"f={self.frequency_hz/1e9:.3f} GHz, "
-                f"E0={self.gradient_mv_per_m:.1f} MV/m, φ={self.phase_deg}°")
+                f"f={self.frequency_hz/1e9:.3f} GHz, {field}, φ={self.phase_deg}°")
 
 
 class beamline:
     class fringeField(lattice):
         __slots__ = ('B',)
+        color = 'brown'
 
         def __init__(self, length, fieldStrength, current=0):
             super().__init__(length)
             self.B = fieldStrength
-            self.color = 'brown'
 
         def _compute_numeric_matrix(self, length=None, current=None, **kwargs):
             '''

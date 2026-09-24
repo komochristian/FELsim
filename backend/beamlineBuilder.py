@@ -9,8 +9,8 @@ from loggingConfig import get_logger_with_fallback
 
 
 class BeamlineBuilder:
-    def __init__(self, excel_path, json_config_path=None, debug=None):
-        if not os.path.exists(excel_path):
+    def __init__(self, excel_path=None, json_config_path=None, debug=None):
+        if excel_path is not None and not os.path.exists(excel_path):
             raise FileNotFoundError(f"Excel beamline file not found: {excel_path}")
 
         self.excel_path = excel_path

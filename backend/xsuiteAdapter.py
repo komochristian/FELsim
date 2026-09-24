@@ -123,6 +123,7 @@ class XsuiteAdapter(SimulatorBase):
             'driftLattice': 'DRIFT', 'qpfLattice': 'QUAD_F',
             'qpdLattice': 'QUAD_D', 'dipole': 'DIPOLE',
             'dipole_wedge': 'DIPOLE_WEDGE', 'rfCavityLattice': 'RF_CAVITY',
+            'alphaMagnetLattice': 'ALPHA_MAGNET',
         }
         etype = type_map.get(cls_name, cls_name.upper())
         params = {}
@@ -224,8 +225,8 @@ class XsuiteAdapter(SimulatorBase):
         elif p.get('voltage_mv') is not None and L > 0:
             E0_vpm = float(p['voltage_mv']) * 1e6 / L
         else:
-            logger.warning("Xsuite RF_CAVITY missing gradient/voltage; drift")
-            return [xt.Drift(length=L)], 0.0, 0
+            raise ValueError("Xsuite RF_CAVITY: provide 'gradient_mv_per_m', or "
+                             "'voltage_mv' with a non-zero length")
         l_sync = PhysicalConstants.C * phi_adv / (2.0 * np.pi * freq)
         n_cells = p.get('n_cells')
         n_cells = int(round(L / l_sync)) if not n_cells else int(round(float(n_cells)))
@@ -296,6 +297,10 @@ class XsuiteAdapter(SimulatorBase):
             return [bend]
         if etype in ('DIPOLE_WEDGE', 'DPW'):
             return [self._dpw_edge(elem)]
+        if etype in ('ALPHA_MAGNET', 'AMG'):
+            raise NotImplementedError(
+                "Xsuite adapter has no alpha magnet element; track the "
+                "section containing it with the COSY or FELsim backend")
         logger.warning("Xsuite: unknown element %s; treated as drift", etype)
         return [xt.Drift(length=length)]
 

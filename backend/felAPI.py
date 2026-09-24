@@ -201,6 +201,10 @@ def getBeamSegmentInfo():
             )
             params_info[name] = default
 
+        if 'length' in params_info and params_info['length'] is None:
+            # Derived length (alpha magnet); the table sums lengths into s positions
+            params_info['length'] = cls(**params_info).length
+
         params_info['color'] = cls.color  # Manually add class info about beam's color
     
         beamSegInfo[cls.__name__] = params_info
@@ -234,11 +238,27 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
     try:
         beamline_class = importlib.import_module(moduleName)
         beamlist = []
+        tableLengths = []
         beamlineData = graphParams.beamline_data
         for segment in beamlineData:
             if hasattr(beamline_class, segment.segmentName):
                 segmentClass = getattr(beamline_class, segment.segmentName)
                 beamlist.append(segmentClass(**segment.parameters))
+                tableLengths.append(segment.parameters.get('length'))
+
+        # target_s_pos comes from the table's lengths. An element whose length is
+        # derived (the alpha magnet) keeps its table length when its current is
+        # edited, and the position would then land in the wrong element.
+        tableEnd = 0.0
+        for i, (tableLength, seg) in enumerate(zip(tableLengths, beamlist)):
+            if tableEnd >= graphParams.target_s_pos:
+                break
+            if tableLength is None or not math.isclose(tableLength, seg.length, rel_tol=0, abs_tol=1e-6):
+                raise ValueError(
+                    f"{type(seg).__name__} at index {i} is {seg.length:.9g} m long, "
+                    f"but the table gives it {tableLength} m, so the scan position does not "
+                    f"match the simulated line; set its length to {seg.length:.9g}")
+            tableEnd += tableLength
 
         cleanedBeamlist = beamlist[:graphParams.beam_index]
 

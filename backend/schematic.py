@@ -225,7 +225,7 @@ class draw_beamline:
             for i in range(len(beamSegments)):
                 intTrack = beamSegments[i].length
 
-                while intTrack >= interval:
+                while beamSegments[i].sliceable and intTrack >= interval:
                     matrixVariables = np.array(beamSegments[i].useMatrice(matrixVariables, length=interval))
                     x_axis.append(round(x_axis[-1] + interval, self.DEFAULTINTERVALROUND))
 
@@ -347,7 +347,7 @@ class draw_beamline:
             for i in range(len(beamSegments)):
                 intTrack = beamSegments[i].length
 
-                while intTrack >= interval:
+                while beamSegments[i].sliceable and intTrack >= interval:
                     matrixVariables = np.array(beamSegments[i].useMatrice(matrixVariables, length=interval))
                     x_axis.append(round(x_axis[-1] + interval, self.DEFAULTINTERVALROUND))
 
