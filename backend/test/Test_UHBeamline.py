@@ -54,7 +54,7 @@ beamlineUH = excel.create_beamline()
 # if len(beamline) >= 5:
 #     beamline = beamline[:-5]
 schem = draw_beamline()
-beamtype = beamline()
+beamtype = Beamline()
 line_UH = beamtype.changeBeamType(beamlineUH, "electron", 40)
 
 print('Beamline nb of Elements: ' + str(len(line_UH)))

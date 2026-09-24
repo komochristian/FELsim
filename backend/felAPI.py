@@ -257,7 +257,7 @@ def plot_parameters(graphParams: GraphParameters) -> List[GraphPlotData]:
         schem.plotBeamPositionTransform(beam_dist, cleanedBeamlist, plot=False, interval=100000, rendering=False)
         beam_dist = schem.matrixVariables
 
-        beamObj = beamline(beamlist)
+        beamObj = Beamline(beamlist)
         indexOfSSegment = beamObj.findSegmentAtPos(graphParams.target_s_pos)
 
         newSegment = copy.deepcopy(beamObj.beamline[indexOfSSegment])

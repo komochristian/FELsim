@@ -29,7 +29,7 @@ beamlineUH = excel.create_beamline()
 # if len(beamline) >= 5:
 #     beamline = beamline[:-5]
 schem = draw_beamline()
-beamtype = beamline()
+beamtype = Beamline()
 line_E = beamlineUH[0].changeBeamType("electron", 45, beamlineUH)
 
 
@@ -90,7 +90,7 @@ sec11 = dipole()
 sec12 = dipole_wedge(0.01)
 # line = [sec1,sec2,sec3,sec4,sec5,sec6,sec7,sec8,sec9,sec10,sec11,sec12]
 line = [sec1, sec2, sec4]
-beamtype = beamline()
+beamtype = Beamline()
 line_E = sec1.changeBeamType("electron", 55, line)
 
 '''

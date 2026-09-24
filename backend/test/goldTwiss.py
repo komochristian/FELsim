@@ -85,7 +85,7 @@ replace all dipole wedge elements with drift elements
 # if len(beamline) >= 5:
 #     beamline = beamline[:-5]
 schem = draw_beamline()
-beamtype = beamline()
+beamtype = Beamline()
 line_UH = relat.changeBeamType("electron", Energy, beamlineUH)
 
 segments = 98

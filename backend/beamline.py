@@ -5,6 +5,7 @@ import numpy as np
 from scipy import interpolate
 from scipy import optimize
 import math
+import copy
 
 
 # IMPORTANT NOTES:
@@ -770,7 +771,7 @@ class dipole_wedge(lattice):
         return f"Horizontal wedge dipole magnet segment {self.length} m long (curvature) with an angle of {self.angle} degrees"
 
 
-class beamline:
+class Beamline:
     class fringeField(lattice):
         def __init__(self, length, fieldStrength, current=0):
             super().__init__(length)
@@ -994,3 +995,46 @@ class beamline:
             i += 1
         self.defineEndFrontPos()
         return zLine, y_values
+
+    def split_element(self, pos):
+        '''
+        Splits a beamline element at a given position, creating two new elements.
+
+        Parameters
+        ----------
+        pos : float
+            The position along the beamline where the split should occur.
+
+        Returns
+        -------
+        None
+            Modifies the beamline in place by splitting the element at the specified position.
+        '''
+        index = self.findSegmentAtPos(pos)
+        if index == -1:
+            raise ValueError(f"Position {pos} is outside the range of the beamline.")
+        
+        segment = self.beamline[index]
+        if not (segment.startPos < pos < segment.endPos):
+            return
+
+        # Calculate lengths for the two new segments
+        length1 = pos - segment.startPos
+        length2 = segment.endPos - pos
+
+        # Create two new segments with the same properties as the original
+        new_segment1 = copy.deepcopy(segment)
+        new_segment1.length = length1
+
+        new_segment2 = copy.deepcopy(segment)
+        new_segment2.length = length2
+
+        # Replace the original segment with the two new segments
+        self.beamline[index] = new_segment1
+        self.beamline.insert(index + 1, new_segment2)
+
+        
+
+        # Update positions of all segments in the beamline
+        self.defineEndFrontPos()
+        self._cache_fringe_parameters()

@@ -9,7 +9,7 @@ import sympy.plotting as plot
 
 # Import Beam Dynamics modules
 from ebeam import beam
-from beamline import lattice, beamline
+from beamline import lattice, Beamline
 from schematic import draw_beamline
 from excelElements import ExcelElements
 from beamOptimizer import beamOptimizer
