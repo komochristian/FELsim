@@ -1,0 +1,22 @@
+# Complete local environment: simulation, tests, notebooks and the Qt prototype.
+# Python 3.12 recommended. COSY Infinity is a separate external installation.
+-r requirements.txt
+
+# Version verified locally; the base requirements allow newer Xsuite releases.
+xsuite==0.62.2
+
+# Additional tracking engine (native wheels available for Apple Silicon).
+RF-Track==2.7.2
+
+# Test runner and FastAPI TestClient transport.
+pytest==9.1.1
+httpx==0.28.1
+
+# JupyterLab and the interactive plotting backend used by the existing notebook.
+jupyterlab==4.6.3
+ipykernel==7.3.0
+ipympl==0.10.0
+
+# devTest/testUI.py desktop prototype.
+PyQt5==5.15.11
+qt-material==2.17
