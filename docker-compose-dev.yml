@@ -14,7 +14,9 @@
 
     backend:
       image: komo04/felsimback:${VERSION}
-      build: ./backend
+      build:
+        context: .
+        dockerfile: backend/Dockerfile
       ports:
         - "${BACKEND_API_PORT}:${BACKEND_API_PORT}"
       environment:

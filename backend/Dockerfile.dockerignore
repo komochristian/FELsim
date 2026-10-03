@@ -4,6 +4,15 @@
 # For more help, visit the .dockerignore file reference guide at
 # https://docs.docker.com/engine/reference/builder/#dockerignore-file
 
+# The build context is the repository root: send only the API, the felsim
+# package and the data it reads.
+*
+!backend/
+!felsim/
+!var/
+!fields/
+!parameters/
+
 **/.DS_Store
 **/__pycache__
 **/.venv

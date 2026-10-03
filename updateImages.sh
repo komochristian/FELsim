@@ -16,7 +16,8 @@ docker buildx build \
 --build-arg FRONTEND_PORT="$FRONTEND_PORT" \
 --platform linux/arm64,linux/amd64 --tag "komo04/felsimfront:$VERSION" .
 
-cd ../backend
+cd ..
 docker buildx build \
 --push \
---platform linux/arm64,linux/amd64 --tag "komo04/felsimback:$VERSION" .
+--platform linux/arm64,linux/amd64 --tag "komo04/felsimback:$VERSION" \
+-f backend/Dockerfile .

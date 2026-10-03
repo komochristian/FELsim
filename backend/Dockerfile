@@ -33,7 +33,7 @@ RUN adduser \
 # Leverage a bind mount to requirements.txt to avoid having to copy them into
 # into this layer.
 RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements.txt,target=requirements.txt \
+    --mount=type=bind,source=backend/requirements.txt,target=requirements.txt \
     python -m pip install -r requirements.txt
 
 RUN mkdir -p /tmp/matplotlib
@@ -46,8 +46,11 @@ ENV FRONTEND_PORT=${FRONTEND_PORT}
 # Switch to the non-privileged user to run the application.
 USER appuser
 
-# Copy the source code into the container.
+# Copy the source code into the container: the API in backend/, the felsim
+# package and the data it reads, in the repository layout.
 COPY . .
+WORKDIR /app/backend
+ENV PYTHONPATH=/app
 
 # Expose the port that the application listens on.
 EXPOSE ${BACKEND_API_PORT}
