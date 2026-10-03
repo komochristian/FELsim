@@ -11,7 +11,7 @@ from loggingConfig import get_logger_with_fallback
 class COSYSimulator(BeamlineBuilder):
     def __init__(self, excel_path, json_config_path=None, config_dict=None, debug=None, use_enge_coeffs=True,
                  use_mge_for_dipoles=False, transfer_matrix_order=None, fringe_field_order=0,
-                 quad_aperture=0.027, dipole_aperture=0.0127):
+                 quad_aperture=0.027, dipole_aperture=0.0127, cosy_dist_dir=None):
         """Initialize COSY simulator with beamline specification and configuration."""
         super().__init__(excel_path, json_config_path)
 
