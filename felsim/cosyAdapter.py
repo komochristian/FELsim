@@ -38,8 +38,8 @@ class COSYAdapter(SimulatorBase):
                  use_mge_for_dipoles: bool = False,
                  quad_aperture: float = 0.027,
                  dipole_aperture: float = 0.0127,
-                 output_dir: Optional[str] = None,
-                 debug: bool = None):
+                 debug: bool = None,
+                 output_dir: Optional[str] = None):
 
         if not _COSY_AVAILABLE:
             raise ImportError("COSY components not available")

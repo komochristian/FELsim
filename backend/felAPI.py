@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import ValidationError
 from typing import Any, List
+from felsim import paths
 from felsim.ebeam import beam
 from felsim.beamline import *
 from felsim.schematic import *
@@ -22,7 +23,7 @@ description = """
 FEL beamline API used to interact with Python FEL and beamline simulation library.
 """
 
-load_dotenv('../.env')  # Only during dev testing when not using Dockerfile...
+load_dotenv(paths.REPO_ROOT / '.env')  # Only during dev testing when not using Dockerfile...
 FRONTEND_PORT = os.getenv('FRONTEND_PORT')
 
 ORIGINS = [f'http://localhost:{FRONTEND_PORT}', f"localhost:{FRONTEND_PORT}"]

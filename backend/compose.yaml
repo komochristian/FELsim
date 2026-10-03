@@ -10,7 +10,8 @@
 services:
   server:
     build:
-      context: .
+      context: ..
+      dockerfile: backend/Dockerfile
     ports:
       - ${BACKEND_API_PORT}:${BACKEND_API_PORT}
 
