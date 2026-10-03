@@ -1,12 +1,13 @@
 """Weighted population beam moments for Xsuite-like particle sets.
 
 Coordinates are canonical (x, px, y, py, zeta, pzeta) in SI: x, y, zeta in m;
-px = P_x/p0, py = P_y/p0; pzeta = ptau/beta0 = (E - E0)/(beta0 p0 c), the Xsuite
-canonical conjugate of zeta = s - beta0 c t. The momentum deviation
-delta = (p - p0)/p0 (equal to pzeta to first order) is used only for sigma_delta,
-chirp and dispersion. Second moments are population moments (ddof = 0) weighted
-by particle weight; particles with state <= 0 or weight <= 0 are excluded.
-Normalized emittances use the reference beta0 gamma0 = p0c/mass0.
+px = P_x/p0, py = P_y/p0. The longitudinal canonical pair is (zeta, pzeta) with
+pzeta = ptau/beta0 = (E - E0)/(beta0 p0 c) and zeta = s - beta0 c t, not (zeta, delta).
+The momentum deviation delta = (p - p0)/p0 is used only for sigma_delta, chirp and
+dispersion. Second moments are population moments (ddof = 0) weighted by particle
+weight; particles with state <= 0 or weight <= 0 are excluded. Normalized emittances
+use the reference beta0 gamma0 = p0c/mass0. ``metrics`` returns the two transverse
+eigen-emittances; ``eigenemittances(cov6)`` gives the three 6D ones.
 """
 from __future__ import annotations
 
@@ -88,28 +89,41 @@ def eigenemittances(cov):
     return np.sort(np.abs(np.linalg.eigvals(j@cov).imag))[::2]
 
 
-def dispersion_corrected_nemitt_x(parts, *, min_particles=7):
-    """Normalized eps_x after removing x, px correlations with delta (R16, R26).
+def dispersion_corrected_nemitt_x(parts, *, min_particles=7, rel_floor=1e-12):
+    """Normalized eps_x of the residuals of weighted least-squares fits x, px = a + R(16, 26) delta.
 
-    The weighted least-squares slopes R16 = <x delta>/<delta^2>, R26 = <px delta>/<delta^2>
-    equal the dispersion D, D' of ``ebeam.beam.cal_twiss``.
+    The fitted dispersion is meaningful only when delta is uncorrelated with the betatron
+    coordinates. Slopes are zero when var(delta) <= (rel_floor max|delta|)^2.
     """
     mask = active_mask(parts)
     weights = particle_weights(parts)[mask]
     if len(weights) < min_particles:
         return dict(nemitt_x_corrected=np.nan, r16_fit_m=np.nan, r26_fit=np.nan)
-    xpd = np.vstack([np.asarray(getattr(parts, key), dtype=float)[mask]
-                     for key in ('x', 'px', 'delta')])
-    cov = weighted_covariance(xpd, weights)
-    r = cov[:2, 2]/cov[2, 2]
-    intrinsic = cov[:2, :2]-np.outer(r, r)*cov[2, 2]
+    x, px, delta = (np.asarray(getattr(parts, key), dtype=float)[mask] for key in ('x', 'px', 'delta'))
+    if not (np.isfinite(x).all() and np.isfinite(px).all() and np.isfinite(delta).all()):
+        raise ValueError('Dispersion fit requires finite active x, px and delta')
+    root = np.sqrt(weights/weights.max())
+    wn = weights/weights.sum()
+    var_delta = float(((delta-delta@wn)**2)@wn)
+    if var_delta <= (rel_floor*np.abs(delta).max())**2:
+        slopes = np.zeros(2)
+    else:
+        design = np.column_stack([np.ones_like(delta), delta])*root[:, None]
+        slopes = np.linalg.lstsq(design, np.column_stack([x, px])*root[:, None], rcond=None)[0][1]
+    cov = weighted_covariance(np.vstack([x, px])-np.outer(slopes, delta), weights)
     betagamma0 = float(np.asarray(parts.p0c).flat[0]/parts.mass0)
-    return dict(nemitt_x_corrected=betagamma0*covariance_emittance(intrinsic),
-                r16_fit_m=float(r[0]), r26_fit=float(r[1]))
+    return dict(nemitt_x_corrected=betagamma0*covariance_emittance(cov),
+                r16_fit_m=float(slopes[0]), r26_fit=float(slopes[1]))
 
 
-def _count_metrics(weights, charge_per_weight, initial_charge):
-    q = float(weights.sum()*charge_per_weight)
+def charge_per_weight(parts):
+    """Charge (C) of one unit of weight, |q0| e; missing or zero q0 counts as 1."""
+    q0 = abs(float(np.asarray(getattr(parts, 'q0', 1.)).flat[0]))
+    return (q0 if q0 > 0 else 1.)*e
+
+
+def _count_metrics(weights, charge_unit, initial_charge):
+    q = float(weights.sum()*charge_unit)
     return dict(n_alive=len(weights), charge=q,
                 transmission=q/initial_charge if initial_charge else np.nan)
 
@@ -130,7 +144,7 @@ def _metric_arrays(parts, mask):
     return _MetricArrays(coordinate_matrix(parts)[:, mask], np.asarray(parts.delta)[mask],
                          np.asarray(parts.energy0)[mask]+ptau*np.asarray(parts.p0c)[mask],
                          particle_weights(parts)[mask],
-                         abs(float(np.asarray(getattr(parts, 'q0', 1.)).flat[0]))*e,
+                         charge_per_weight(parts),
                          float(np.asarray(parts.p0c).flat[0]/parts.mass0),
                          float(np.asarray(parts.beta0).flat[0]))
 
@@ -152,7 +166,7 @@ def _metrics_from_arrays(data, selection=slice(None), *, initial_charge=None, mi
                nemitt_y=bg*covariance_emittance(cov[2:4, 2:4]),
                eps_z=covariance_emittance(cov[4:, 4:]),
                sigma_delta=np.sqrt(zd[1, 1]),
-               sigma_delta_uncorr=np.sqrt(max(zd[1, 1]-chirp*zd[0, 1], 0)),
+               sigma_delta_uncorr=np.sqrt(max(zd[1, 1]-zd[0, 1]**2/max(zd[0, 0], 1e-300), 0)),
                sigma_t=np.sqrt(cov[4, 4])/(data.beta0*c),
                sigma_x=np.sqrt(cov[0, 0]), sigma_y=np.sqrt(cov[2, 2]),
                mean_delta=float(delta@wn), mean_energy_eV=float(data.energy_eV[selection]@wn),
@@ -165,13 +179,13 @@ def _metrics_from_arrays(data, selection=slice(None), *, initial_charge=None, mi
 def metrics(parts, *, initial_charge=None, min_particles=7):
     """Active charge (C), transmission and SI beam moments; NaN moments below ``min_particles``.
 
+    Charge is sum(weight) |q0| e (Xsuite convention); missing or zero q0 counts as 1.
     eps_z is geometric in (zeta, pzeta); nemitt_x, nemitt_y, eigen1_n, eigen2_n are normalized.
     """
     mask = active_mask(parts)
     if np.count_nonzero(mask) < min_particles:
-        q = abs(float(np.asarray(getattr(parts, 'q0', 1.)).flat[0]))*e
-        return _count_metrics(particle_weights(parts)[mask], q, initial_charge) | dict.fromkeys(
-            METRIC_FIELDS, np.nan)
+        return _count_metrics(particle_weights(parts)[mask], charge_per_weight(parts),
+                              initial_charge) | dict.fromkeys(METRIC_FIELDS, np.nan)
     return _metrics_from_arrays(_metric_arrays(parts, mask), initial_charge=initial_charge,
                                 min_particles=min_particles)
 
