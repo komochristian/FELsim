@@ -72,7 +72,7 @@ class SimulatorFactory:
         'cosy': frozenset({
             'lattice_path', 'excel_path', 'mode', 'config', 'debug',
             'transfer_matrix_order', 'fringe_field_order',
-            'use_mge_for_dipoles', 'quad_aperture', 'dipole_aperture',
+            'use_mge_for_dipoles', 'quad_aperture', 'dipole_aperture', 'output_dir',
         }),
         'rftrack': frozenset({
             'lattice_path', 'excel_path', 'mode', 'debug',

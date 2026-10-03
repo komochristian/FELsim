@@ -254,7 +254,7 @@ def run_cosy_optimization(file_path, stages, targets, max_stage=None,
     index_map = result['index_map']
 
     if generate_only:
-        fox_path = sim.generate_input(output_dir='results')
+        fox_path = sim.generate_input()
         print(f"FOX file generated: {fox_path}")
         return {'fox_path': fox_path, 'index_map': index_map}
 

@@ -31,11 +31,11 @@ class COSYParticleSimulator(COSYSimulator):
     def __init__(self, excel_path, json_config_path=None, config_dict=None,
                  debug=None, use_enge_coeffs=True, use_mge_for_dipoles=False,
                  transfer_matrix_order=None, fringe_field_order=0,
-                 quad_aperture=0.027, dipole_aperture=0.0127):
+                 quad_aperture=0.027, dipole_aperture=0.0127, output_dir=None):
         super().__init__(excel_path, json_config_path, config_dict,
                          debug, use_enge_coeffs, use_mge_for_dipoles,
                          transfer_matrix_order, fringe_field_order,
-                         quad_aperture, dipole_aperture)
+                         quad_aperture, dipole_aperture, output_dir=output_dir)
 
         # Particle tracking configuration
         self.particle_tracking_enabled = False
@@ -401,7 +401,7 @@ class COSYParticleSimulator(COSYSimulator):
 
         for elem_idx in checkpoint_indices:
             try:
-                particles_cosy = self.read_particle_file(elem_idx, format='auto', output_dir='results')
+                particles_cosy = self.read_particle_file(elem_idx, format='auto')
 
                 particles = self.transform_from_cosy_coordinates(
                     particles_cosy) if transform_to_felsim else particles_cosy
@@ -928,7 +928,7 @@ class COSYParticleSimulator(COSYSimulator):
     # --- File I/O ---
 
     def write_particle_file(self, particles_cosy, filename=None,
-                            format='sray', output_dir='results'):
+                            format='sray', output_dir=None):
         """
         Write particles to file for COSY input.
 
@@ -949,6 +949,7 @@ class COSYParticleSimulator(COSYSimulator):
         if filename is None:
             filename = self.particle_input_file
 
+        output_dir = output_dir or self.output_dir
         os.makedirs(output_dir, exist_ok=True)
         filepath = os.path.join(output_dir, filename)
 
@@ -996,7 +997,7 @@ class COSYParticleSimulator(COSYSimulator):
 
         return filepath
 
-    def read_particle_file(self, filename=None, format='auto', output_dir='results'):
+    def read_particle_file(self, filename=None, format='auto', output_dir=None):
         """
         Read particle distribution from COSY output.
 
@@ -1021,7 +1022,7 @@ class COSYParticleSimulator(COSYSimulator):
         elif filename is None:
             filename = self.particle_output_file
 
-        filepath = os.path.join(output_dir, filename)
+        filepath = os.path.join(output_dir or self.output_dir, filename)
 
         if not os.path.exists(filepath):
             raise FileNotFoundError(f"Particle file not found: {filepath}")
@@ -1084,7 +1085,7 @@ class COSYParticleSimulator(COSYSimulator):
 
         return particles
 
-    def read_checkpoints(self, element_indices, output_dir='results',
+    def read_checkpoints(self, element_indices, output_dir=None,
                          transform_to_felsim=True, validate=True, filter_invalid=False):
         """
         Read multiple checkpoint files at once.

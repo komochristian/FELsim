@@ -2,12 +2,13 @@ import os
 import json
 import re
 import numpy as np
+from felsim import paths
 from felsim.loggingConfig import get_logger_with_fallback
 
 
 class COSYResultsReader:
-    def __init__(self, results_dir='results', debug=None):
-        self.results_dir = results_dir
+    def __init__(self, results_dir=None, debug=None):
+        self.results_dir = str(results_dir or paths.default_output_dir('cosy'))
         self._json_data = None
         self.logger, self.debug = get_logger_with_fallback(__name__, debug)
 

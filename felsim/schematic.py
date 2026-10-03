@@ -9,6 +9,8 @@ from matplotlib.widgets import TextBox
 import pandas as pd
 import csv
 import numpy as np
+from pathlib import Path
+from felsim import paths
 from felsim.beamline import *
 from felsim.ebeam import beam
 import datetime
@@ -19,10 +21,16 @@ from matplotlib.widgets import Button
 # Note: plotBeamTransform may show rounded interval values slightly inaccurate to actual lengths, but calculations are made with exact values, (rounded values only used for visualization)
 
 class draw_beamline:
-    def __init__(self):
+    def __init__(self, output_dir=None):
         '''
         Beamline object creates graphs and plots to visualize beamline data and information
+
+        Parameters
+        ----------
+        output_dir: str or Path, optional
+            Directory for saved CSV data and EPS figures (default outputs/tmp/schematic)
         '''
+        self.output_dir = Path(output_dir) if output_dir else paths.default_output_dir("schematic")
         self.figsize = (10, 9)
         self.matrixVariables = None
         self.sixdValues = None
@@ -123,7 +131,8 @@ class draw_beamline:
         return xLabels
 
     def _csvWriteData(self, name, twiss, x_axis):
-        with open(name, 'a', newline='') as csvfile:
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        with open(self.output_dir / name, 'a', newline='') as csvfile:
             csvwriter = csv.writer(csvfile)
             if csvfile.tell() == 0:
                 labels = ["z distance"]
@@ -166,7 +175,8 @@ class draw_beamline:
         pad_top = 0.1
         new_bbox = Bbox.from_extents(x0 - pad_left, y0 - pad_bottom, x1 + pad_right, y1 + pad_top)
         scrollbar.ax.set_visible(False)
-        fig.savefig(f"dynamics_plot_z_{scrollbar.val}.eps", format='eps', bbox_inches=new_bbox)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        fig.savefig(self.output_dir / f"dynamics_plot_z_{scrollbar.val}.eps", format='eps', bbox_inches=new_bbox)
         scrollbar.ax.set_visible(True)
 
         bbox1 = ax1.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
@@ -180,7 +190,7 @@ class draw_beamline:
         pad_bottom = 0.5
         pad_top = 0.3
         bbox_quadrants_asym = Bbox.from_extents(x0 - pad_left, y0 - pad_bottom, x1 + pad_right, y1 + pad_top)
-        fig.savefig(f"phase_space_z_{scrollbar.val}.eps", format='eps', bbox_inches=bbox_quadrants_asym)
+        fig.savefig(self.output_dir / f"phase_space_z_{scrollbar.val}.eps", format='eps', bbox_inches=bbox_quadrants_asym)
 
     def _getClosestZ(self, plot6dValues, val):
         '''

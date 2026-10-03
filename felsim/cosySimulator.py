@@ -12,7 +12,7 @@ from felsim.loggingConfig import get_logger_with_fallback
 class COSYSimulator(BeamlineBuilder):
     def __init__(self, excel_path, json_config_path=None, config_dict=None, debug=None, use_enge_coeffs=True,
                  use_mge_for_dipoles=False, transfer_matrix_order=None, fringe_field_order=0,
-                 quad_aperture=0.027, dipole_aperture=0.0127, cosy_dist_dir=None):
+                 quad_aperture=0.027, dipole_aperture=0.0127, cosy_dist_dir=None, output_dir=None):
         """Initialize COSY simulator with beamline specification and configuration."""
         super().__init__(excel_path, json_config_path)
 
@@ -128,6 +128,7 @@ class COSYSimulator(BeamlineBuilder):
         self.project_fields_dir = str(paths.FIELDS_DIR)
         self.default_cosy_dir = os.path.expanduser('/usr/local/bin')
         self.cosy_dist_dir = cosy_dist_dir or os.path.expanduser('~/COSY/10.2/UNIX')
+        self.output_dir = str(output_dir or paths.default_output_dir('cosy'))
         self.search_dirs = [self.script_dir, self.current_dir, self.project_fields_dir,
                             self.default_cosy_dir, self.cosy_dist_dir]
 
@@ -234,7 +235,7 @@ END ;
 
     def analyze_results(self, output_dir=None):
         """Return COSYResultsReader for parsing simulation output."""
-        return COSYResultsReader(output_dir or 'results')
+        return COSYResultsReader(output_dir or self.output_dir)
 
     def _format_cosy_value(self, value):
         return value if isinstance(value, str) else str(value)
@@ -1311,8 +1312,9 @@ END ;
             elements_str += "    CO NOM ;\n"
         return elements_str
 
-    def generate_input(self, output_dir='results'):
+    def generate_input(self, output_dir=None):
         """Generate COSY input file from beamline specification."""
+        output_dir = output_dir or self.output_dir
         os.makedirs(output_dir, exist_ok=True)
 
         # Apply variable mapping
@@ -1565,8 +1567,10 @@ END ;
 
         return errors
 
-    def run_simulation(self, output_dir='results'):
+    def run_simulation(self, output_dir=None):
         """Generate and execute COSY simulation."""
+        output_dir = output_dir or self.output_dir
+        os.makedirs(output_dir, exist_ok=True)
 
         # Copy required files
         files_to_copy = ['cosy', 'cosy.fox']

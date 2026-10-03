@@ -15,3 +15,8 @@ FIELDS_DIR = REPO_ROOT / "fields"
 PARAMETERS_DIR = REPO_ROOT / "parameters"
 EXCEL_DIR = REPO_ROOT / "beam_excel"
 OUTPUT_DIR = REPO_ROOT / "outputs"
+
+
+def default_output_dir(name):
+    """Scratch directory outputs/tmp/<name> for runs given no output directory."""
+    return OUTPUT_DIR / "tmp" / name

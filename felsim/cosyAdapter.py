@@ -38,6 +38,7 @@ class COSYAdapter(SimulatorBase):
                  use_mge_for_dipoles: bool = False,
                  quad_aperture: float = 0.027,
                  dipole_aperture: float = 0.0127,
+                 output_dir: Optional[str] = None,
                  debug: bool = None):
 
         if not _COSY_AVAILABLE:
@@ -74,6 +75,7 @@ class COSYAdapter(SimulatorBase):
                 use_mge_for_dipoles=use_mge_for_dipoles,
                 quad_aperture=quad_aperture,
                 dipole_aperture=dipole_aperture,
+                output_dir=output_dir,
                 debug=debug
             )
             self._particle_sim = None
@@ -88,6 +90,7 @@ class COSYAdapter(SimulatorBase):
                 use_mge_for_dipoles=use_mge_for_dipoles,
                 quad_aperture=quad_aperture,
                 dipole_aperture=dipole_aperture,
+                output_dir=output_dir,
                 debug=debug
             )
             self._native_sim = self._particle_sim
@@ -171,7 +174,7 @@ class COSYAdapter(SimulatorBase):
 
         particles_cosy = native_sim.transform_to_cosy_coordinates(particles)
         native_sim.enable_particle_tracking(checkpoint_elements=checkpoint_list)
-        native_sim.write_particle_file(particles_cosy, format='rray', output_dir='results')
+        native_sim.write_particle_file(particles_cosy, format='rray')
 
         result = native_sim.run_simulation()
         if result.get('status') != 'success':
@@ -371,11 +374,7 @@ class COSYAdapter(SimulatorBase):
                 raise ValueError(f"Expected 6 coordinates, got {particles.shape[1]}")
 
             particles_cosy = self._particle_sim.transform_to_cosy_coordinates(particles)
-            self._particle_sim.write_particle_file(
-                particles_cosy,
-                format='rray',
-                output_dir='results'
-            )
+            self._particle_sim.write_particle_file(particles_cosy, format='rray')
 
             result_dict = self._particle_sim.run_simulation()
 
