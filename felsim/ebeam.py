@@ -94,6 +94,7 @@ class beam:
         Calculates the Twiss parameters (emittance, alpha, beta, gamma, dispersion,
         dispersion prime, and phase advance) for each of the three phase space axes (x, y, z)
         from a 6D particle distribution.
+        Unweighted, ddof=1, FELsim coordinates; felsim.diagnostics gives weighted ddof=0 moments in Xsuite coordinates.
 
         Parameters
         ----------
