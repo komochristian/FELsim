@@ -39,7 +39,7 @@ def propagate(beamline: List,
     for idx, segment in enumerate(beamline):
         remaining = segment.length
 
-        while remaining - interval > EPS:
+        while segment.sliceable and remaining - interval > EPS:
             current = np.array(segment.useMatrice(current, length=interval))
             s = round(s + interval, rounding)
             remaining -= interval

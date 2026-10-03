@@ -480,6 +480,10 @@ class LatticeLoaderBase:
                 raise ValueError(
                     f"RFC element {name!r}: missing required parameter 'frequency_hz'"
                 )
+            if voltage_mv is None and gradient_mv_per_m is None:
+                raise ValueError(
+                    f"RFC element {name!r}: provide 'voltage_mv' or 'gradient_mv_per_m'"
+                )
             return rfCavityLattice(
                 length=length, frequency_hz=frequency_hz,
                 phase_deg=phase_deg, voltage_mv=voltage_mv,
