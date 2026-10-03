@@ -14,14 +14,16 @@ application.
 
 | Path | Contents |
 |------|----------|
-| `backend/` | Python modules (flat, imported with `PYTHONPATH=backend`) |
-| `backend/beamline.py`, `ebeam.py` | Lattice elements, transfer matrices, beam moments and Twiss |
-| `backend/simulatorBase.py`, `simulatorFactory.py` | Common simulator interface and registry |
-| `backend/felsimAdapter.py`, `cosy*.py`, `rftrackAdapter.py`, `xsuiteAdapter.py` | Adapters to the four codes |
-| `backend/multiCodeSimulator.py` | Chains codes section by section in FELsim coordinates |
-| `backend/beamOptimizer.py`, `AlgebraicOptimization.py` | Quadrupole optimization |
-| `backend/beamUtility.py`, `backend/data/estar/` | Energy deposition: beam-pipe heating and FLASH dose from NIST ESTAR tables |
-| `backend/felAPI.py` | FastAPI service used by the front end |
+| `felsim/` | Python package (`pyproject.toml`), imported as `felsim` |
+| `felsim/beamline.py`, `ebeam.py` | Lattice elements, transfer matrices, beam moments and Twiss |
+| `felsim/simulatorBase.py`, `simulatorFactory.py` | Common simulator interface and registry |
+| `felsim/felsimAdapter.py`, `cosy*.py`, `rftrackAdapter.py`, `xsuiteAdapter.py` | Adapters to the four codes |
+| `felsim/multiCodeSimulator.py` | Chains codes section by section in FELsim coordinates |
+| `felsim/beamOptimizer.py`, `AlgebraicOptimization.py` | Quadrupole optimization |
+| `felsim/beamUtility.py`, `felsim/data/estar/` | Energy deposition: beam-pipe heating and FLASH dose from NIST ESTAR tables |
+| `felsim/parameters.py`, `parameters/` | UH reference beam parameters |
+| `felsim/paths.py` | Locations of the data files and of `outputs/` |
+| `backend/felAPI.py` | FastAPI service used by the front end, with its Docker files |
 | `backend/examples/` | Stand-alone example and the energy deposition notebook |
 | `backend/test/beamline_optimization.ipynb` | Sequential optimization of the UH beamline |
 | `beam_excel/Beamline_elements.xlsx` | Element table of the UH beamline (source of the lattice files) |
@@ -38,6 +40,7 @@ Python 3.12 (`.python-version`). Create the environment with
 uv venv --python 3.12 --seed .venv
 source .venv/bin/activate
 uv pip install -r backend/requirements-local.txt
+uv pip install -e .
 python -m ipykernel install --sys-prefix --name felsim --display-name "Python (FELsim .venv)"
 ```
 
@@ -53,14 +56,33 @@ pip install xsuite==0.62.2 RF-Track==2.7.2
 RF-Track is imported as `RF_Track`. Xsuite compiles its tracking kernels and
 needs a C compiler (Apple Command Line Tools on macOS).
 
-Modules are imported as flat files, so scripts and notebooks run with
-`PYTHONPATH=backend` or insert `backend/` into `sys.path`.
+### The felsim package
+
+`pip install -e .` installs the package in editable mode with its core
+dependencies; the extras `xsuite`, `rftrack` and `app` (FastAPI service) add
+the optional ones, e.g. `pip install -e ".[xsuite,rftrack,app]"`. Other
+repositories use FELsim as their toolkit by installing the checkout into their
+own environment:
+
+```bash
+uv pip install --python /path/to/repo/.venv/bin/python -e /path/to/FELsim
+```
+
+```python
+import felsim
+from felsim.beamline import driftLattice, qpfLattice
+from felsim import SimulatorFactory, BeamlineElement, chicane_inputs
+```
+
+Lattices, schemas, field maps and reference parameters are read from `var/`,
+`fields/` and `parameters/` of the checkout (`felsim.paths`), whatever the
+working directory.
 
 ### COSY INFINITY
 
 COSY INFINITY 10.2 is a separate licensed download from
 [cosyinfinity.org](https://www.cosyinfinity.org). `COSYSimulator` looks for
-`cosy`, `cosy.fox`, `COSY.bin` and `SYSCA.DAT` in `backend/`, the working
+`cosy`, `cosy.fox`, `COSY.bin` and `SYSCA.DAT` in `felsim/`, the working
 directory, `fields/`, `/usr/local/bin` and `~/COSY/10.2/UNIX`; another
 location is passed as `COSYSimulator(..., cosy_dist_dir=...)`.
 
@@ -79,8 +101,7 @@ The macOS binary needs the gfortran runtime (`brew install gcc`).
 Each code is created through the factory and driven with the same calls:
 
 ```python
-from simulatorFactory import SimulatorFactory
-from simulatorBase import BeamlineElement
+from felsim import SimulatorFactory, BeamlineElement
 
 sim = SimulatorFactory.create("felsim")       # or "cosy", "rftrack", "xsuite"
 sim.set_beam_energy(45.0)                     # MeV
@@ -109,16 +130,17 @@ Beamlines are described in JSON or YAML following
 `manuals/lattice_specification.md`, validated against
 `var/lattice_schema_v{1,2,3}.json`. The UH beamline is
 `var/UH_FEL_beamline.json` / `.yaml` (converted from the Excel table with
-`excelToJson.py` and `excelToYaml.py`); `var/lattice_specification.json` is
-the curated PALS-aligned reference. `latticeLoader.create_beamline(path)`
-selects the loader from the extension.
+`python -m felsim.excelToJson` and `python -m felsim.excelToYaml`);
+`var/lattice_specification.json` is the curated PALS-aligned reference.
+`felsim.create_beamline(path)` selects the loader from the extension.
 
 ### Output conventions
 
 Run outputs go under `outputs/`, which is not versioned: `outputs/tmp/` for
 scratch runs that may be overwritten, `outputs/ref/` for reference runs kept
-locally for code-to-code comparisons. COSY writes its `results/` directory
-relative to the working directory; it is ignored as well.
+locally for code-to-code comparisons. COSY runs and the CSV and EPS saves of
+`draw_beamline` go to `outputs/tmp/cosy/` and `outputs/tmp/schematic/` unless
+an `output_dir` is given.
 
 ## Web application
 
@@ -131,8 +153,10 @@ docker compose pull
 docker compose up --build
 ```
 
-Without Docker, start the API from `backend/` so it finds `../.env`, then the
-front end:
+The backend image is built from the repository root
+(`docker compose -f docker-compose-dev.yml build`) so that it contains
+`felsim/` and its data. Without Docker, install the `app` extra and start the
+API from `backend/` so it finds `../.env`, then the front end:
 
 ```bash
 cd backend && uvicorn felAPI:app --host 127.0.0.1 --port 8000 --reload
