@@ -4,6 +4,11 @@
 # Ignore Python cache directories
 __pycache__/
 
+# Local Python environment and development caches
+.venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
 backend/test/experimental.py
 backend/test/BFieldEquations.py
 *.eps
@@ -14,3 +19,21 @@ node_modules/
 /backend/cosy
 
 results
+
+# Archives, IDE settings, local configuration
+*.zip
+~$*.xlsx
+.idea/
+.env
+
+# Figures, publications, run outputs
+*.pdf
+*.png
+outputs/
+backend/results/
+
+# Local tests and agent documentation stay out of the repository
+backend/test/test_*.py
+backend/tests/
+test_*.py
+docs/
