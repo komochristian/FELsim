@@ -6,10 +6,10 @@ import matplotlib.patches as patches
 from matplotlib.widgets import Slider
 from typing import Optional, Dict
 
-from beamEvolution import BeamEvolution
-from ebeam import beam as ebeam_class
+from felsim.beamEvolution import BeamEvolution
+from felsim.ebeam import beam as ebeam_class
 
-from loggingConfig import get_logger_with_fallback
+from felsim.loggingConfig import get_logger_with_fallback
 
 
 class EvolutionPlotter:

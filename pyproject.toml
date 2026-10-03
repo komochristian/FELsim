@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "felsim"
+version = "0.1.0"
+description = "Start-to-end simulation framework of the UH FEL beamline: transfer-matrix model and adapters to COSY INFINITY, RF-Track and Xsuite"
+readme = "README.md"
+authors = [{ name = "Niels Bidault" }]
+requires-python = ">=3.11"
+dependencies = [
+    "jsonschema>=4.26.0",
+    "matplotlib>=3.10.5",
+    "numpy>=2.3.2",
+    "openpyxl>=3.1.5",
+    "pandas>=2.3.2",
+    "PyYAML>=6.0.2",
+    "scipy>=1.16.1",
+    "sympy>=1.13.1",
+    "tqdm>=4.66.5",
+]
+
+[project.optional-dependencies]
+xsuite = ["xsuite>=0.50"]
+rftrack = ["RF-Track>=2.7.2"]
+app = [
+    "fastapi>=0.116.1",
+    "pydantic>=2.11.7",
+    "python-dotenv>=1.1.1",
+    "uvicorn>=0.35.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["felsim*"]
+
+[tool.setuptools.package-data]
+felsim = ["data/estar/*.csv"]

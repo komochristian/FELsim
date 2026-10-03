@@ -4,6 +4,10 @@
 # Ignore Python cache directories
 __pycache__/
 
+# Package build metadata
+*.egg-info/
+build/
+
 # Local Python environment and development caches
 .venv/
 .pytest_cache/

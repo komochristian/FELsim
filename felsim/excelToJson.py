@@ -14,7 +14,7 @@ transformations). The output can be loaded by JsonLatticeLoader and
 should produce equivalent beamline representations.
 
 Usage:
-    python excelToJson.py [input.xlsx] [output.json] [--v2|--v3]
+    python -m felsim.excelToJson [input.xlsx] [output.json] [--v2|--v3]
 
 Author: Eremey Valetov
 """
@@ -27,7 +27,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from excelElements import ExcelElements
+from felsim.excelElements import ExcelElements
 
 # Excel short names -> canonical JSON type names (v1)
 _TYPE_MAP_V1 = {

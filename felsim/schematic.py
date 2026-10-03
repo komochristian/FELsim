@@ -9,8 +9,8 @@ from matplotlib.widgets import TextBox
 import pandas as pd
 import csv
 import numpy as np
-from beamline import *
-from ebeam import beam
+from felsim.beamline import *
+from felsim.ebeam import beam
 import datetime
 from tqdm import tqdm
 from matplotlib.widgets import Button

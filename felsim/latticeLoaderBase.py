@@ -17,7 +17,7 @@ Author: Eremey Valetov
 import math
 
 try:
-    from tracked_dict import TrackedDict
+    from felsim.tracked_dict import TrackedDict
 except ImportError:
     class TrackedDict(dict):
         """Minimal fallback when tracked_dict is not installed."""
@@ -45,11 +45,11 @@ except ImportError:
         def mark_all_accessed(self): pass
         def report_unused(self): return []
         def unaccessed(self): return []
-from beamline import (
+from felsim.beamline import (
     driftLattice, qpfLattice, qpdLattice, dipole, dipole_wedge, rfCavityLattice,
     alphaMagnetLattice,
 )
-from loggingConfig import get_logger_with_fallback
+from felsim.loggingConfig import get_logger_with_fallback
 
 SUPPORTED_FORMAT_VERSIONS = [1, 2, 3]
 

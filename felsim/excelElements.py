@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 import os
 from typing import Optional, List
-from beamline import (driftLattice, qpfLattice, qpdLattice,
-                     dipole, dipole_wedge, alphaMagnetLattice)
+from felsim.beamline import (driftLattice, qpfLattice, qpdLattice,
+                            dipole, dipole_wedge, alphaMagnetLattice)
 
 logger = logging.getLogger(__name__)
 

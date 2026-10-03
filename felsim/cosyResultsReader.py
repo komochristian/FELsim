@@ -2,7 +2,7 @@ import os
 import json
 import re
 import numpy as np
-from loggingConfig import get_logger_with_fallback
+from felsim.loggingConfig import get_logger_with_fallback
 
 
 class COSYResultsReader:

@@ -2,10 +2,10 @@ import subprocess
 import os
 import shutil
 import json
-from beamlineBuilder import BeamlineBuilder
-from cosyResultsReader import COSYResultsReader
-from physicalConstants import PhysicalConstants
-from loggingConfig import get_logger_with_fallback
+from felsim.beamlineBuilder import BeamlineBuilder
+from felsim.cosyResultsReader import COSYResultsReader
+from felsim.physicalConstants import PhysicalConstants
+from felsim.loggingConfig import get_logger_with_fallback
 
 
 class COSYSimulator(BeamlineBuilder):

@@ -25,12 +25,12 @@ from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 
-from simulatorBase import (
+from felsim.simulatorBase import (
     SimulatorBase, SimulationResult, BeamlineElement,
     CoordinateSystem, SimulationMode,
 )
-from physicalConstants import PhysicalConstants
-from ebeam import beam as ebeam_class
+from felsim.physicalConstants import PhysicalConstants
+from felsim.ebeam import beam as ebeam_class
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +89,7 @@ class XsuiteAdapter(SimulatorBase):
 
         path = lattice_path or excel_path
         if path:
-            import latticeLoader
+            from felsim import latticeLoader
             native = latticeLoader.create_beamline(path)
             for e in native:
                 e.setE(self.beam_energy)
@@ -519,7 +519,7 @@ class XsuiteAdapter(SimulatorBase):
         # energy [MeV] sets the reference for the delta / angle conversion;
         # defaults to the injection energy. Pass the exit energy for the output
         # of an accelerating (linac) line.
-        from simulatorFactory import CoordinateTransformer
+        from felsim.simulatorFactory import CoordinateTransformer
         return CoordinateTransformer.transform(
             particles, from_system, to_system,
             energy if energy is not None else self.beam_energy,

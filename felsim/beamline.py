@@ -5,7 +5,7 @@ import numpy as np
 from scipy import interpolate
 from scipy import optimize
 import math
-from physicalConstants import PhysicalConstants
+from felsim.physicalConstants import PhysicalConstants
 
 
 # IMPORTANT NOTES:

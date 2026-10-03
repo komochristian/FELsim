@@ -35,14 +35,14 @@ def create_beamline(lattice_path):
     ext = _check_extension(lattice_path)
 
     if ext in _EXCEL_EXTENSIONS:
-        from excelElements import ExcelElements
+        from felsim.excelElements import ExcelElements
         return ExcelElements(str(lattice_path)).create_beamline()
 
     if ext in _JSON_EXTENSIONS:
-        from jsonLatticeLoader import JsonLatticeLoader
+        from felsim.jsonLatticeLoader import JsonLatticeLoader
         return JsonLatticeLoader(str(lattice_path)).create_beamline()
 
-    from yamlLatticeLoader import YamlLatticeLoader
+    from felsim.yamlLatticeLoader import YamlLatticeLoader
     return YamlLatticeLoader(str(lattice_path)).create_beamline()
 
 
@@ -62,15 +62,15 @@ def parse_beamline(lattice_path):
     ext = _check_extension(lattice_path)
 
     if ext in _EXCEL_EXTENSIONS:
-        from beamlineBuilder import BeamlineBuilder
+        from felsim.beamlineBuilder import BeamlineBuilder
         bb = BeamlineBuilder(str(lattice_path))
         return bb.parse_beamline()
 
     if ext in _JSON_EXTENSIONS:
-        from jsonLatticeLoader import JsonLatticeLoader
+        from felsim.jsonLatticeLoader import JsonLatticeLoader
         return JsonLatticeLoader(str(lattice_path)).parse_beamline()
 
-    from yamlLatticeLoader import YamlLatticeLoader
+    from felsim.yamlLatticeLoader import YamlLatticeLoader
     return YamlLatticeLoader(str(lattice_path)).parse_beamline()
 
 

@@ -10,7 +10,7 @@ expected keys.
 Usage::
 
     import json
-    from tracked_dict import TrackedDict
+    from felsim.tracked_dict import TrackedDict
 
     with open("config.json") as f:
         data = TrackedDict(json.load(f))

@@ -12,13 +12,13 @@ Author: Eremey Valetov
 
 import numpy as np
 from typing import Dict, List, Optional, Any, Union
-from simulatorBase import (
+from felsim.simulatorBase import (
     SimulatorBase, SimulationResult, BeamlineElement,
     CoordinateSystem, SimulationMode
 )
-from beamEvolution import BeamEvolution, ElementInfo
-from loggingConfig import get_logger_with_fallback
-from physicalConstants import PhysicalConstants
+from felsim.beamEvolution import BeamEvolution, ElementInfo
+from felsim.loggingConfig import get_logger_with_fallback
+from felsim.physicalConstants import PhysicalConstants
 
 # Attempt to import RF-Track
 try:
@@ -1381,7 +1381,7 @@ class RFTrackAdapter(SimulatorBase):
 
     def _load_lattice(self, lattice_path: str):
         """Load beamline from Excel, JSON, or YAML lattice file."""
-        import latticeLoader
+        from felsim import latticeLoader
 
         try:
             native_elements = latticeLoader.create_beamline(lattice_path)

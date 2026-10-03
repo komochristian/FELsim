@@ -6,8 +6,8 @@ Author: Eremey Valetov
 
 import numpy as np
 import os
-from cosySimulator import COSYSimulator
-from physicalConstants import PhysicalConstants
+from felsim.cosySimulator import COSYSimulator
+from felsim.physicalConstants import PhysicalConstants
 import warnings
 
 

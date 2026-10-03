@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
-from simulatorBase import (
+from felsim.simulatorBase import (
     SimulatorBase, SimulationResult, BeamlineElement,
     CoordinateSystem, SimulationMode
 )
@@ -122,13 +122,13 @@ class MultiCodeSimulator(SimulatorBase):
             self._init_simulators()
 
     def _load_master_beamline(self, lattice_path: str):
-        import latticeLoader
+        from felsim import latticeLoader
         self._master_beamline = latticeLoader.create_beamline(lattice_path)
         for elem in self._master_beamline:
             elem.setE(self.beam_energy)
 
     def _init_simulators(self):
-        from simulatorFactory import SimulatorFactory
+        from felsim.simulatorFactory import SimulatorFactory
 
         for section in self.sections:
             cfg = section.config or {}
@@ -290,7 +290,7 @@ class MultiCodeSimulator(SimulatorBase):
         raise NotImplementedError("MultiCodeSimulator delegates to child simulators")
 
     def transform_coordinates(self, particles, from_system, to_system):
-        from simulatorFactory import CoordinateTransformer
+        from felsim.simulatorFactory import CoordinateTransformer
         return CoordinateTransformer.transform(
             particles, from_system, to_system, self.beam_energy
         )

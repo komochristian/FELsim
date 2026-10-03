@@ -9,17 +9,17 @@ Author: Eremey Valetov
 
 import numpy as np
 from typing import Dict, List, Optional, Any
-from simulatorBase import (
+from felsim.simulatorBase import (
     SimulatorBase, SimulationResult, BeamlineElement,
     CoordinateSystem, SimulationMode
 )
-from beamEvolution import BeamEvolution, ElementInfo
-from evolutionPlotter import EvolutionPlotter
-from beamPropagator import propagate
-import latticeLoader
-from beamline import driftLattice, qpfLattice, qpdLattice, dipole, dipole_wedge
-from ebeam import beam as ebeam_class
-from beamOptimizer import beamOptimizer
+from felsim.beamEvolution import BeamEvolution, ElementInfo
+from felsim.evolutionPlotter import EvolutionPlotter
+from felsim.beamPropagator import propagate
+from felsim import latticeLoader
+from felsim.beamline import driftLattice, qpfLattice, qpdLattice, dipole, dipole_wedge
+from felsim.ebeam import beam as ebeam_class
+from felsim.beamOptimizer import beamOptimizer
 
 
 class FELsimAdapter(SimulatorBase):

@@ -1,6 +1,6 @@
-from beamline import *
-from schematic import draw_beamline
-from ebeam import *
+from felsim.beamline import *
+from felsim.schematic import draw_beamline
+from felsim.ebeam import *
 import sympy as sp
 import sys
 from tqdm import tqdm

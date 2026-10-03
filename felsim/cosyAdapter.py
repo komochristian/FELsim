@@ -6,18 +6,18 @@ Author: Eremey Valetov
 
 import numpy as np
 from typing import Dict, List, Optional, Any, Union
-from simulatorBase import (
+from felsim.simulatorBase import (
     SimulatorBase, SimulationResult, BeamlineElement,
     CoordinateSystem, SimulationMode
 )
-from beamEvolution import BeamEvolution, ElementInfo
-from physicalConstants import PhysicalConstants
-from evolutionPlotter import EvolutionPlotter
-from loggingConfig import get_logger_with_fallback
+from felsim.beamEvolution import BeamEvolution, ElementInfo
+from felsim.physicalConstants import PhysicalConstants
+from felsim.evolutionPlotter import EvolutionPlotter
+from felsim.loggingConfig import get_logger_with_fallback
 
 try:
-    from cosySimulator import COSYSimulator
-    from cosyParticleSimulator import COSYParticleSimulator
+    from felsim.cosySimulator import COSYSimulator
+    from felsim.cosyParticleSimulator import COSYParticleSimulator
     _COSY_AVAILABLE = True
 except ImportError:
     _COSY_AVAILABLE = False
@@ -118,7 +118,7 @@ class COSYAdapter(SimulatorBase):
             if is_excel:
                 parsed = self._native_sim.parse_beamline()
             else:
-                import latticeLoader
+                from felsim import latticeLoader
                 parsed = latticeLoader.parse_beamline(lattice_path)
                 self._native_sim.beamline = parsed
             self._beamline_parsed = True
@@ -240,7 +240,7 @@ class COSYAdapter(SimulatorBase):
                         twiss[plane]['dispersion'] = 0.0
             return twiss
 
-        from ebeam import beam
+        from felsim.ebeam import beam
         ebeam = beam()
         _, _, twiss_df = ebeam.cal_twiss(particles_felsim, ddof=1)
 

@@ -1,8 +1,9 @@
 """
-Load beamline lattice configurations from JSON files.
+Load beamline lattice configurations from YAML files.
 
-Thin wrapper around LatticeLoaderBase that handles JSON I/O and schema
-validation. Supports format_version 1, 2, and 3.
+Thin wrapper around LatticeLoaderBase that handles YAML I/O and schema
+validation. Supports format_version 1, 2, and 3. Uses the same JSON Schema
+files for validation since the in-memory dict representation is identical.
 
 Author: Eremey Valetov
 """
@@ -10,11 +11,9 @@ Author: Eremey Valetov
 import json
 from pathlib import Path
 
-try:
-    from tracked_dict import TrackedDict
-except ImportError:
-    from latticeLoaderBase import TrackedDict
-from latticeLoaderBase import LatticeLoaderBase, SUPPORTED_FORMAT_VERSIONS
+import yaml
+from felsim.tracked_dict import TrackedDict
+from felsim.latticeLoaderBase import LatticeLoaderBase
 
 _SCHEMA_FILES = {
     1: "lattice_schema_v1.json",
@@ -23,14 +22,14 @@ _SCHEMA_FILES = {
 }
 
 
-class JsonLatticeLoader(LatticeLoaderBase):
-    """Load a FELsim JSON lattice file into beamline representations."""
+class YamlLatticeLoader(LatticeLoaderBase):
+    """Load a FELsim YAML lattice file into beamline representations."""
 
     def __init__(self, file_path, validate_schema=True, debug=None):
         file_path = str(file_path)
 
         with open(file_path) as f:
-            raw = json.load(f)
+            raw = yaml.safe_load(f)
 
         if validate_schema:
             self._validate_schema(raw, file_path)
@@ -40,7 +39,7 @@ class JsonLatticeLoader(LatticeLoaderBase):
 
     @staticmethod
     def _validate_schema(raw, file_path):
-        """Validate raw JSON against the lattice schema (if jsonschema is installed)."""
+        """Validate parsed YAML against the lattice JSON Schema."""
         try:
             import jsonschema
         except ImportError:
@@ -61,4 +60,4 @@ class JsonLatticeLoader(LatticeLoaderBase):
         try:
             jsonschema.validate(raw, schema)
         except jsonschema.ValidationError as e:
-            raise ValueError(f"JSON schema validation failed: {e.message}") from e
+            raise ValueError(f"YAML schema validation failed: {e.message}") from e

@@ -4,8 +4,8 @@ import re
 import os
 from functools import wraps
 from collections.abc import Iterable
-from excelElements import ExcelElements
-from loggingConfig import get_logger_with_fallback
+from felsim.excelElements import ExcelElements
+from felsim.loggingConfig import get_logger_with_fallback
 
 
 class BeamlineBuilder:

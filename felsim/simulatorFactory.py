@@ -9,16 +9,16 @@ from typing import Dict, List, Union, Optional
 from enum import Enum
 import numpy as np
 
-from simulatorBase import SimulatorBase, CoordinateSystem
-from felsimAdapter import FELsimAdapter
-from cosyAdapter import COSYAdapter
-from beamEvolution import BeamEvolution
+from felsim.simulatorBase import SimulatorBase, CoordinateSystem
+from felsim.felsimAdapter import FELsimAdapter
+from felsim.cosyAdapter import COSYAdapter
+from felsim.beamEvolution import BeamEvolution
 
 logger = logging.getLogger(__name__)
 
 # RF-Track is optional - import if available
 try:
-    from rftrackAdapter import RFTrackAdapter
+    from felsim.rftrackAdapter import RFTrackAdapter
     _RFTRACK_AVAILABLE = True
 except ImportError:
     _RFTRACK_AVAILABLE = False
@@ -26,7 +26,7 @@ except ImportError:
 
 # xsuite is optional - import if available
 try:
-    from xsuiteAdapter import XsuiteAdapter
+    from felsim.xsuiteAdapter import XsuiteAdapter
     _XSUITE_AVAILABLE = True
 except ImportError:
     _XSUITE_AVAILABLE = False
@@ -150,7 +150,7 @@ class SimulatorFactory:
         # MultiCodeSimulator uses lazy import to avoid circular dependency
         if sim_type == SimulatorType.MULTICODE.value:
             cls._validate_config(sim_type, kwargs)
-            from multiCodeSimulator import MultiCodeSimulator
+            from felsim.multiCodeSimulator import MultiCodeSimulator
             try:
                 return MultiCodeSimulator(**kwargs)
             except Exception as e:
@@ -304,7 +304,7 @@ class CoordinateTransformer:
 
     @staticmethod
     def _felsim_to_cosy(particles_felsim: np.ndarray, energy_mev: float) -> np.ndarray:
-        from physicalConstants import PhysicalConstants
+        from felsim.physicalConstants import PhysicalConstants
         E0 = PhysicalConstants.E0_electron
         C = float(PhysicalConstants.C)
         f_RF = PhysicalConstants.f_RF_default
@@ -344,7 +344,7 @@ class CoordinateTransformer:
 
     @staticmethod
     def _cosy_to_felsim(particles_cosy: np.ndarray, energy_mev: float) -> np.ndarray:
-        from physicalConstants import PhysicalConstants
+        from felsim.physicalConstants import PhysicalConstants
         E0 = PhysicalConstants.E0_electron
         C = float(PhysicalConstants.C)
         f_RF = PhysicalConstants.f_RF_default
@@ -389,7 +389,7 @@ class CoordinateTransformer:
     def _felsim_to_rftrack(particles: np.ndarray, energy_mev: float,
                            particle_mass_mev: float = None,
                            rf_frequency_hz: float = None) -> np.ndarray:
-        from physicalConstants import PhysicalConstants
+        from felsim.physicalConstants import PhysicalConstants
         mass = particle_mass_mev or PhysicalConstants.E0_electron
         f_RF = rf_frequency_hz or PhysicalConstants.f_RF_default
         t_scale = PhysicalConstants.C / f_RF
@@ -406,7 +406,7 @@ class CoordinateTransformer:
     def _rftrack_to_felsim(particles: np.ndarray, energy_mev: float,
                            particle_mass_mev: float = None,
                            rf_frequency_hz: float = None) -> np.ndarray:
-        from physicalConstants import PhysicalConstants
+        from felsim.physicalConstants import PhysicalConstants
         mass = particle_mass_mev or PhysicalConstants.E0_electron
         f_RF = rf_frequency_hz or PhysicalConstants.f_RF_default
         t_scale = PhysicalConstants.C / f_RF
@@ -422,7 +422,7 @@ class CoordinateTransformer:
     def _cosy_to_rftrack(particles: np.ndarray, energy_mev: float,
                          particle_mass_mev: float = None,
                          rf_frequency_hz: float = None) -> np.ndarray:
-        from physicalConstants import PhysicalConstants
+        from felsim.physicalConstants import PhysicalConstants
         mass = particle_mass_mev or PhysicalConstants.E0_electron
         gamma = 1 + energy_mev / mass
         beta = np.sqrt(1 - 1/gamma**2)
@@ -439,7 +439,7 @@ class CoordinateTransformer:
     def _rftrack_to_cosy(particles: np.ndarray, energy_mev: float,
                          particle_mass_mev: float = None,
                          rf_frequency_hz: float = None) -> np.ndarray:
-        from physicalConstants import PhysicalConstants
+        from felsim.physicalConstants import PhysicalConstants
         mass = particle_mass_mev or PhysicalConstants.E0_electron
         gamma = 1 + energy_mev / mass
         beta = np.sqrt(1 - 1/gamma**2)
@@ -458,7 +458,7 @@ class CoordinateTransformer:
         zeta[m]=-v0*Δt, delta=(p-p0)/p0. Transverse momenta use the same exact
         3D decomposition as the COSY transform; longitudinal is a plain
         path-length offset (no COSY γ/(1+γ) factor)."""
-        from physicalConstants import PhysicalConstants
+        from felsim.physicalConstants import PhysicalConstants
         E0 = particle_mass_mev or PhysicalConstants.E0_electron
         C = float(PhysicalConstants.C)
         T_RF = 1.0 / PhysicalConstants.f_RF_default
@@ -488,7 +488,7 @@ class CoordinateTransformer:
     @staticmethod
     def _xsuite_to_felsim(particles: np.ndarray, energy_mev: float,
                           particle_mass_mev: float = None) -> np.ndarray:
-        from physicalConstants import PhysicalConstants
+        from felsim.physicalConstants import PhysicalConstants
         E0 = particle_mass_mev or PhysicalConstants.E0_electron
         C = float(PhysicalConstants.C)
         T_RF = 1.0 / PhysicalConstants.f_RF_default

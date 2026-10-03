@@ -30,7 +30,7 @@ Both formats produce identical in-memory representations and share the same JSON
 The `latticeLoader` module provides format-agnostic loading that auto-detects by file extension:
 
 ```python
-import latticeLoader
+from felsim import latticeLoader
 
 # Returns beamline.py transfer matrix objects (driftLattice, qpfLattice, etc.)
 beamline = latticeLoader.create_beamline("var/UH_FEL_beamline.yaml")
@@ -45,7 +45,7 @@ beamline = latticeLoader.create_beamline("beam_excel/Beamline_elements.xlsx")
 All simulator adapters accept a `lattice_path` parameter that delegates to `latticeLoader`:
 
 ```python
-from felsimAdapter import FELsimAdapter
+from felsim.felsimAdapter import FELsimAdapter
 
 adapter = FELsimAdapter(lattice_path="var/UH_FEL_beamline.yaml")
 ```
@@ -425,13 +425,13 @@ v1 files load unchanged in the updated parser — no migration is required. To c
 The converters support this:
 ```bash
 # Generate v1 JSON (excelToJson default, backward-compatible)
-python excelToJson.py input.xlsx output.json
+python -m felsim.excelToJson input.xlsx output.json
 
 # Generate v2 JSON with PALS names
-python excelToJson.py input.xlsx output.json --v2
+python -m felsim.excelToJson input.xlsx output.json --v2
 
 # Generate v2 YAML (excelToYaml default — YAML is a v2-era format)
-python excelToYaml.py input.xlsx output.yaml
+python -m felsim.excelToYaml input.xlsx output.yaml
 ```
 
 Note: `excelToJson` defaults to `format_version=1` for backward compatibility with existing JSON consumers. `excelToYaml` defaults to `format_version=2` since YAML support was introduced alongside v2.

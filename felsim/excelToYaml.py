@@ -8,7 +8,7 @@ Delegates to excelToJson.convert() for the data transformation, then
 serialises to YAML.
 
 Usage:
-    python excelToYaml.py <input.xlsx> [output.yaml]
+    python -m felsim.excelToYaml <input.xlsx> [output.yaml]
 
 Author: Eremey Valetov
 """
@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 import yaml
-from excelToJson import convert as json_convert
+from felsim.excelToJson import convert as json_convert
 
 
 def convert(excel_path, output_path=None, name=None, description=None,

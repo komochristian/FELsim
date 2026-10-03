@@ -15,10 +15,10 @@ gpt"can you xplain the parameters of a constraint paramter in scipy.minimize"
 #         2d list of particles and each indice can only appear once as a key
 
 import scipy.optimize as spo
-from beamline import *
-from ebeam import beam
+from felsim.beamline import *
+from felsim.ebeam import beam
 import numpy as np
-from schematic import *
+from felsim.schematic import *
 import timeit
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines

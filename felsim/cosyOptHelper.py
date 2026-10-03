@@ -8,7 +8,7 @@ Author: Eremey Valetov
 
 import pandas as pd
 import numpy as np
-from loggingConfig import get_logger_with_fallback
+from felsim.loggingConfig import get_logger_with_fallback
 
 logger, _ = get_logger_with_fallback(__name__)
 
@@ -38,7 +38,7 @@ def parse_beamline_felsim_indexed(excel_path):
     list of dict
         Beamline elements in COSY dict format with FELsim-compatible indexing.
     """
-    from excelElements import ExcelElements
+    from felsim.excelElements import ExcelElements
 
     excel = ExcelElements(str(excel_path))
     df = excel.get_dataframe()
