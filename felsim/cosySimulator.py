@@ -2,6 +2,7 @@ import subprocess
 import os
 import shutil
 import json
+from felsim import paths
 from felsim.beamlineBuilder import BeamlineBuilder
 from felsim.cosyResultsReader import COSYResultsReader
 from felsim.physicalConstants import PhysicalConstants
@@ -124,7 +125,7 @@ class COSYSimulator(BeamlineBuilder):
         # File search paths
         self.script_dir = os.path.dirname(os.path.abspath(__file__))
         self.current_dir = os.getcwd()
-        self.project_fields_dir = os.path.join(os.path.dirname(self.script_dir), 'fields')
+        self.project_fields_dir = str(paths.FIELDS_DIR)
         self.default_cosy_dir = os.path.expanduser('/usr/local/bin')
         self.cosy_dist_dir = cosy_dist_dir or os.path.expanduser('~/COSY/10.2/UNIX')
         self.search_dirs = [self.script_dir, self.current_dir, self.project_fields_dir,

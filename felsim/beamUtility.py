@@ -21,7 +21,7 @@ B. FLASH radiotherapy study  ->  :func:`flash_dose`
    rates, and the number of pulses / time to reach a prescription.
 
 Stopping powers, CSDA ranges and radiation yields are interpolated (log-log)
-from NIST ESTAR tables stored in ``backend/data/estar/``.  Stainless steel is
+from NIST ESTAR tables stored in ``felsim/data/estar/``.  Stainless steel is
 built from the Fe, Cr and Ni tables by Bragg additivity.  An analytic
 Rohrlich-Carlson (Bethe) collision stopping power with the Sternheimer
 density-effect correction is provided as an independent cross-check only.
@@ -65,12 +65,13 @@ from __future__ import annotations
 import math
 import warnings
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
 from scipy.integrate import solve_ivp
+
+from felsim import paths
 
 # ---------------------------------------------------------------------------
 # Constants (CODATA 2018)
@@ -85,7 +86,7 @@ ESTAR_E_MIN = 0.01               # MeV, lower edge of the ESTAR tables
 ESTAR_E_MAX = 1000.0             # MeV
 GRAZING_WARN_DEG = 75.0          # beyond this incidence angle straight-line transport is unreliable
 
-DATA_DIR = Path(__file__).resolve().parent / "data" / "estar"
+DATA_DIR = paths.ESTAR_DIR
 
 
 # ---------------------------------------------------------------------------

@@ -1,9 +1,9 @@
 """UH reference beam parameters loaded from parameters/UH_reference_parameters.yaml."""
-from pathlib import Path
-
 import yaml
 
-REFERENCE_PATH = Path(__file__).resolve().parent.parent / "parameters" / "UH_reference_parameters.yaml"
+from felsim import paths
+
+REFERENCE_PATH = paths.PARAMETERS_DIR / "UH_reference_parameters.yaml"
 
 _TO_SI = {"MeV": 1e6, "pC": 1e-12, "um": 1e-6, "ps": 1e-12, "percent": 1e-2, "m": 1.0}
 

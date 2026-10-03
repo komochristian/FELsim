@@ -12,6 +12,7 @@ import json
 from pathlib import Path
 
 import yaml
+from felsim import paths
 from felsim.tracked_dict import TrackedDict
 from felsim.latticeLoaderBase import LatticeLoaderBase
 
@@ -50,7 +51,7 @@ class YamlLatticeLoader(LatticeLoaderBase):
 
         schema_path = Path(file_path).resolve().parent.parent / "var" / schema_name
         if not schema_path.exists():
-            schema_path = Path(__file__).resolve().parent.parent / "var" / schema_name
+            schema_path = paths.LATTICE_DIR / schema_name
         if not schema_path.exists():
             return
 

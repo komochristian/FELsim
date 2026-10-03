@@ -14,6 +14,7 @@ try:
     from felsim.tracked_dict import TrackedDict
 except ImportError:
     from felsim.latticeLoaderBase import TrackedDict
+from felsim import paths
 from felsim.latticeLoaderBase import LatticeLoaderBase, SUPPORTED_FORMAT_VERSIONS
 
 _SCHEMA_FILES = {
@@ -51,7 +52,7 @@ class JsonLatticeLoader(LatticeLoaderBase):
 
         schema_path = Path(file_path).resolve().parent.parent / "var" / schema_name
         if not schema_path.exists():
-            schema_path = Path(__file__).resolve().parent.parent / "var" / schema_name
+            schema_path = paths.LATTICE_DIR / schema_name
         if not schema_path.exists():
             return
 
