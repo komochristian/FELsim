@@ -1,7 +1,7 @@
-from beamOptimizer import beamOptimizer
-from ebeam import beam
-from schematic import draw_beamline
-from beamline import *
+from felsim.beamOptimizer import beamOptimizer
+from felsim.ebeam import beam
+from felsim.schematic import draw_beamline
+from felsim.beamline import *
 import numpy as np
 
 ebeam = beam()

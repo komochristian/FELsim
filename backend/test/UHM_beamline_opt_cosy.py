@@ -7,18 +7,14 @@ Supports S1 (2 ps) and S3 (0.5 ps) configs, multistart for Stage 5, and full
 Author: Eremey Valetov
 """
 
-import sys
 import json
 import copy
 import argparse
 from pathlib import Path
 import numpy as np
 
-backend_dir = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(backend_dir))
-
-from cosyAdapter import COSYAdapter
-from cosyOptHelper import add_stages, get_optimized_currents, parse_beamline_felsim_indexed
+from felsim.cosyAdapter import COSYAdapter
+from felsim.cosyOptHelper import add_stages, get_optimized_currents, parse_beamline_felsim_indexed
 
 # --- Beam parameters ---
 Energy = 40  # MeV
@@ -36,7 +32,7 @@ STAGE5_STARTS = [
 
 def compute_targets():
     """Compute undulator Twiss targets, geometric emittance, and initial Twiss."""
-    from beamline import lattice
+    from felsim.beamline import lattice
     relat = lattice(1, fringeType=None)
     relat.setE(E=Energy)
     norm = relat.gamma * relat.beta

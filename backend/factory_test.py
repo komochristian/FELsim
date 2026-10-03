@@ -1,8 +1,8 @@
-from cosyAdapter import COSYAdapter
-from rftrackAdapter import RFTrackAdapter
-from felsimAdapter import FELsimAdapter
-from simulatorFactory import SimulatorFactory
-from ebeam import beam
+from felsim.cosyAdapter import COSYAdapter
+from felsim.rftrackAdapter import RFTrackAdapter
+from felsim.felsimAdapter import FELsimAdapter
+from felsim.simulatorFactory import SimulatorFactory
+from felsim.ebeam import beam
 
 ebeam = beam()
 particles = ebeam.gen_6d_gaussian(0,[1,1,1,1,0.1,100], 1000)

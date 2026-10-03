@@ -14,12 +14,9 @@ not the full UH machine model; it does not include collective effects.
 
 import argparse
 from pathlib import Path
-import sys
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-# Backend modules currently use local imports rather than a Python package.
-sys.path.insert(0, str(REPO_ROOT / "backend"))
 
 
 def main():
@@ -48,8 +45,8 @@ def main():
     import numpy as np
     import pandas as pd
 
-    from felsimAdapter import FELsimAdapter
-    from simulatorBase import BeamlineElement
+    from felsim.felsimAdapter import FELsimAdapter
+    from felsim.simulatorBase import BeamlineElement
 
     energy_mev = 45.0
     rng = np.random.default_rng(2026)

@@ -3,16 +3,16 @@ from pathlib import Path
 
 import numpy as np
 
-from ebeam import beam
-from beamline import lattice
-from schematic import draw_beamline
-from excelElements import ExcelElements
-from beamline import *
+from felsim.ebeam import beam
+from felsim.beamline import lattice
+from felsim.schematic import draw_beamline
+from felsim.excelElements import ExcelElements
+from felsim.beamline import *
 import sys
 import time
 import pandas as pd
-from beamOptimizer import *
-from AlgebraicOptimization import AlgebraicOpti
+from felsim.beamOptimizer import *
+from felsim.AlgebraicOptimization import AlgebraicOpti
 import sympy.plotting as plot
 import sympy as sp
 

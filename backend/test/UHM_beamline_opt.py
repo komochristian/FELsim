@@ -8,13 +8,13 @@ import sympy as sp
 import sympy.plotting as plot
 
 # Import Beam Dynamics modules
-from ebeam import beam
-from parameters import chicane_inputs
-from beamline import lattice, beamline
-from schematic import draw_beamline
-from excelElements import ExcelElements
-from beamOptimizer import beamOptimizer
-from AlgebraicOptimization import AlgebraicOpti
+from felsim.ebeam import beam
+from felsim.parameters import chicane_inputs
+from felsim.beamline import lattice, beamline
+from felsim.schematic import draw_beamline
+from felsim.excelElements import ExcelElements
+from felsim.beamOptimizer import beamOptimizer
+from felsim.AlgebraicOptimization import AlgebraicOpti
 
 # Initial Beam Parameters at the chicane entrance (parameters/UH_reference_parameters.yaml)
 inputs = chicane_inputs()

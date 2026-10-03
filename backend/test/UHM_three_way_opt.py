@@ -20,24 +20,23 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from UHM_beamline_opt_cosy import (
     build_stages, compute_targets, Energy, epsilon_n, x_std,
     FELSIM_S1_CURRENTS
 )
-from felsimAdapter import FELsimAdapter
+from felsim.felsimAdapter import FELsimAdapter
 
 try:
-    from cosyAdapter import COSYAdapter
-    from cosyOptHelper import parse_beamline_felsim_indexed
+    from felsim.cosyAdapter import COSYAdapter
+    from felsim.cosyOptHelper import parse_beamline_felsim_indexed
     _COSY_AVAILABLE = True
 except ImportError:
     _COSY_AVAILABLE = False
 
 try:
     import RF_Track as rft
-    from rftrackAdapter import RFTrackAdapter
+    from felsim.rftrackAdapter import RFTrackAdapter
     _RFTRACK_AVAILABLE = True
 except ImportError:
     _RFTRACK_AVAILABLE = False
@@ -62,7 +61,7 @@ def stage_to_felsim_vars(stage):
 
 def generate_particles(n, seed=42):
     """Generate 6D Gaussian distribution in FELsim coordinates."""
-    from beamline import lattice as lat_class
+    from felsim.beamline import lattice as lat_class
 
     rng = np.random.default_rng(seed)
     rel = lat_class(1, fringeType=None)

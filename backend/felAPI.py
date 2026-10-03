@@ -1,15 +1,15 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import ValidationError
 from typing import Any, List
-from ebeam import beam
-from beamline import *
-from schematic import *
+from felsim.ebeam import beam
+from felsim.beamline import *
+from felsim.schematic import *
 from fastapi.middleware.cors import CORSMiddleware
 import inspect
 import importlib
 import io
 import base64
-from excelElements import ExcelElements
+from felsim.excelElements import ExcelElements
 import uvicorn
 import os
 from dotenv import load_dotenv
@@ -26,7 +26,7 @@ load_dotenv('../.env')  # Only during dev testing when not using Dockerfile...
 FRONTEND_PORT = os.getenv('FRONTEND_PORT')
 
 ORIGINS = [f'http://localhost:{FRONTEND_PORT}', f"localhost:{FRONTEND_PORT}"]
-moduleName = 'beamline'
+moduleName = 'felsim.beamline'
 
 app = FastAPI(
     title="FEL Simulation API",
@@ -157,7 +157,7 @@ def loadAxes(plotParams: PlottingParameters) -> AxesPNGData:
     - pngObject: Object containing base64 encoded particle plot images and twiss data
     """
     try:
-        beamline = importlib.import_module("beamline")
+        beamline = importlib.import_module("felsim.beamline")
         beamlist = []
         beamlineData = plotParams.beamlineData
         for segment in beamlineData:
