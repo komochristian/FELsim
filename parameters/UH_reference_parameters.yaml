@@ -1,0 +1,424 @@
+# UH Manoa reference beam and machine parameters - master file (v1.0, decided 2026-10-02)
+# madey_beam: measured, referenced values (benchmark). inputs: repo start values. machine: by section.
+# status: validated = decided by Niels on the date in `decided`; unverified = found in a repo or paper, not settled.
+# Field-map provenance: planar .mat slices Gorham 2024-12-02; full 3D E+H volume Burridge 2024-09-09 (see projects/RF-TRACK_UH_ThermionicRFgun/field_maps_manifest.md).
+# Edit by hand or through the Orchestrator; keep the schema (value, unit, range, source, where, status, decided, note).
+meta:
+  version: '1.0'
+  decided_by: Niels Bidault
+  decided_on: '2026-10-02'
+  sets:
+    madey_beam: measured properties published by the Madey group before 2024 (benchmark for the codes); details and conflicts
+      in parameters/MadeyBeam.md
+    inputs: start values used in the repos, in particular at the diagnostic-chicane entrance after the linac (FELsim); become
+      simulation outputs once FELsim is start-to-end
+    machine: machine parameters by section
+  entry_schema: value, unit, [range], source, where (measurement location), status (validated | unverified), decided, note
+  reference_keys: parameters/MadeyBeam.md section 2 (Kow13, Kow14, Kow14b, Lumpkin13, Hadmack13, HadThesis12, NikThesis16,
+    Nik19, Howe16, Benson88)
+madey_beam:
+  kinetic_energy:
+    value: 45
+    unit: MeV
+    range:
+    - 40
+    - 45
+    source: Howe16; Kow14 (42.2 MeV at the emittance measurement, 41.8 MeV at the spectrum)
+    where: linac exit, 90 deg spectrometer harp, E[MeV] = 1.896 * I_spec[A]
+    status: validated
+    decided: '2026-10-02'
+    note: 45 MeV chosen as reference; measurements exist at 41.8 and 42.2 MeV
+  normalized_emittance_measured:
+    x:
+      value: 9.91
+      unit: um
+    y:
+      value: 8.67
+      unit: um
+    geometric:
+      x: 0.12
+      y: 0.105
+      unit: um
+    at_energy:
+      value: 42.2
+      unit: MeV
+    source: Kow14 Table I, attributed to P. Niknejadi (to be published)
+    where: not stated (probably linac exit / chicane entrance); method not stated
+    status: validated
+    decided: '2026-10-02'
+    note: only UH emittance numbers published
+  normalized_emittance_nominal:
+    value: 25.1
+    unit: um
+    source: 'Benson88 (Stanford MkIII: 8 pi horizontal, 4 pi vertical, normalized edge); carried at UH by HadThesis12, Howe16,
+      Nik19 as design/assumed'
+    where: none (assumption)
+    status: validated
+    decided: '2026-10-02'
+    note: 8 pi mm mrad
+  normalized_emittance_operational:
+    x:
+      range:
+      - 16
+      - 27
+      unit: um
+    y:
+      range:
+      - 12
+      - 43
+      unit: um
+    source: NikThesis16 Tables 4.2/4.3 (geometric 0.20-0.35 x, 0.15-0.55 y pi mm mrad at ~40 MeV; TR screens + transport model)
+    where: out of the linac (chicane entrance), 2013-2014
+    status: unverified
+    note: 2-5x the Kow14 values; conflict unresolved (definitions, method)
+  energy_spread_rms:
+    value: 0.11
+    unit: percent
+    source: 'Kow14: 0.25 % FWHM at 41.8 MeV, 180 mA; Gaussian conversion'
+    where: spectrometer harp, linac exit
+    status: validated
+    decided: '2026-10-02'
+    note: FWHM 0.25 % is the quoted measurement; Hadmack13 gives 0.3 % with feed-forward at 38 MeV
+  bunch_length_rms:
+    value: 1.3
+    unit: ps
+    source: 'Kow14: 3.1 ps FWHM, streak camera, resolution-corrected; Lumpkin13: 2-5 ps FWHM along the macropulse'
+    where: OTR mirror in the diagnostic chicane, after the linac
+    status: validated
+    decided: '2026-10-02'
+  bunch_charge_measured:
+    value: 46
+    unit: pC
+    source: 'Lumpkin13 Table 1 (text: 40 pC typical); macropulse current / 2.856 GHz'
+    where: toroid after the linac
+    status: validated
+    decided: '2026-10-02'
+    note: Niels quoted 45 pC; the paper gives 46
+  bunch_charge_nominal:
+    value: 60
+    unit: pC
+    source: Nik19, Howe16 (170 mA design)
+    status: validated
+    decided: '2026-10-02'
+  peak_current:
+    rule: 'derived, never stored: I_peak = Q / (sqrt(2 pi) sigma_t) for a Gaussian bunch'
+    examples:
+      measured: 46 pC, 1.3 ps rms -> 14 A
+      design: 60 pC, 1 ps rms -> 24 A
+    status: validated
+    decided: '2026-10-02'
+  macropulse:
+    current:
+      value: 200
+      unit: mA
+    length:
+      value: 5
+      unit: us
+    repetition_rate:
+      value: 4
+      unit: Hz
+    source: 'Kow14 Table I and gun studies (Kow13); other operating points: 150 mA / 4 us / 4-5 Hz (Howe16), 170 mA / 4.5
+      us / 100 Hz design (Nik19)'
+    where: toroid GT2 after the alpha magnet, before the linac; RF waveforms
+    status: validated
+    decided: '2026-10-02'
+  micropulse_repetition:
+    value: 2.856
+    unit: GHz
+    status: validated
+    decided: '2026-10-02'
+  twiss_linac_exit_measured:
+    note: measured references for cross-checking only; not simulation inputs
+    source: NikThesis16 Tables 4.2/4.3 (TR screens along the chicane fitted with the transport model)
+    where: out of the linac, ~40 MeV
+    units:
+      beta: m
+      alpha: '1'
+      eps: pi mm mrad geometric
+    columns:
+      collimated:
+        beta_x: 3.0
+        alpha_x: 0.0
+        beta_y: 3.0
+        alpha_y: 0.0
+        eps_x: 0.35
+        eps_y: 0.15
+      may2013_new_cathode:
+        beta_x: 9.0
+        alpha_x: 1.0
+        beta_y: 12.0
+        alpha_y: 1.3
+        eps_x: 0.25
+        eps_y: 0.55
+      mar2014_new_cathode:
+        beta_x: 3.4
+        alpha_x: 3.25
+        beta_y: 10.0
+        alpha_y: -1.9
+        eps_x: 0.2
+        eps_y: 0.28
+      mar2014_new_position:
+        beta_x: 5.8
+        alpha_x: 0.3
+        beta_y: 3.4
+        alpha_y: -3.535
+        eps_x: 0.2
+        eps_y: 0.28
+    status: validated
+    decided: '2026-10-02'
+  gun_exit_kinetic_energy:
+    value: ~1
+    unit: MeV
+    source: Howe16, NikThesis16 (statement, not measured; knife edge rejects beta*gamma < 2.5, i.e. 0.87 MeV)
+    status: validated
+    decided: '2026-10-02'
+    note: stated, not measured
+  gun_output_current:
+    range:
+    - 500
+    - 600
+    unit: mA
+    source: Kow13, Kow14
+    where: toroid GT1 before the alpha magnet
+    status: unverified
+  gun_peak_cathode_field:
+    operating_point_2013:
+      value: 0.33
+      unit: MV/cm
+      source: Kow13
+    useful_window_2014:
+      range:
+      - 540
+      - 560
+      unit: kV/cm
+      source: Kow14 simulation
+    status: validated
+    decided: '2026-10-02'
+    note: definitions (peak surface field vs accelerating gradient) to reconcile in the RF-gun repo
+  cathode_temperature:
+    value: 1700
+    unit: K
+    rise_per_macropulse:
+      value: 59
+      unit: K
+      per: 5 us
+      slopes:
+        magnet_on: 10.8
+        magnet_off: 13.8
+        unit: K/us
+    source: 'Nik19 (nominal); Kow13 (rise); other values: 1718 K target, 1622 K ex-situ emissivity measurement, 1750 K bake-out'
+    where: cathode surface, InGaAs radiometer + pyrometer
+    status: validated
+    decided: '2026-10-02'
+  cathode:
+    material: LaB6
+    diameter:
+      value: 3
+      unit: mm
+    length:
+      value: 1
+      unit: mm
+    work_function_fit:
+      value: 2.485
+      unit: eV
+      source: Kow14 1D model
+    status: unverified
+  alpha_magnet_current:
+    value: 12.5
+    unit: A
+    range:
+    - 12.2
+    - 12.5
+    source: Lumpkin13 (2013 run)
+    gradient_sim:
+      value: 1.29
+      unit: T/m
+      source: Kow14
+    status: validated
+    decided: '2026-10-02'
+  beam_size_ics_ip:
+    range:
+    - 60
+    - 70
+    unit: um
+    source: Nik16, Nik19 wire scanner
+    where: ICS interaction point in the chicane
+    status: unverified
+inputs:
+  chicane_entrance:
+    kinetic_energy:
+      value: 45
+      unit: MeV
+    bunch_charge:
+      value: 60
+      unit: pC
+    normalized_emittance:
+      x: 25.1
+      y: 25.1
+      unit: um
+      note: 8 pi mm mrad
+    bunch_length_rms:
+      value: 1.0
+      unit: ps
+    energy_spread_rms:
+      value: 0.2
+      unit: percent
+    twiss:
+      beta_x: 1.0
+      beta_y: 1.0
+      alpha_x: 0.0
+      alpha_y: 0.0
+      unit_beta: m
+      note: placeholder until upstream simulations provide the distribution
+    status: validated
+    decided: '2026-10-02'
+    repo_deviations_to_fix:
+      FELsim: 40 MeV, 2 ps, 0.5 %, 0.8 mm beam size in UHM_beamline_opt.py and the optimization notebook
+      xwake_UHdemo: consistent (BeamSpec 45 MeV, 60 pC, 25.13 um, 1 ps, 0.2 %)
+  gun:
+    cathode_temperature:
+      value: 1650
+      unit: K
+      repo: RF-TRACK_UH_ThermionicRFgun
+    work_function:
+      value: 2.66
+      unit: eV
+      source: Liu 2017 via the RF-gun repo
+      note: CLI default 2.1 eV to be changed
+    rf_frequency:
+      value: 2.856
+      unit: GHz
+      note: machine value; the XFdtd artifact used for tracking has eigenfrequency 2.865417 GHz (+0.33 %), documented as a
+        model property
+    macropulse_configurations:
+      benchmark:
+        value: 5
+        unit: us
+      design_study:
+        value: 8
+        unit: us
+    status: validated
+    decided: '2026-10-02'
+  alpha_magnet:
+    current:
+      value: 12
+      unit: A
+      gradient:
+        value: 1.245
+        unit: T/m
+      gradient_per_ampere:
+        value: 0.103754
+        unit: T/m/A
+      repo: AlphaMagnet_BeamDynamics
+    injection_beam:
+      energy:
+        value: 0.75
+        unit: MeV
+      charge:
+        value: 60
+        unit: pC
+      sigma_E:
+        value: 13
+        unit: keV
+      sigma_t:
+        value: 1.5
+        unit: ps
+      sigma_xy:
+        value: 0.5
+        unit: mm
+      sigma_xpyp:
+        value: 2
+        unit: mrad
+    gun_exit_latest_simulation:
+      energy:
+        value: 1.16
+        unit: MeV
+      charge_per_rf_period:
+        value: 30
+        unit: pC
+      normalized_emittance:
+        value: 44
+        unit: um
+      peak_current:
+        value: 0.46
+        unit: A
+      repo: RF-TRACK_UH_ThermionicRFgun
+    deviations_to_fix:
+      FELsim: beamUtility default 17.5 A
+    status: validated
+    decided: '2026-10-02'
+machine:
+  rf_frequency:
+    value: 2.856
+    unit: GHz
+    status: validated
+    decided: '2026-10-02'
+  linac:
+    type: SLAC 3 m travelling-wave S-band
+    gradient:
+      value: 13.3
+      unit: MV/m
+    phase:
+      value: 120
+      unit: deg
+    source: FELsim var/slac_linac.json
+    status: unverified
+  quadrupole_gradient_per_ampere:
+    value: 2.694
+    unit: T/m/A
+    source: FELsim physicalConstants; xwake line builder
+    status: unverified
+  cavity_geometry:
+    radius:
+      value: 34.0145
+      unit: mm
+    iris_radius:
+      value: 2.5275
+      unit: mm
+    exit_plane:
+      value: 40.589
+      unit: mm
+    source: RF-gun aperture.py
+    status: unverified
+  beam_loading:
+    Q0: 4000
+    Qext: 3500
+    R_over_Q:
+      value: 1
+      unit: ohm/m
+    source: RF-gun defaults
+    status: unverified
+  undulator:
+    primary_mkv:
+      period:
+        value: 2.3
+        unit: cm
+      periods: 47
+      K: 1.2
+      position_in_lattice:
+        s_start: 12.39
+        s_end: 13.47
+        unit: m
+      source: FELsim lattices; MadeyBeam.md
+      status: validated
+      decided: '2026-10-02'
+    secondary_12mm_spare:
+      period:
+        value: 12
+        unit: mm
+      periods: 100
+      K: 1.0
+      taper:
+        value: -10
+        unit: percent
+      source: xwake study_undulator.py
+      status: validated
+      decided: '2026-10-02'
+  deflection_magnet:
+    value: 0.0114
+    unit: T/A
+    position:
+      value: -65.8
+      unit: mm
+    source: RF-gun deflection_field.py
+    status: unverified

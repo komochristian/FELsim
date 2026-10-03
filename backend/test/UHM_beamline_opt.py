@@ -9,22 +9,22 @@ import sympy.plotting as plot
 
 # Import Beam Dynamics modules
 from ebeam import beam
+from parameters import chicane_inputs
 from beamline import lattice, beamline
 from schematic import draw_beamline
 from excelElements import ExcelElements
 from beamOptimizer import beamOptimizer
 from AlgebraicOptimization import AlgebraicOpti
 
-# Initial Beam Parameters
-Energy = 40  # MeV
+# Initial Beam Parameters at the chicane entrance (parameters/UH_reference_parameters.yaml)
+inputs = chicane_inputs()
+Energy = inputs['kinetic_energy_eV'] * 1e-6  # MeV
 f = 2856e6  # Hz
-bunch_spread = 2  # ps
-energy_std_percent = 0.5  # 0.3 % Energy spread from M. Hadmack Rev. Sci. Instrum. 84, 063302 (2013); doi: 10.1063/1.4809938
+bunch_spread = inputs['sigma_t_s'] * 1e12  # ps
+energy_std_percent = inputs['energy_spread_rms'] * 1e2  # %
 h = 5e9  # 1/s
 
-epsilon_n = 8  # pi.mm.mrad
-x_std = 0.8  # mm
-y_std = 0.8  # mm
+epsilon_n = inputs['emittance_n_x_m'] * 1e6  # pi.mm.mrad
 nb_particles = 1000
 
 relat = lattice(1,fringeType=None)
@@ -34,6 +34,8 @@ epsilon = epsilon_n / norm
 print(relat.gamma)
 print(relat.beta)
 print(epsilon)
+x_std = np.sqrt(epsilon * inputs['beta_x_m'])  # mm, from mm.mrad * m at alpha = 0
+y_std = np.sqrt(epsilon * inputs['beta_y_m'])  # mm
 x_prime_std = epsilon / x_std
 y_prime_std = epsilon / y_std
 
