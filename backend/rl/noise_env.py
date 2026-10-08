@@ -11,10 +11,9 @@ import copy
 
 
 class Noise_env(gym.Env):
-    def __init__(self, beamline, monitor_indices, otr_locations, seed=None):
+    def __init__(self, beamline, otr_locations, seed=None):
         super().__init__()
         self.beamline = beamline
-        self.monitor_indices = monitor_indices
         self.otr_locations = otr_locations
         self.rng = np.random.default_rng(seed)
         self.ebeam = beam()
@@ -25,6 +24,15 @@ class Noise_env(gym.Env):
 
         for loc in otr_locations:
             self.beamline.split_element(loc)
+
+    def _get_obs(self):
+        # obs space: list of current values, (mapped to) list OTR statistics of closest downstream otr, distance to downstream OTR, 
+        # scalar OTR stats of closest upstream otr,distance to upstream otr, upstream otr current
+        pass
+
+    def step(self):
+        # step: call script, for a each quad, get obs space for each quad, then guess noise for each quad
+        pass
 
 
 
