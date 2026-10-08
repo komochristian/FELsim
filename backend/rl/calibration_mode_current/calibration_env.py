@@ -9,6 +9,9 @@ from ebeam import beam
 from beamline import *
 import copy
 from backend.rl.calibration_mode_current.calibration_reference import *
+from backend.rl.calibration_mode_current.data_classes import Clock, GaussianConfig
+from otr_estimator import Estimator
+
 
 
 class CalibrationSMDPEnv(gym.Env):

@@ -4,12 +4,14 @@ from dataclasses import dataclass
 from typing import Protocol
 import math
 import numpy as np
+from backend.rl.calibration_mode_current.data_classes import QuadErrors, RawFrame, Measurement, GaussianConfig
 
 QUAD_INDICES = (1, 3, 10, 16, 18, 20)
 INITIAL_CURRENTS = np.array([
     .84, 1.05, 3.98,
     2.05, 4.88, 3.48,
 ])
+RF_HZ = 2.856e9
 K_PER_AMP_40_MEV = 19.9379220911
 INITIAL_K = K_PER_AMP_40_MEV * INITIAL_CURRENTS
 QUAD_SETTLE_S = 2.0
@@ -41,23 +43,6 @@ def initial_beam(seed=12345):
     )
     beam[:, 5] += 5e9 * beam[:, 4] / RF_HZ
     return beam
-
-
-@dataclass
-class QuadErrors:
-    b0: np.ndarray             # m^-2; constant within an episode
-    sigma_k: np.ndarray        # m^-2; independent machine-pulse-to-pulse RMS
-    A: np.ndarray              # m^-2; zero means no drift
-    P: np.ndarray              # seconds; positive even when A = 0
-    phi: np.ndarray            # radians
-
-    def sample(self, k_nominal, t, rng):
-        b = self.b0 + self.A * np.sin(2 * np.pi * t / self.P + self.phi)
-        k_actual = k_nominal + b + self.sigma_k * rng.normal(size=6)
-        if not np.all(np.isfinite(k_actual)) or np.any(k_actual < 0):
-            raise ValueError("Outside the initial positive-strength model")
-        return k_actual
-
 
 def benchmark_quad_errors():
     return QuadErrors(
@@ -111,18 +96,6 @@ def to_otr_coordinates(beam):
     result[:, 5] = p / p0 - 1   # relative momentum, not relative kinetic energy
     return result
 
-
-@dataclass
-class RawFrame:
-    image: np.ndarray          # electrons/pixel integrated over one bunch train
-    t: float                   # master-clock machine-pulse timestamp
-    currents: np.ndarray       # commands; never actual hidden k
-    diagnostic: str = "DC2.OTR.032"
-    bunches_integrated: int = BUNCHES_PER_MACROPULSE
-    bunch_charge_C: float = BUNCH_CHARGE_C
-    macropulse_duration_s: float = MACROPULSE_DURATION_S
-    machine_period_s: float = 1 / REP_RATE_HZ
-    camera_readouts: int = 1
 
 
 class BeamDiagnostic(Protocol):
@@ -185,29 +158,6 @@ def sample_cmos_frame(photons_per_period, sigma_read, rng):
         raise ValueError("Read-noise RMS must be finite and nonnegative")
     return rng.poisson(QE * photons) + rng.normal(0, sigma_read, photons.shape)
 
-
-@dataclass(frozen=True)
-class GaussianConfig:
-    # Fixed validated ROI; use the same configuration in every procedure.
-    roi: tuple = (0, 1200, 0, 1920)  # row start/end, column start/end
-    background_border: int = 8
-    max_reduced_chi2: float = 3.0
-    edge_margin_sigma: float = 3.0
-    min_signal_snr: float = 5.0
-    max_background_signal_sigma: float = .1
-
-
-@dataclass
-class Measurement:
-    sigma_xy: np.ndarray       # [sigma_x, sigma_y], m in nominal beam coordinates
-    covariance_xy: np.ndarray  # approximate fit uncertainty, m^2
-    background_variance: float # electrons^2, for read-noise estimation
-    background_dof: int
-    valid: bool
-    reduced_chi2: float
-    t: float
-    currents: np.ndarray
-    method: str = "otr_gaussian_v1"
 
 
 def gaussian_image(parameters, shape):
@@ -305,24 +255,6 @@ DIAGNOSTIC_TYPES = {"otr": OTRScreen}
 ANALYSIS_METHODS = {("otr", "gaussian_v1"): OTRGaussianAnalysis}
 
 
-@dataclass
-class Clock:
-    t: float = 0.
-    rep_rate_hz: float = REP_RATE_HZ
-
-    def advance(self, seconds):
-        if not np.isfinite(seconds) or seconds < 0:
-            raise ValueError("Clock advances must be finite and nonnegative")
-        self.t += seconds
-
-    def pulse_times(self, n):
-        """Timestamps for n machine pulses, not RF bunches."""
-        if not isinstance(n, (int, np.integer)) or n < 1:
-            raise ValueError("Choose an integer number of pulses >= 1")
-        # Whole pulse slots; guarantees integration >= n/f, even at an exact tick.
-        start_slot = math.ceil(self.t * self.rep_rate_hz)
-        return (start_slot + np.arange(1, n+1)) / self.rep_rate_hz
-
 
 def execute_measurement(machine, diagnostic, analysis, estimator, currents,
                         n_pulses, quad_rng, camera_rng, config, charge_latency):
@@ -333,6 +265,7 @@ def execute_measurement(machine, diagnostic, analysis, estimator, currents,
     charges measured or replayed online latency; it is not simulation timing.
     Check remaining budget INCLUDING processing/retraction before calling.
     """
+    #  Insert OTR screenm 
     if not np.array_equal(currents, machine.currents):
         machine.currents = np.array(currents, copy=True)
         machine.clock.advance(QUAD_SETTLE_S)
