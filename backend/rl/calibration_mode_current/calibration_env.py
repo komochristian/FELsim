@@ -42,6 +42,7 @@ class CalibrationSMDPEnv(gym.Env):
 
     def step(self, action):
         # 1. Decode agent action into physical commands
+        # Receive currents to change, and number of macropulses to simulate
         target_currents, n_pulses = self._decode_recipe(action)
         
         # 2. Execute measurement (advances clock for settling, insertion, pulses, and latency)[cite: 1]

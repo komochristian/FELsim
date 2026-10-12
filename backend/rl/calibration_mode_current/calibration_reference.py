@@ -128,7 +128,14 @@ class OTRScreen:
         return sum_identical_bunch_images(photons_per_bunch)
 
     def acquire(self, beam, *, t, currents, rng):
+        #  Generate expected beam shape as an np.array
+        #  return an array of expected photos per pixel over all bunches in time period
+        #  Ex. at 2.856 GHz, expected photon data includes all 14280 bunches in each 5 microsecond period
+        #  the bunch is fired.
         photons = self.expected_photons_per_machine_period(beam)
+
+        #  Generate OTR snapshot frame of beam distribution with poisson and normal bellcurve noise
+        #  (so it is assumed that the end of the beamline contains the OTR screen)
         image = sample_cmos_frame(photons, self._sigma_read, rng)
         return RawFrame(image, t, np.array(currents, copy=True))
 
@@ -175,6 +182,8 @@ class OTRGaussianAnalysis:
 
     def analyze(self, raw, config=GaussianConfig()):
         from scipy.optimize import least_squares
+
+        #  Estimate background level and check camera boundaries
         r0, r1, c0, c1 = config.roi
         image = np.asarray(raw.image[r0:r1, c0:c1], dtype=float)
         rows, cols = image.shape
@@ -188,6 +197,8 @@ class OTRGaussianAnalysis:
         dark = image[background_mask]
         background = np.median(dark)
         dark_var = max(float(np.var(dark, ddof=1)), 1e-12)
+
+        #  Initial guess of the centroid and spread of beamline with zero, first, and second order summation
         rr, cc = np.indices(image.shape)
         weights = np.maximum(image - background, 0)  # initialization only
         total = weights.sum()
@@ -201,7 +212,9 @@ class OTRGaussianAnalysis:
                    np.log(np.clip(sr, .5, rows/3)), background]
         lower = [-40, 0, 0, np.log(.3), np.log(.3), -np.inf]
         upper = [60, cols-1, rows-1, np.log(cols), np.log(rows), np.inf]
-        # Two feasible weighted-least-squares passes. Never read hidden sigma_read.
+
+        #  Run reweighting with two passes to improve predictions.
+        #  Two feasible weighted-least-squares passes. Never read hidden sigma_read.
         noise = np.sqrt(np.maximum(image-background, 0) + dark_var)
         for _ in range(2):
             fit = least_squares(
@@ -213,11 +226,16 @@ class OTRGaussianAnalysis:
             next_noise = np.sqrt(np.maximum(model-fit.x[5], 0) + dark_var)
             if _ == 0:
                 noise = next_noise
+
+        #  Measure quaility of prediction with chi2, construct fisher information,
+        #  Calculate scaled parameter covariance matrix
         residual = (model-image) / noise
         chi2 = float(np.sum(residual**2) / max(image.size-6, 1))
         information = fit.jac.T @ fit.jac
         full_rank = np.linalg.matrix_rank(information) == 6
         covariance = np.linalg.pinv(information) * max(1., chi2)
+
+        #  Transfer pixel space into physical beam size properties
         scale = PIXEL_PITCH_M / NOMINAL_MAGNIFICATION
         # At nominal geometry rows=P -> beam x; columns=S -> beam y.
         sx, sy = np.exp(fit.x[[4, 3]]) * scale
@@ -227,6 +245,8 @@ class OTRGaussianAnalysis:
         col0, row0 = fit.x[1:3]
         sc, sr = np.exp(fit.x[3:5])
         margin = config.edge_margin_sigma
+
+        #  run final quaility checking on data
         contained = (min(col0-border, cols-1-border-col0) > margin*sc and
                      min(row0-border, rows-1-border-row0) > margin*sr)
         dark_clean = (np.max(model[background_mask]-fit.x[5]) <
@@ -265,21 +285,30 @@ def execute_measurement(machine, diagnostic, analysis, estimator, currents,
     charges measured or replayed online latency; it is not simulation timing.
     Check remaining budget INCLUDING processing/retraction before calling.
     """
-    #  Insert OTR screenm 
+    #  Insert OTR screen, and set machine currents if not equal. Subtract time bank 
     if not np.array_equal(currents, machine.currents):
         machine.currents = np.array(currents, copy=True)
         machine.clock.advance(QUAD_SETTLE_S)
     if not machine.screen_inserted:
         machine.clock.advance(OTR_INSERT_S)
         machine.screen_inserted = True
+
     frames = []
+
+    # Iterate over each timestamp for each pulse that occurs every second
     for t in machine.clock.pulse_times(n_pulses):
         machine.clock.advance(t - machine.clock.t)
+
+        # Propogate pulse through beamline with new currents and error model
+        # k strength of quadropole is calculated and used
         beam = track_one_pulse(machine.line, machine.beam, machine.currents,
                                machine.errors, t, quad_rng)
+
+        # Add data frame capturing pulse data with diagnostic tool
         frames.append(diagnostic.acquire(beam, t=t, currents=machine.currents,
                                          rng=camera_rng))
     # Analysis happens after acquisition; no artificial gaps between its pulses.
+    # Prepare analysis data to be used by the estimator
     results = charge_latency("analysis", lambda: [analysis.analyze(f, config)
                                                   for f in frames])
     measurements = [m for m, debug in results]
