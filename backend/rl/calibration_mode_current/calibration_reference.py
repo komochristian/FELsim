@@ -246,7 +246,7 @@ class OTRGaussianAnalysis:
         sc, sr = np.exp(fit.x[3:5])
         margin = config.edge_margin_sigma
 
-        #  run final quaility checking on data
+        #  run final quality checking on data
         contained = (min(col0-border, cols-1-border-col0) > margin*sc and
                      min(row0-border, rows-1-border-row0) > margin*sr)
         dark_clean = (np.max(model[background_mask]-fit.x[5]) <
@@ -276,8 +276,8 @@ ANALYSIS_METHODS = {("otr", "gaussian_v1"): OTRGaussianAnalysis}
 
 
 
-def execute_measurement(machine, diagnostic, analysis, estimator, currents,
-                        n_pulses, quad_rng, camera_rng, config, charge_latency):
+def execute_measurement(machine, diagnostic, analysis, estimator, scan_steps,
+                         quad_rng, camera_rng, config, charge_latency):
     """Scheduler integration example. machine owns line, beam, errors, clock,
     currents, screen_inserted. n_pulses counts complete machine pulses, each
     containing BUNCHES_PER_MACROPULSE bunches. One camera readout per pulse.
@@ -285,33 +285,38 @@ def execute_measurement(machine, diagnostic, analysis, estimator, currents,
     charges measured or replayed online latency; it is not simulation timing.
     Check remaining budget INCLUDING processing/retraction before calling.
     """
-    #  Insert OTR screen, and set machine currents if not equal. Subtract time bank 
-    if not np.array_equal(currents, machine.currents):
-        machine.currents = np.array(currents, copy=True)
-        machine.clock.advance(QUAD_SETTLE_S)
+    #  Insert OTR screen and subtract time bank 
     if not machine.screen_inserted:
         machine.clock.advance(OTR_INSERT_S)
         machine.screen_inserted = True
 
-    frames = []
+    measurements, frames = [], []
+    for currents, n_pulses in scan_steps:
+        if not np.array_equal(currents, machine.currents):
+            machine.currents = np.array(currents, copy=True)
+            machine.clock.advance(QUAD_SETTLE_S)
 
-    # Iterate over each timestamp for each pulse that occurs every second
-    for t in machine.clock.pulse_times(n_pulses):
-        machine.clock.advance(t - machine.clock.t)
+        step_frames = []
+        # Iterate over each timestamp for each pulse that occurs every second
+        for t in machine.clock.pulse_times(n_pulses):
+            machine.clock.advance(t - machine.clock.t)
 
-        # Propogate pulse through beamline with new currents and error model
-        # k strength of quadropole is calculated and used
-        beam = track_one_pulse(machine.line, machine.beam, machine.currents,
-                               machine.errors, t, quad_rng)
+            # Propogate pulse through beamline with new currents and error model
+            # k strength of quadropole is calculated and used
+            beam = track_one_pulse(machine.line, machine.beam, machine.currents,
+                                machine.errors, t, quad_rng)
 
-        # Add data frame capturing pulse data with diagnostic tool
-        frames.append(diagnostic.acquire(beam, t=t, currents=machine.currents,
-                                         rng=camera_rng))
-    # Analysis happens after acquisition; no artificial gaps between its pulses.
-    # Prepare analysis data to be used by the estimator
-    results = charge_latency("analysis", lambda: [analysis.analyze(f, config)
-                                                  for f in frames])
-    measurements = [m for m, debug in results]
+            # Add data frame capturing pulse data with diagnostic tool
+            step_frames.append(diagnostic.acquire(beam, t=t, currents=machine.currents,
+                                            rng=camera_rng))
+        # Analysis happens after acquisition; no artificial gaps between its pulses.
+        # Prepare analysis data to be used by the estimator
+        results = charge_latency("analysis", lambda: [analysis.analyze(f, config)
+                                                    for f in step_frames])
+        step_measurements = [m for m, debug in results]
+        measurements.extend(step_measurements)
+        frames.extend(step_frames)
+        
     charge_latency("estimator", lambda: estimator.update(measurements))
     return frames, measurements
 
