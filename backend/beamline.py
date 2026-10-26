@@ -301,7 +301,7 @@ class qpfLattice(lattice):
         self.color = self.__class__.color
         self.G = 2.694  # Quadrupole focusing strength (T/A/m)
 
-    def _compute_numeric_matrix(self, length=None, current=None, **kwargs):
+    def _compute_numeric_matrix(self, length=None, current=None, k_actual=None, **kwargs):
         '''
         Pure NumPy implementation for quadrupole focusing magnet transfer matrix.
 
@@ -319,7 +319,7 @@ class qpfLattice(lattice):
         '''
         l = self.length if length is None else length
         I = self.current if current is None else current
-        k = np.abs((self.Q * self.G * I) / (self.M * self.C * self.beta * self.gamma))
+        k = np.abs((self.Q * self.G * I) / (self.M * self.C * self.beta * self.gamma)) if k_actual is None else k = k_actual
         theta = np.sqrt(k) * l
         M11 = np.cos(theta)
         M22 = M11
@@ -423,7 +423,7 @@ class qpdLattice(lattice):
         self.G = 2.694  # Quadrupole focusing strength (T/A/m)
         self.color = self.__class__.color
 
-    def _compute_numeric_matrix(self, length=None, current=None, **kwargs):
+    def _compute_numeric_matrix(self, length=None, current=None, k_actual = None, **kwargs):
         '''
         Pure NumPy implementation for quadrupole defocusing magnet transfer matrix.
 
@@ -441,7 +441,7 @@ class qpdLattice(lattice):
         '''
         l = self.length if length is None else length
         I = self.current if current is None else current
-        k = np.abs((self.Q * self.G * I) / (self.M * self.C * self.beta * self.gamma))
+        k = np.abs((self.Q * self.G * I) / (self.M * self.C * self.beta * self.gamma)) if k_actual is None else k = k_actual
         theta = np.sqrt(k) * l
         M11 = np.cosh(theta)
         M22 = M11

@@ -17,7 +17,7 @@ NUM_RECIPES = 20
 
 
 class CalibrationSMDPEnv(gym.Env):
-    def __init__(self):
+    def __init__(self, line):
         # Action space: Discrete menu of measurement recipes (Options)
         self.action_space = gym.spaces.Discrete(NUM_RECIPES)
         
@@ -28,14 +28,22 @@ class CalibrationSMDPEnv(gym.Env):
         self.diagnostic = OTRScreen() #[cite: 1]
         self.analysis = OTRGaussianAnalysis() #[cite: 1]
         self.max_budget_seconds = 100.0
+        self.original_line = line
 
     def reset(self, seed=None):
+        super().reset(seed=seed)
+
+        if seed is not None:
+            np.random.seed(seed)
+            self.np_random = np.random.default_rng(seed=seed)
+
         # Reset master clock, beam, and hidden machine state[cite: 1]
         self.clock = Clock() #[cite: 1]
         self.beam = initial_beam(seed) #[cite: 1]
         self.errors = benchmark_quad_errors() #[cite: 1]
         self.currents = INITIAL_CURRENTS.copy() #[cite: 1]
         self.screen_inserted = False 
+        self.line = copy.deepcopy(self.original_line)
         
         # Initialize belief state (Estimator tracks the 14 unknowns)
         self.estimator = Estimator() 
@@ -47,6 +55,9 @@ class CalibrationSMDPEnv(gym.Env):
         # Receive currents to change, and number of macropulses to simulate
         # scan_steps: list(list(list(current_vals), n_pulses))
         scan_steps = self._decode_recipe(action)
+
+        self.previous_time = self.clock.t
+        prev_covariance = self.estimator.covariance
         
         # 2. Execute measurement (advances clock for settling, insertion, pulses, and latency)[cite: 1]
         frames, measurements = execute_measurement(
@@ -65,7 +76,7 @@ class CalibrationSMDPEnv(gym.Env):
         terminated = self.clock.t >= self.max_budget_seconds
         
         # 4. SMDP Reward Calculation: (Uncertainty reduction) - (Elapsed time cost)
-        reward = self._calculate_reward(measurements)
+        reward = self._calculate_reward(measurements, prev_covariance)
         
         return self._get_observation(), reward, terminated, False, {}
 
@@ -140,3 +151,40 @@ class CalibrationSMDPEnv(gym.Env):
 
         else:
             raise ValueError(f"Invalid action value: {action_val}")
+
+    def _calculate_reward(self, measurements, prev_covariance):
+        """
+        Calculates the SMDP reward for a completed measurement step.
+        """
+        reward = 0.0
+        
+        # 1. Time Penalty: Penalize machine seconds consumed by the action
+        step_duration = self.clock.t - self.previous_time
+        time_penalty_coefficient = 0.1
+        reward -= time_penalty_coefficient * step_duration
+        
+        # 2. Calibration Knowledge Improvement (Information Gain)
+        # Compare current estimator covariance against the previous step's covariance
+        current_cov = self.estimator.covariance
+        try:
+            prev_log_det = np.log(np.linalg.det(prev_covariance) + 1e-12)
+            curr_log_det = np.log(np.linalg.det(current_cov) + 1e-12)
+            information_gain = prev_log_det - curr_log_det  # Positive when uncertainty shrinks
+            reward += 2.0 * max(0.0, information_gain)
+        except np.linalg.LinAlgError:
+            pass  # Handle near-singular covariance matrices gracefully
+
+        # 3. Measurement Validity Penalty
+        if measurements:
+            invalid_count = sum(1 for m in measurements if not m.valid)
+            reward -= 0.5 * invalid_count
+        else:
+            reward -= 1.0  # Penalty if no measurements were produced
+
+        # 4. Budget Exhaustion / Terminal Check
+        # if self.clock.t >= self.max_budget_seconds:
+        #     # Optional: Check if final parameter uncertainty meets convergence criteria
+        #     if not self._is_converged():
+        #         reward -= 20.0  # Failure penalty for running out of budget
+
+        return reward

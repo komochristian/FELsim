@@ -313,7 +313,7 @@ def execute_measurement(machine, diagnostic, analysis, estimator, scan_steps,
         # Prepare analysis data to be used by the estimator
         results = charge_latency("analysis", lambda: [analysis.analyze(f, config)
                                                     for f in step_frames])
-        step_measurements = [m for m, debug in results]
+        step_measurements = [m for m, debug in results if m.valid]
         measurements.extend(step_measurements)
         frames.extend(step_frames)
         
